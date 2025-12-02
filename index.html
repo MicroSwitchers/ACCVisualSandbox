@@ -1,0 +1,1720 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+
+    <!-- PWA Settings -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/svg+xml" href="icon.svg">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="ACC Visual Sandbox">
+    <meta name="mobile-web-app-capable" content="yes">
+
+    <title>ACC Visual Sandbox</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Core Styles */
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #f8fafc;
+            font-family: system-ui, -apple-system, sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: pan-x pan-y;
+            /* Safe area support for notched devices */
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+        }
+
+        /* Drawer Transitions */
+        #drawer {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Responsive Drawer Width */
+        @media (max-width: 640px) {
+            #drawer {
+                width: 85vw !important;
+                max-width: 320px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            #drawer {
+                width: 90vw !important;
+            }
+        }
+
+        .drawer-closed {
+            transform: translateX(-100%);
+        }
+
+        .drawer-open {
+            transform: translateX(0);
+        }
+
+        /* Grid Styles */
+        #grid-container {
+            display: grid;
+            width: 100%;
+            height: 100%;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+
+        /* Grid Item (The Cell) */
+        .grid-cell {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            overflow: visible;
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s, opacity 0.2s;
+            touch-action: none;
+            background-color: transparent;
+            z-index: 1;
+            /* Default z-index */
+            box-sizing: border-box;
+            /* Performance optimizations for mobile */
+            -webkit-transform: translateZ(0);
+            transform: translateZ(0);
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+
+        /* Occupied Cell Styles */
+        .grid-cell.occupied {
+            background: white;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+            cursor: pointer;
+        }
+
+        /* Empty Cell Styles (Target) */
+        .grid-cell.empty {
+            border: 2px dashed #cbd5e1;
+        }
+
+        /* Edit Mode Interactions */
+        .grid-cell.occupied.editable {
+            cursor: grab;
+        }
+
+        .grid-cell.occupied.editable:active {
+            cursor: grabbing;
+        }
+
+        /* Play Mode Interactions */
+        .grid-cell.occupied.locked {
+            cursor: pointer;
+        }
+
+        /* Magnification Effect */
+        .grid-cell.magnified {
+            z-index: 100 !important;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+            border-color: #3b82f6;
+            will-change: transform;
+        }
+
+        /* Hiding dashed lines in play mode */
+        .play-mode .grid-cell.empty {
+            border: none;
+        }
+
+        /* Image Styling */
+        /* Inner content wrapper to clip images */
+        .grid-cell .cell-content {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .grid-cell .image-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            padding: 4px;
+            overflow: hidden;
+        }
+
+        .grid-cell img {
+            flex: 1 1 auto;
+            min-height: 0;
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            pointer-events: none;
+            border-radius: 4px;
+        }
+
+        .grid-cell .label-text {
+            position: relative;
+            width: 100%;
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: #475569;
+            text-align: center;
+            padding: 4px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.9);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            z-index: 10;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        /* Delete Button */
+        .delete-btn {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            width: 24px;
+            height: 24px;
+            background-color: #ef4444;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            z-index: 20;
+            transition: transform 0.1s;
+        }
+
+        .delete-btn:hover {
+            background-color: #dc2626;
+            transform: scale(1.1);
+        }
+
+        .delete-btn svg {
+            width: 14px;
+            height: 14px;
+            pointer-events: none;
+        }
+
+        /* Drag and Drop Visual States */
+        .dragging {
+            opacity: 0.4;
+        }
+
+        .drag-over {
+            border: 4px solid #3b82f6 !important;
+            background-color: rgba(59, 130, 246, 0.1);
+            z-index: 10;
+            transform: scale(1.02);
+        }
+
+        /* Color Selection */
+        .color-btn.selected {
+            ring-width: 2px;
+            ring-color: #3b82f6;
+            transform: scale(1.1);
+            border-color: #3b82f6;
+        }
+
+        /* Toggle Switch Styling */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #3b82f6;
+        }
+
+        .toggle-checkbox:checked+.toggle-label {
+            background-color: #3b82f6;
+        }
+
+        /* Unlock Animation for Open Button */
+        #open-btn {
+            transition: background-color 0.2s, color 0.2s, transform 0.2s;
+        }
+
+        #open-btn.unlocking {
+            background-color: #3b82f6 !important;
+            color: white !important;
+            transition: background-color 3s linear, color 3s linear;
+        }
+
+        /* Loading Overlay */
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.95);
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.2s;
+            cursor: pointer;
+            /* Click to dismiss */
+        }
+
+        /* Robust hidden state */
+        #loading-overlay.hidden {
+            display: none !important;
+            pointer-events: none !important;
+            visibility: hidden !important;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e2e8f0;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Landscape Mode Optimization for Phones */
+        @media (max-height: 500px) and (orientation: landscape) {
+            #drawer {
+                width: 60vw !important;
+                max-width: 280px;
+            }
+
+            .p-6 {
+                padding: 1rem !important;
+            }
+
+            .space-y-8>*+* {
+                margin-top: 1.25rem !important;
+            }
+        }
+
+        /* Minimum Touch Target Sizes (44px x 44px for accessibility) */
+        button,
+        .color-btn,
+        .delete-btn,
+        input[type="range"],
+        select {
+            min-height: 44px;
+            min-width: 44px;
+        }
+
+        .color-btn {
+            width: 44px;
+            height: 44px;
+        }
+
+        /* Pulse Animation for Play Mode */
+        @keyframes pulse-feedback {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.15);
+                box-shadow: 0 0 20px rgba(59, 130, 246, 0.6);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .pulse-active {
+            animation: pulse-feedback 0.5s ease-in-out;
+            z-index: 150 !important;
+            position: relative;
+        }
+
+        /* Drawer Animation */
+        #drawer {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .drawer-open {
+            transform: translateX(0);
+        }
+
+        .drawer-closed {
+            transform: translateX(-100%);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Loading Overlay (Click to force dismiss) -->
+    <div id="loading-overlay" class="hidden" title="Tap to cancel">
+        <div class="spinner mb-4"></div>
+        <p class="text-slate-600 font-medium">Processing... (Tap to Cancel)</p>
+    </div>
+
+    <!-- Toggle Button (Drawer Handle) -->
+    <button id="open-btn" class="fixed z-50 p-2 bg-white rounded-full shadow-lg hover:bg-gray-100 text-slate-600 hidden"
+        style="top: max(1rem, env(safe-area-inset-top, 1rem)); left: max(1rem, env(safe-area-inset-left, 1rem));">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="4" x2="20" y1="12" y2="12" />
+            <line x1="4" x2="20" y1="6" y2="6" />
+            <line x1="4" x2="20" y1="18" y2="18" />
+        </svg>
+    </button>
+
+    <!-- Settings Drawer -->
+    <aside id="drawer"
+        class="fixed inset-y-0 left-0 z-50 w-80 bg-white/95 backdrop-blur-sm shadow-2xl flex flex-col drawer-open overflow-hidden border-r border-slate-200"
+        style="padding-top: env(safe-area-inset-top, 0); padding-bottom: env(safe-area-inset-bottom, 0);">
+        <!-- Header -->
+        <div class="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50/80">
+            <h2 class="font-bold text-slate-700 text-lg">ACC Visual Sandbox</h2>
+            <button id="close-btn"
+                class="p-2 hover:bg-slate-200 rounded-lg text-slate-600 transition-colors flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 6 6 18" />
+                    <path d="m6 6 12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Controls -->
+        <div class="flex-1 overflow-y-auto p-6 space-y-8"
+            style="-webkit-overflow-scrolling: touch; overscroll-behavior: contain;">
+
+            <!-- Fullscreen Toggle (Top Priority) -->
+            <button onclick="toggleFullScreen()"
+                class="w-full py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-900 transition-colors text-sm font-medium flex justify-center items-center gap-2 shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M15 3h6v6" />
+                    <path d="M9 21H3v-6" />
+                    <path d="M21 3l-7 7" />
+                    <path d="M3 21l7-7" />
+                </svg>
+                Toggle Fullscreen
+            </button>
+
+            <!-- Mode Toggle -->
+            <div class="bg-slate-100 p-1 rounded-lg flex shadow-inner">
+                <button id="btn-mode-edit" onclick="setMode('edit')"
+                    class="mode-btn flex-1 py-2 rounded-md text-sm font-bold shadow-sm bg-white text-blue-600 flex items-center justify-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                    </svg>
+                    Edit
+                </button>
+                <button id="btn-mode-play" onclick="setMode('play')"
+                    class="mode-btn flex-1 py-2 rounded-md text-sm font-bold text-slate-500 hover:text-slate-700 flex items-center justify-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="5 3 19 12 5 21 5 3" />
+                    </svg>
+                    Play
+                </button>
+            </div>
+
+            <!-- Upload (Only visible in Edit Mode) -->
+            <div id="section-upload" class="space-y-2 transition-opacity duration-300">
+                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">1. Images</label>
+                <div onclick="document.getElementById('file-input').click()"
+                    class="border-2 border-dashed border-slate-300 rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors group">
+                    <svg class="text-slate-400 group-hover:text-blue-500 mb-2" xmlns="http://www.w3.org/2000/svg"
+                        width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="17 8 12 3 7 8" />
+                        <line x1="12" x2="12" y1="3" y2="15" />
+                    </svg>
+                    <span class="text-sm font-medium text-slate-600 group-hover:text-blue-600">Upload Pictures</span>
+                    <span class="text-xs text-slate-400 mt-1 text-center">Tap to select images</span>
+                </div>
+                <input type="file" id="file-input" class="hidden" multiple accept="image/*">
+
+                <div id="file-status" class="hidden flex justify-between items-center bg-slate-100 p-2 rounded-lg mt-2">
+                    <span id="file-count" class="text-xs font-bold text-slate-500 px-2">0 images</span>
+                    <button onclick="clearGrid()" class="text-red-500 hover:text-red-700 text-xs font-bold px-2">Clear
+                        All</button>
+                </div>
+            </div>
+
+            <!-- Dimensions -->
+            <div id="section-dimensions" class="space-y-6 transition-opacity duration-300">
+                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">2. Dimensions</label>
+
+                <div>
+                    <div class="flex justify-between mb-1">
+                        <label class="text-sm text-slate-700">Columns</label>
+                        <span id="col-val"
+                            class="text-sm font-mono font-bold text-blue-600 bg-blue-50 px-2 rounded">2</span>
+                    </div>
+                    <input type="range" id="col-range" min="1" max="10" value="2"
+                        class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                </div>
+
+                <div>
+                    <div class="flex justify-between mb-1">
+                        <label class="text-sm text-slate-700">Rows</label>
+                        <span id="row-val"
+                            class="text-sm font-mono font-bold text-blue-600 bg-blue-50 px-2 rounded">2</span>
+                    </div>
+                    <input type="range" id="row-range" min="1" max="10" value="2"
+                        class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                </div>
+
+                <div>
+                    <div class="flex justify-between mb-1">
+                        <label class="text-sm text-slate-700">Padding</label>
+                        <span id="gap-val"
+                            class="text-sm font-mono font-bold text-blue-600 bg-blue-50 px-2 rounded">10px</span>
+                    </div>
+                    <input type="range" id="gap-range" min="0" max="100" step="2" value="10"
+                        class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                </div>
+            </div>
+
+            <!-- Vision Adaptation -->
+            <div class="space-y-4">
+                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Vision Adaptation</label>
+
+                <!-- Background Color Selection -->
+                <div class="space-y-2">
+                    <span class="text-sm text-slate-700 block">Background Color</span>
+                    <div class="flex gap-3">
+                        <button onclick="setBackground('#f8fafc', this)"
+                            class="color-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none selected"
+                            style="background-color: #f8fafc;" title="White"></button>
+                        <button onclick="setBackground('#d4c5a0', this)"
+                            class="color-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                            style="background-color: #d4c5a0;" title="Beige"></button>
+                        <button onclick="setBackground('#334155', this)"
+                            class="color-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                            style="background-color: #334155;" title="Dark Grey"></button>
+                        <button onclick="setBackground('#000000', this)"
+                            class="color-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                            style="background-color: #000000;" title="Black"></button>
+                    </div>
+                </div>
+
+                <!-- Symbol Border Option -->
+                <div class="space-y-2">
+                    <span class="text-sm text-slate-700 block">Symbol Border</span>
+                    <div class="flex gap-3 items-center">
+                        <button onclick="setBorderColor('#000000', this)"
+                            class="border-color-btn w-8 h-8 rounded-full border-2 border-slate-300 shadow-sm focus:outline-none selected"
+                            style="background-color: #000000;" title="Black"></button>
+                        <button onclick="setBorderColor('#ffffff', this)"
+                            class="border-color-btn w-8 h-8 rounded-full border-2 border-slate-300 shadow-sm focus:outline-none"
+                            style="background-color: #ffffff;" title="White"></button>
+                        <button onclick="setBorderColor('#1e3a8a', this)"
+                            class="border-color-btn w-8 h-8 rounded-full border-2 border-slate-300 shadow-sm focus:outline-none"
+                            style="background-color: #1e3a8a;" title="Dark Blue"></button>
+                        <button onclick="setBorderColor('#991b1b', this)"
+                            class="border-color-btn w-8 h-8 rounded-full border-2 border-slate-300 shadow-sm focus:outline-none"
+                            style="background-color: #991b1b;" title="Dark Red"></button>
+                    </div>
+                    <div class="mt-3">
+                        <div class="flex justify-between mb-1">
+                            <label class="text-xs text-slate-600">Border Width</label>
+                            <span id="border-width-val" class="text-xs font-bold text-blue-600">1px</span>
+                        </div>
+                        <input type="range" id="border-width-range" min="0" max="10" step="1" value="1"
+                            class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                    </div>
+                </div>
+            </div>
+            <!-- Magnify Setting -->
+            <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-3">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <span class="text-sm font-semibold text-slate-700 block">Magnifier</span>
+                        <span class="text-xs text-amber-600 font-medium">(Active only in Play Mode)</span>
+                    </div>
+                    <div
+                        class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                        <input type="checkbox" name="toggle" id="magnify-toggle"
+                            class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-300" />
+                        <label for="magnify-toggle"
+                            class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-300 cursor-pointer"></label>
+                    </div>
+                </div>
+
+                <!-- Zoom Level Slider -->
+                <div id="magnify-controls" class="pt-2 border-t border-slate-200 hidden">
+                    <div class="flex justify-between mb-1">
+                        <label class="text-xs text-slate-600">Zoom Strength</label>
+                        <span id="zoom-val" class="text-xs font-bold text-blue-600">1.5x</span>
+                    </div>
+                    <input type="range" id="zoom-range" min="1.5" max="2.5" step="0.1" value="1.5"
+                        class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                </div>
+            </div>
+
+            <!-- Auditory Adaptation -->
+            <div class="space-y-4">
+                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Auditory
+                    Adaptation</label>
+
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <span class="text-sm font-semibold text-slate-700 block">Audio Labels</span>
+                            <span class="text-xs text-slate-500">Reads filename on press</span>
+                        </div>
+                        <div
+                            class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                            <input type="checkbox" name="toggle" id="audio-toggle"
+                                class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-300" />
+                            <label for="audio-toggle"
+                                class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-300 cursor-pointer"></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interaction Timing -->
+            <div class="space-y-4">
+                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Interaction
+                    Timing</label>
+
+                <!-- Dwell Time -->
+                <div class="space-y-2">
+                    <div class="flex justify-between mb-1">
+                        <div>
+                            <span class="text-sm text-slate-700 block">Dwell Time</span>
+                            <span class="text-xs text-slate-500">Hold duration to activate</span>
+                        </div>
+                        <span id="dwell-val" class="text-xs font-bold text-blue-600">Off</span>
+                    </div>
+                    <input type="range" id="dwell-range" min="0" max="0.5" step="0.1" value="0"
+                        class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                </div>
+
+                <!-- Cooldown Time -->
+                <div class="space-y-2">
+                    <div class="flex justify-between mb-1">
+                        <div>
+                            <span class="text-sm text-slate-700 block">Cooldown Time</span>
+                            <span class="text-xs text-slate-500">Delay between activations</span>
+                        </div>
+                        <span id="cooldown-val" class="text-xs font-bold text-blue-600">Off</span>
+                    </div>
+                    <input type="range" id="cooldown-range" min="0" max="1.0" step="0.1" value="0"
+                        class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                </div>
+            </div>
+
+
+
+            <!-- View Options -->
+            <div class="space-y-4">
+                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Other Settings</label>
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-slate-700">Image Fit</span>
+                    <select id="fit-select" class="text-sm border rounded p-1 bg-white text-slate-700">
+                        <option value="contain">Contain (Whole)</option>
+                        <option value="cover">Cover (Fill)</option>
+                    </select>
+                </div>
+
+                <!-- Text Labels Toggle -->
+                <div class="flex items-center justify-between">
+                    <div>
+                        <span class="text-sm text-slate-700 block">Text Labels</span>
+                        <span class="text-xs text-slate-500">Show under symbols</span>
+                    </div>
+                    <div
+                        class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                        <input type="checkbox" name="toggle" id="labels-toggle"
+                            class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-300" />
+                        <label for="labels-toggle"
+                            class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-300 cursor-pointer"></label>
+                    </div>
+                </div>
+
+                <!-- Label Size Slider -->
+                <div id="label-size-control" class="hidden mt-2 pt-2 border-t border-slate-100">
+                    <div class="flex justify-between mb-1">
+                        <label class="text-xs text-slate-600">Text Size</label>
+                        <span id="label-size-val" class="text-xs font-bold text-blue-600">20px</span>
+                    </div>
+                    <input type="range" id="label-size-range" min="12" max="48" step="1" value="20"
+                        class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                </div>
+
+
+            </div>
+
+            <!-- Games Section -->
+            <div class="space-y-4">
+                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Games</label>
+
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-3">
+                    <!-- Find-It Game Toggle -->
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <span class="text-sm font-semibold text-slate-700 block">Find-It Game</span>
+                            <span class="text-xs text-slate-500">Practice identifying symbols</span>
+                        </div>
+                        <button id="game-btn" onclick="toggleGame()"
+                            class="px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-lg shadow-sm hover:bg-blue-700 transition-colors">
+                            Start
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Game Delay Slider -->
+                <div class="pt-2 border-t border-slate-200">
+                    <div class="flex justify-between mb-1">
+                        <label class="text-xs text-slate-600">Next Question Delay</label>
+                        <span id="game-delay-val" class="text-xs font-bold text-blue-600">2s</span>
+                    </div>
+                    <input type="range" id="game-delay-range" min="1" max="4" step="0.5" value="2"
+                        class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                </div>
+            </div>
+        </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main id="main-content" class="h-screen w-full relative transition-colors duration-300"
+        style="background-color: #f8fafc;">
+        <div id="grid-container" class="hidden">
+            <!-- Grid items injected here -->
+        </div>
+
+        <!-- Empty State (moved to grid cell) -->
+    </main>
+
+    <script>
+        // --- State Management ---
+        let gridData = Array(4).fill(null);
+        let config = {
+            rows: 2,
+            cols: 2,
+            gap: 10,
+            fit: 'contain',
+            mode: 'edit',
+            magnify: false,
+            zoomLevel: 1.5,
+            audioEnabled: false,
+            borderColor: '#000000',
+            borderWidth: 1,
+            showLabels: false,
+            labelSize: 20,
+            dwellTime: 0,
+            cooldownTime: 0,
+            gameDelay: 2
+        };
+
+        // Timing state
+        let dwellTimer = null;
+        let lastActivationTime = 0;
+
+        // Game state
+        let gameActive = false;
+        let currentTargetIndex = null;
+        const gamePhrases = ["Where's the word", "Find the word", "Touch the word"];
+        const reinforcementPhrases = ["You found the", "That's", "You pressed"];
+
+        // --- DOM Elements ---
+        const drawer = document.getElementById('drawer');
+        const mainContent = document.getElementById('main-content');
+        const openBtn = document.getElementById('open-btn');
+        const closeBtn = document.getElementById('close-btn');
+        const fileInput = document.getElementById('file-input');
+        const gridContainer = document.getElementById('grid-container');
+        const emptyState = document.getElementById('empty-state');
+        const fileStatus = document.getElementById('file-status');
+        const fileCountSpan = document.getElementById('file-count');
+        const loadingOverlay = document.getElementById('loading-overlay');
+
+        // Inputs
+        const colRange = document.getElementById('col-range');
+        const rowRange = document.getElementById('row-range');
+        const gapRange = document.getElementById('gap-range');
+        const colVal = document.getElementById('col-val');
+        const rowVal = document.getElementById('row-val');
+        const gapVal = document.getElementById('gap-val');
+        const fitSelect = document.getElementById('fit-select');
+
+        // Feature Controls
+        const magnifyToggle = document.getElementById('magnify-toggle');
+        const magnifyControls = document.getElementById('magnify-controls');
+        const zoomRange = document.getElementById('zoom-range');
+        const zoomVal = document.getElementById('zoom-val');
+        const audioToggle = document.getElementById('audio-toggle');
+        const borderWidthRange = document.getElementById('border-width-range');
+        const borderWidthVal = document.getElementById('border-width-val');
+        const labelsToggle = document.getElementById('labels-toggle');
+        const labelSizeControl = document.getElementById('label-size-control');
+        const labelSizeRange = document.getElementById('label-size-range');
+        const labelSizeVal = document.getElementById('label-size-val');
+        const dwellRange = document.getElementById('dwell-range');
+        const dwellVal = document.getElementById('dwell-val');
+        const cooldownRange = document.getElementById('cooldown-range');
+        const cooldownVal = document.getElementById('cooldown-val');
+        const gameBtn = document.getElementById('game-btn');
+        const gameDelayRange = document.getElementById('game-delay-range');
+        const gameDelayVal = document.getElementById('game-delay-val');
+
+        // Mode Buttons
+        const btnEdit = document.getElementById('btn-mode-edit');
+        const btnPlay = document.getElementById('btn-mode-play');
+        const sectionUpload = document.getElementById('section-upload');
+        const sectionDimensions = document.getElementById('section-dimensions');
+
+        // --- Global Error Handler (Failsafe) ---
+        window.onerror = function () {
+            if (loadingOverlay) loadingOverlay.classList.add('hidden');
+        };
+
+        // --- Loading Fail-Safe ---
+        loadingOverlay.addEventListener('click', () => {
+            loadingOverlay.classList.add('hidden');
+        });
+
+        // --- TTS Helper ---
+        let availableVoices = [];
+        window.speechSynthesis.onvoiceschanged = () => {
+            availableVoices = window.speechSynthesis.getVoices();
+        };
+        availableVoices = window.speechSynthesis.getVoices();
+
+        function speak(text, force = true) {
+            if (!config.audioEnabled || !text) return;
+            if (force) window.speechSynthesis.cancel();
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            let selectedVoice = availableVoices.find(v => v.name.includes('Google US English')) ||
+                availableVoices.find(v => v.name.includes('Samantha')) ||
+                availableVoices.find(v => v.lang.startsWith('en') && v.localService);
+            if (selectedVoice) utterance.voice = selectedVoice;
+
+            utterance.rate = 1.0;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // --- TTS Format Logic: Stop at first dash ---
+        function formatLabel(filename) {
+            let name = filename.replace(/\.[^/.]+$/, ""); // Remove extension
+            if (name.includes('-')) {
+                name = name.split('-')[0]; // Take part before first dash
+            }
+            // Clean up underscores and extra spaces
+            name = name.replace(/_/g, " ");
+            name = name.replace(/\s+/g, " ").trim();
+            return name;
+        }
+
+        // --- Clean Up ---
+        function clearAllGhosts() {
+            if (touchGhost && touchGhost.parentNode) {
+                touchGhost.parentNode.removeChild(touchGhost);
+            }
+            touchGhost = null;
+            touchDragItem = null;
+            touchDragIndex = null;
+
+            if (currentMagnifiedEl) {
+                currentMagnifiedEl.classList.remove('magnified');
+                currentMagnifiedEl.style.transform = 'scale(1)';
+                currentMagnifiedEl = null;
+            }
+            document.querySelectorAll('.magnified').forEach(el => {
+                el.classList.remove('magnified');
+                el.style.transform = 'scale(1)';
+            });
+            document.querySelectorAll('.grid-cell').forEach(el => {
+                el.classList.remove('drag-over', 'dragging');
+            });
+        }
+
+        // --- Sync Config ---
+        function syncConfig() {
+            config.cols = parseInt(colRange.value);
+            config.rows = parseInt(rowRange.value);
+            config.gap = parseInt(gapRange.value);
+            config.fit = fitSelect.value;
+            config.magnify = magnifyToggle.checked;
+            config.zoomLevel = parseFloat(zoomRange.value);
+            config.audioEnabled = audioToggle.checked;
+            config.borderWidth = parseInt(borderWidthRange.value);
+            config.labelSize = parseInt(labelSizeRange.value);
+            config.gameDelay = parseFloat(gameDelayRange.value);
+
+            colVal.innerText = config.cols;
+            rowVal.innerText = config.rows;
+            gapVal.innerText = `${config.gap}px`;
+            zoomVal.innerText = config.zoomLevel + 'x';
+            borderWidthVal.innerText = `${config.borderWidth}px`;
+            labelSizeVal.innerText = `${config.labelSize}px`;
+        }
+
+        // --- Safe Unlock Logic ---
+        let unlockTimer = null;
+        const unlockDuration = 3000;
+
+        function startUnlock(e) {
+            if (config.mode !== 'play') return;
+            if (e.type === 'touchstart') e.preventDefault();
+            openBtn.classList.add('unlocking');
+            unlockTimer = setTimeout(() => {
+                setMode('edit');
+                toggleDrawer(true);
+                endUnlock();
+            }, unlockDuration);
+        }
+
+        function endUnlock() {
+            if (unlockTimer) {
+                clearTimeout(unlockTimer);
+                unlockTimer = null;
+            }
+            openBtn.classList.remove('unlocking');
+        }
+
+        openBtn.addEventListener('mousedown', startUnlock);
+        openBtn.addEventListener('touchstart', startUnlock);
+        openBtn.addEventListener('mouseup', endUnlock);
+        openBtn.addEventListener('mouseleave', endUnlock);
+        openBtn.addEventListener('touchend', endUnlock);
+
+        openBtn.addEventListener('click', (e) => {
+            if (config.mode === 'edit') {
+                toggleDrawer(true);
+            } else {
+                e.preventDefault();
+            }
+        });
+
+        // --- Resize Logic ---
+        function resizeGrid(newRows, newCols) {
+            const newSize = newRows * newCols;
+            let newGrid = Array(newSize).fill(null);
+
+            for (let i = 0; i < Math.min(gridData.length, newSize); i++) {
+                newGrid[i] = gridData[i];
+            }
+            if (gridData.length > newSize) {
+                for (let i = newSize; i < gridData.length; i++) {
+                    if (gridData[i] !== null) {
+                        const emptyIdx = newGrid.indexOf(null);
+                        if (emptyIdx !== -1) newGrid[emptyIdx] = gridData[i];
+                    }
+                }
+            }
+            gridData = newGrid;
+            config.rows = newRows;
+            config.cols = newCols;
+        }
+
+        // --- Mode Logic ---
+        window.setMode = function (mode) {
+            clearAllGhosts();
+            syncConfig();
+
+            config.mode = mode;
+            const isEdit = mode === 'edit';
+
+            if (isEdit) {
+                btnEdit.classList.add('bg-white', 'text-blue-600', 'shadow-sm');
+                btnEdit.classList.remove('text-slate-500', 'hover:text-slate-700');
+                btnPlay.classList.remove('bg-white', 'text-blue-600', 'shadow-sm');
+                btnPlay.classList.add('text-slate-500', 'hover:text-slate-700');
+
+                sectionUpload.style.opacity = '1';
+                sectionUpload.style.pointerEvents = 'auto';
+                sectionDimensions.style.opacity = '1';
+                sectionDimensions.style.pointerEvents = 'auto';
+
+                mainContent.classList.remove('play-mode');
+            } else {
+                btnPlay.classList.add('bg-white', 'text-blue-600', 'shadow-sm');
+                btnPlay.classList.remove('text-slate-500', 'hover:text-slate-700');
+                btnEdit.classList.remove('bg-white', 'text-blue-600', 'shadow-sm');
+                btnEdit.classList.add('text-slate-500', 'hover:text-slate-700');
+
+                sectionUpload.style.opacity = '0.4';
+                sectionUpload.style.pointerEvents = 'none';
+                sectionDimensions.style.opacity = '0.4';
+                sectionDimensions.style.pointerEvents = 'none';
+
+                mainContent.classList.add('play-mode');
+                toggleDrawer(false);
+            }
+            renderGrid();
+        };
+
+        window.setBackground = function (color, btnElement) {
+            mainContent.style.backgroundColor = color;
+            document.body.style.backgroundColor = color;
+
+            const isDark = (color === '#334155' || color === '#000000');
+            const emptyText = document.querySelectorAll('#empty-state p, #empty-state svg');
+            emptyText.forEach(el => {
+                el.style.color = isDark ? '#475569' : (el.tagName === 'svg' ? '#cbd5e1' : '#94a3b8');
+            });
+
+            document.querySelectorAll('.color-btn').forEach(btn => {
+                btn.classList.remove('selected', 'ring-2', 'ring-blue-500', 'scale-110');
+                btn.style.transform = 'scale(1)';
+            });
+            if (btnElement) {
+                btnElement.classList.add('selected', 'ring-2', 'ring-blue-500');
+                btnElement.style.transform = 'scale(1.1)';
+            }
+        };
+
+        window.setBorderColor = function (color, btnElement) {
+            config.borderColor = color;
+
+            document.querySelectorAll('.border-color-btn').forEach(btn => {
+                btn.classList.remove('selected', 'ring-2', 'ring-blue-500', 'scale-110');
+                btn.style.transform = 'scale(1)';
+            });
+            if (btnElement) {
+                btnElement.classList.add('selected', 'ring-2', 'ring-blue-500');
+                btnElement.style.transform = 'scale(1.1)';
+            }
+
+            renderGrid();
+        };
+
+        function toggleDrawer(isOpen) {
+            if (isOpen) {
+                drawer.classList.remove('drawer-closed');
+                drawer.classList.add('drawer-open');
+                openBtn.classList.add('hidden');
+            } else {
+                drawer.classList.remove('drawer-open');
+                drawer.classList.add('drawer-closed');
+                openBtn.classList.remove('hidden');
+            }
+        }
+
+        closeBtn.addEventListener('click', () => {
+            toggleDrawer(false);
+            loadingOverlay.classList.add('hidden');
+        });
+
+        // --- Feature Listeners ---
+        function updateFeatures() {
+            config.magnify = magnifyToggle.checked;
+            config.zoomLevel = parseFloat(zoomRange.value);
+            config.audioEnabled = audioToggle.checked;
+            zoomVal.innerText = config.zoomLevel + 'x';
+            if (config.magnify) {
+                magnifyControls.classList.remove('hidden');
+            } else {
+                magnifyControls.classList.add('hidden');
+            }
+        }
+
+        magnifyToggle.addEventListener('change', updateFeatures);
+        zoomRange.addEventListener('input', updateFeatures);
+        audioToggle.addEventListener('change', updateFeatures);
+
+        // Border width listener
+        borderWidthRange.addEventListener('input', () => {
+            config.borderWidth = parseInt(borderWidthRange.value);
+            borderWidthVal.innerText = `${config.borderWidth}px`;
+            renderGrid();
+        });
+
+        // Labels toggle listener
+        labelsToggle.addEventListener('change', () => {
+            config.showLabels = labelsToggle.checked;
+            if (config.showLabels) {
+                labelSizeControl.classList.remove('hidden');
+            } else {
+                labelSizeControl.classList.add('hidden');
+            }
+            renderGrid();
+        });
+
+        // Label size listener
+        labelSizeRange.addEventListener('input', () => {
+            config.labelSize = parseInt(labelSizeRange.value);
+            labelSizeVal.innerText = `${config.labelSize}px`;
+            // Update existing labels directly for performance
+            document.querySelectorAll('.label-text').forEach(el => {
+                el.style.fontSize = `${config.labelSize}px`;
+            });
+        });
+
+        // Dwell time listener
+        dwellRange.addEventListener('input', () => {
+            config.dwellTime = parseFloat(dwellRange.value);
+            dwellVal.innerText = config.dwellTime === 0 ? 'Off' : `${config.dwellTime}s`;
+        });
+
+        // Cooldown time listener
+        cooldownRange.addEventListener('input', () => {
+            config.cooldownTime = parseFloat(cooldownRange.value);
+            cooldownVal.innerText = config.cooldownTime === 0 ? 'Off' : `${config.cooldownTime}s`;
+        });
+
+        // Game toggle logic
+        window.toggleGame = function () {
+            if (gameActive) {
+                stopGame();
+            } else {
+                startGame();
+            }
+        };
+
+        // Game delay listener
+        gameDelayRange.addEventListener('input', () => {
+            config.gameDelay = parseFloat(gameDelayRange.value);
+            gameDelayVal.innerText = `${config.gameDelay}s`;
+        });
+
+        // --- Magnify Interaction ---
+        let currentMagnifiedEl = null;
+
+        function handleMagnifyMove(e) {
+            if (config.mode !== 'play' || !config.magnify) return;
+
+            let clientX, clientY;
+            if (e.type === 'touchmove' || e.type === 'touchstart') {
+                e.preventDefault();
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else if ((e.type === 'mousemove' || e.type === 'mousedown') && e.buttons === 1) {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            } else {
+                return;
+            }
+
+            const target = document.elementFromPoint(clientX, clientY);
+            const gridCell = target?.closest('.grid-cell.occupied');
+
+            if (currentMagnifiedEl && currentMagnifiedEl !== gridCell) {
+                currentMagnifiedEl.classList.remove('magnified');
+                currentMagnifiedEl.style.transform = 'scale(1)';
+                currentMagnifiedEl = null;
+            }
+
+            if (gridCell) {
+                currentMagnifiedEl = gridCell;
+                currentMagnifiedEl.classList.add('magnified');
+                currentMagnifiedEl.style.transform = `scale(${config.zoomLevel})`;
+            }
+        }
+
+        function handleMagnifyEnd(e) {
+            // Only trigger speech on a valid release event (touchend/mouseup)
+            // and NOT if the touch was cancelled (e.g. system gesture)
+            const isRelease = e && (e.type === 'touchend' || e.type === 'mouseup');
+
+            if (currentMagnifiedEl) {
+                if (isRelease && config.magnify && config.mode === 'play') {
+                    const index = currentMagnifiedEl.dataset.index;
+                    if (gridData[index]) {
+                        // If game is active, check answer on release
+                        if (gameActive) {
+                            checkAnswer(parseInt(index));
+                        }
+                        // Otherwise play TTS/Chime as normal feedback
+                        else {
+                            if (config.audioEnabled) {
+                                speak(gridData[index].label);
+                            } else {
+                                playChime();
+                            }
+                        }
+                    }
+                }
+
+                currentMagnifiedEl.classList.remove('magnified');
+                currentMagnifiedEl.style.transform = 'scale(1)';
+                currentMagnifiedEl = null;
+            }
+        }
+
+        window.addEventListener('touchmove', handleMagnifyMove, { passive: false });
+        window.addEventListener('touchstart', handleMagnifyMove, { passive: false });
+        window.addEventListener('touchend', handleMagnifyEnd);
+        window.addEventListener('touchcancel', handleMagnifyEnd); // Cancel handles cleanup, no speech
+        window.addEventListener('mousemove', handleMagnifyMove);
+        window.addEventListener('mousedown', handleMagnifyMove);
+        window.addEventListener('mouseup', handleMagnifyEnd);
+
+        // --- Drag and Drop Logic (Edit Mode) ---
+        let dragSrcIndex = null;
+
+        function handleDragStart(e) {
+            if (config.mode !== 'edit') { e.preventDefault(); return false; }
+            this.classList.add('dragging');
+            dragSrcIndex = Number(this.dataset.index);
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', dragSrcIndex);
+        }
+
+        function handleDragOver(e) {
+            if (config.mode !== 'edit') return;
+            if (e.preventDefault) e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            return false;
+        }
+
+        function handleDragEnter(e) {
+            if (config.mode !== 'edit') return;
+            this.classList.add('drag-over');
+        }
+
+        function handleDragLeave(e) {
+            this.classList.remove('drag-over');
+        }
+
+        function handleDrop(e) {
+            if (config.mode !== 'edit') return;
+            e.stopPropagation();
+            let dragDestIndex = Number(this.dataset.index);
+            if (dragSrcIndex !== dragDestIndex) {
+                const srcContent = gridData[dragSrcIndex];
+                const destContent = gridData[dragDestIndex];
+                gridData[dragDestIndex] = srcContent;
+                gridData[dragSrcIndex] = destContent;
+                renderGrid();
+            }
+            return false;
+        }
+
+        function handleDragEnd(e) {
+            document.querySelectorAll('.grid-cell').forEach(item => {
+                item.classList.remove('drag-over');
+                item.classList.remove('dragging');
+            });
+        }
+
+        // --- Mobile Touch Drag Logic (Edit Mode) ---
+        let touchDragItem = null;
+        let touchDragIndex = null;
+        let touchGhost = null;
+
+        function handleEditTouchStart(e) {
+            if (config.mode !== 'edit') return;
+            if (!this.classList.contains('occupied')) return;
+            if (e.target.closest('.delete-btn')) return;
+            if (e.touches.length > 1) return;
+
+            if (config.audioEnabled && gridData[this.dataset.index]) {
+                speak(gridData[this.dataset.index].label);
+            }
+
+            touchDragItem = this;
+            touchDragIndex = parseInt(this.dataset.index);
+
+            const img = this.querySelector('img');
+            touchGhost = img.cloneNode(true);
+            touchGhost.style.position = 'fixed';
+            touchGhost.style.width = `${this.offsetWidth}px`;
+            touchGhost.style.height = `${this.offsetHeight}px`;
+            const touch = e.touches[0];
+            touchGhost.style.left = `${touch.clientX - (this.offsetWidth / 2)}px`;
+            touchGhost.style.top = `${touch.clientY - (this.offsetHeight / 2)}px`;
+            touchGhost.style.opacity = '0.8';
+            touchGhost.style.zIndex = '9999';
+            touchGhost.style.pointerEvents = 'none';
+            touchGhost.style.transform = 'scale(1.05)';
+            touchGhost.style.boxShadow = '0 10px 20px rgba(0,0,0,0.3)';
+
+            document.body.appendChild(touchGhost);
+            this.style.opacity = '0.4';
+        }
+
+        function handleEditTouchMove(e) {
+            if (!touchGhost || config.mode !== 'edit') return;
+            e.preventDefault();
+            const touch = e.touches[0];
+            touchGhost.style.left = `${touch.clientX - (touchGhost.offsetWidth / 2)}px`;
+            touchGhost.style.top = `${touch.clientY - (touchGhost.offsetHeight / 2)}px`;
+
+            document.querySelectorAll('.grid-cell').forEach(el => el.classList.remove('drag-over'));
+            const target = document.elementFromPoint(touch.clientX, touch.clientY);
+            const targetItem = target?.closest('.grid-cell');
+            if (targetItem && targetItem !== touchDragItem) {
+                targetItem.classList.add('drag-over');
+            }
+        }
+
+        function handleEditTouchEnd(e) {
+            if (!touchGhost || config.mode !== 'edit') return;
+
+            const touch = e.changedTouches[0];
+            const target = document.elementFromPoint(touch.clientX, touch.clientY);
+            const targetItem = target?.closest('.grid-cell');
+
+            if (targetItem) {
+                const targetIndex = parseInt(targetItem.dataset.index);
+                if (targetIndex !== touchDragIndex && !isNaN(targetIndex)) {
+                    const srcContent = gridData[touchDragIndex];
+                    const destContent = gridData[targetIndex];
+                    gridData[targetIndex] = srcContent;
+                    gridData[touchDragIndex] = destContent;
+                    renderGrid();
+                }
+            }
+            clearAllGhosts();
+        }
+
+        // --- Audio Chime Generator ---
+        function playChime() {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.frequency.value = 800; // Pleasant chime frequency
+            oscillator.type = 'sine';
+
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.5);
+        }
+
+        // --- Find-It Game Logic ---
+        function startGame() {
+            gameActive = true;
+            gameBtn.innerText = "Stop";
+            gameBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+            gameBtn.classList.add('bg-red-500', 'hover:bg-red-600');
+
+            // Ensure Audio Labels are enabled for the game
+            if (!config.audioEnabled) {
+                config.audioEnabled = true;
+                audioToggle.checked = true;
+            }
+
+            // Switch to play mode if not already
+            if (config.mode !== 'play') {
+                setMode('play');
+            }
+            startFindItRound();
+        }
+
+        function stopGame() {
+            gameActive = false;
+            gameBtn.innerText = "Start";
+            gameBtn.classList.remove('bg-red-500', 'hover:bg-red-600');
+            gameBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+            currentTargetIndex = null;
+            window.speechSynthesis.cancel();
+        }
+
+        function startFindItRound() {
+            if (!gameActive) return;
+
+            // Find all occupied cells
+            const occupiedIndices = gridData
+                .map((item, index) => item !== null ? index : null)
+                .filter(index => index !== null);
+
+            if (occupiedIndices.length === 0) {
+                speak("Please add some symbols first.");
+
+                stopGame();
+                return;
+            }
+
+            // Pick random target
+            const randomIndex = Math.floor(Math.random() * occupiedIndices.length);
+            currentTargetIndex = occupiedIndices[randomIndex];
+            const targetItem = gridData[currentTargetIndex];
+
+            // Pick random phrase
+            const randomPhrase = gamePhrases[Math.floor(Math.random() * gamePhrases.length)];
+
+            // Speak prompt after a short delay
+            setTimeout(() => {
+                speak(`${randomPhrase} ${targetItem.label}`);
+            }, 1000);
+        }
+
+        function checkAnswer(index) {
+            if (!gameActive || currentTargetIndex === null) return;
+
+            const clickedItem = gridData[index];
+            const targetItem = gridData[currentTargetIndex];
+
+            // Check if labels match (allowing multiple correct items)
+            if (clickedItem && targetItem && clickedItem.label === targetItem.label) {
+                // Correct!
+                playChime();
+
+                // Visual feedback (green flash)
+                const cell = gridContainer.children[index];
+                if (cell) {
+                    cell.classList.add('ring-4', 'ring-green-500', 'scale-110', 'z-50');
+                    setTimeout(() => {
+                        cell.classList.remove('ring-4', 'ring-green-500', 'scale-110', 'z-50');
+                    }, 500);
+                }
+
+                // 1. Speak the name immediately
+                speak(targetItem.label, true);
+
+                // 2. Pause then Reinforcement
+                setTimeout(() => {
+                    const randomReinforcement = reinforcementPhrases[Math.floor(Math.random() * reinforcementPhrases.length)];
+                    speak(`${randomReinforcement} ${targetItem.label}`, true);
+                }, 1500);
+
+                // 3. Pause (after reinforcement) before next round based on slider
+                setTimeout(() => {
+                    startFindItRound();
+                }, 1500 + (config.gameDelay * 1000));
+            } else {
+                // Incorrect
+                if (clickedItem) {
+                    speak(`That says ${clickedItem.label}. Look for ${targetItem.label}`, true);
+                } else {
+                    speak(`Look for ${targetItem.label}`, true);
+                }
+            }
+        }
+
+        // Helper function to activate a cell (with cooldown check)
+        function activateCell(index, cellElement) {
+            index = parseInt(index);
+
+            // Game Mode Interception
+            if (gameActive) {
+                checkAnswer(index);
+                return;
+            }
+
+            const now = Date.now();
+            const timeSinceLastActivation = (now - lastActivationTime) / 1000;
+
+            // Check cooldown (only if enabled)
+            if (config.cooldownTime > 0 && timeSinceLastActivation < config.cooldownTime) {
+                return; // Still in cooldown period
+            }
+
+            // Update last activation time
+            lastActivationTime = now;
+
+            // In Play Mode, add pulse animation and audio feedback
+            if (config.mode === 'play') {
+                // Add pulse animation
+                cellElement.classList.add('pulse-active');
+                setTimeout(() => {
+                    cellElement.classList.remove('pulse-active');
+                }, 500);
+
+                // Audio feedback
+                if (config.audioEnabled) {
+                    speak(gridData[index].label);
+                } else {
+                    playChime();
+                }
+            } else {
+                // In Edit Mode, just speak if audio is enabled
+                if (config.audioEnabled) {
+                    speak(gridData[index].label);
+                }
+            }
+        }
+
+        function handleCellClick(e) {
+            if (e.target.closest('.delete-btn')) return;
+
+            // If using Magnify in Play Mode, speech is handled on release (handleMagnifyEnd)
+            if (config.mode === 'play' && config.magnify) return;
+
+            const index = this.dataset.index;
+            if (!gridData[index]) return;
+
+            const cellElement = this;
+
+            // If dwell time is 0 (off), activate immediately
+            if (config.dwellTime === 0) {
+                activateCell(index, cellElement);
+                return;
+            }
+
+            // Clear any existing dwell timer
+            if (dwellTimer) {
+                clearTimeout(dwellTimer);
+                dwellTimer = null;
+            }
+
+            // Start dwell timer
+            dwellTimer = setTimeout(() => {
+                activateCell(index, cellElement);
+                dwellTimer = null;
+            }, config.dwellTime * 1000);
+        }
+
+        // Cancel dwell if mouse/touch leaves before dwell time completes
+        function handleCellLeave(e) {
+            if (dwellTimer) {
+                clearTimeout(dwellTimer);
+                dwellTimer = null;
+            }
+        }
+
+        window.deleteImage = function (index) {
+            gridData[index] = null;
+            renderGrid();
+        };
+
+        function renderGrid() {
+            const hasImages = gridData.some(item => item !== null);
+
+            gridContainer.classList.remove('hidden');
+            fileStatus.classList.remove('hidden');
+            const count = gridData.filter(i => i !== null).length;
+            fileCountSpan.innerText = `${count} images`;
+
+            if (!hasImages && config.mode === 'edit') {
+                fileStatus.classList.add('hidden');
+            }
+
+            gridContainer.innerHTML = '';
+            gridContainer.style.gridTemplateColumns = `repeat(${config.cols}, minmax(0, 1fr))`;
+            gridContainer.style.gridTemplateRows = `repeat(${config.rows}, minmax(0, 1fr))`;
+            gridContainer.style.gap = `${config.gap}px`;
+            gridContainer.style.padding = `${config.gap}px`;
+
+            gridData.forEach((item, index) => {
+                const cell = document.createElement('div');
+                cell.className = 'grid-cell';
+                cell.dataset.index = index;
+
+                if (item) {
+                    cell.classList.add('occupied');
+                    cell.addEventListener('mousedown', handleCellClick);
+                    cell.addEventListener('mouseleave', handleCellLeave);
+                    cell.addEventListener('mouseup', handleCellLeave);
+                    cell.addEventListener('touchstart', handleCellClick);
+                    cell.addEventListener('touchend', handleCellLeave);
+                    cell.addEventListener('touchcancel', handleCellLeave);
+
+                    // Apply border styling
+                    if (config.borderWidth > 0) {
+                        cell.style.border = `${config.borderWidth}px solid ${config.borderColor}`;
+                    } else {
+                        cell.style.border = '1px solid #e2e8f0';
+                    }
+
+                    if (config.mode === 'edit') {
+                        cell.classList.add('editable');
+                        cell.setAttribute('draggable', 'true');
+
+                        const delBtn = document.createElement('div');
+                        delBtn.className = 'delete-btn';
+                        delBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+                        delBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            deleteImage(index);
+                        };
+                        cell.appendChild(delBtn);
+
+                        cell.addEventListener('dragstart', handleDragStart);
+                        cell.addEventListener('touchstart', handleEditTouchStart, { passive: false });
+                        cell.addEventListener('touchmove', handleEditTouchMove, { passive: false });
+                        cell.addEventListener('touchend', handleEditTouchEnd);
+                        cell.addEventListener('touchcancel', handleEditTouchEnd);
+                    } else {
+                        cell.classList.add('locked');
+                        cell.setAttribute('draggable', 'false');
+                    }
+
+                    // Create content wrapper for overflow clipping
+                    const contentWrapper = document.createElement('div');
+                    contentWrapper.className = 'cell-content';
+
+                    const imgContainer = document.createElement('div');
+                    imgContainer.className = 'image-container';
+
+                    const img = document.createElement('img');
+                    img.src = item.src;
+                    img.style.objectFit = config.fit;
+                    imgContainer.appendChild(img);
+
+                    // Add text label if enabled
+                    if (config.showLabels) {
+                        const label = document.createElement('div');
+                        label.className = 'label-text';
+                        label.textContent = item.label;
+                        label.style.fontSize = `${config.labelSize}px`;
+                        imgContainer.appendChild(label);
+                    }
+
+                    contentWrapper.appendChild(imgContainer);
+                    cell.appendChild(contentWrapper);
+
+                } else {
+                    cell.classList.add('empty');
+
+                    // Show empty state message in first cell only (in edit mode when no images)
+                    if (index === 0 && !hasImages && config.mode === 'edit') {
+                        cell.innerHTML = `
+                            <div class="flex flex-col items-center justify-center text-slate-400 pointer-events-none h-full">
+                                <svg class="w-12 h-12 mb-2 text-slate-300" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+                                    <circle cx="9" cy="9" r="2" />
+                                    <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+                                </svg>
+                                <p class="text-sm font-medium">No images loaded</p>
+                                <p class="text-xs mt-1">Upload pictures</p>
+                            </div>
+                        `;
+                    }
+
+                    if (config.mode === 'edit') {
+                        cell.addEventListener('dragover', handleDragOver);
+                        cell.addEventListener('dragenter', handleDragEnter);
+                    }
+                }
+
+                if (config.mode === 'edit') {
+                    cell.addEventListener('dragover', handleDragOver);
+                    cell.addEventListener('dragenter', handleDragEnter);
+                    cell.addEventListener('dragleave', handleDragLeave);
+                    cell.addEventListener('drop', handleDrop);
+                    cell.addEventListener('dragend', handleDragEnd);
+                }
+
+                gridContainer.appendChild(cell);
+            });
+        }
+
+        function updateSettings() {
+            const newCols = parseInt(colRange.value);
+            const newRows = parseInt(rowRange.value);
+            if (newCols !== config.cols || newRows !== config.rows) {
+                resizeGrid(newRows, newCols);
+            }
+            config.gap = parseInt(gapRange.value);
+            config.fit = fitSelect.value;
+            colVal.innerText = config.cols;
+            rowVal.innerText = config.rows;
+            gapVal.innerText = `${config.gap}px`;
+            renderGrid();
+        }
+
+        colRange.addEventListener('input', updateSettings);
+        rowRange.addEventListener('input', updateSettings);
+        gapRange.addEventListener('input', updateSettings);
+        fitSelect.addEventListener('change', updateSettings);
+
+        // Simple, robust file loader
+        fileInput.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+            if (!files || files.length === 0) return;
+
+            loadingOverlay.classList.remove('hidden');
+
+            setTimeout(() => {
+                try {
+                    const newItems = files.map(file => ({
+                        src: URL.createObjectURL(file),
+                        label: formatLabel(file.name)
+                    }));
+
+                    let emptySlots = gridData.filter(x => x === null).length;
+                    const required = newItems.length;
+
+                    if (required > emptySlots) {
+                        const totalNeeded = gridData.filter(x => x !== null).length + required;
+                        const autoCols = Math.ceil(Math.sqrt(totalNeeded));
+                        const autoRows = Math.ceil(totalNeeded / autoCols);
+                        const safeCols = Math.min(Math.max(config.cols, autoCols), 10);
+                        const safeRows = Math.min(Math.max(config.rows, autoRows), 10);
+                        colRange.value = safeCols;
+                        rowRange.value = safeRows;
+                        resizeGrid(safeRows, safeCols);
+                    }
+
+                    let idx = 0;
+                    for (let i = 0; i < gridData.length && idx < newItems.length; i++) {
+                        if (gridData[i] === null) {
+                            gridData[i] = newItems[idx++];
+                        }
+                    }
+                    renderGrid();
+                } catch (err) {
+                    console.error(err);
+                } finally {
+                    loadingOverlay.classList.add('hidden');
+                    fileInput.value = '';
+                }
+            }, 50);
+        });
+
+        window.clearGrid = function () {
+            gridData = Array(config.rows * config.cols).fill(null);
+            renderGrid();
+        }
+
+        window.toggleFullScreen = function () {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        syncConfig();
+        renderGrid();
+
+        // --- PWA Service Worker Registration ---
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                    })
+                    .catch(err => {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+            });
+        }
+
+    </script>
+</body>
+
+</html>
