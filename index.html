@@ -366,9 +366,69 @@
             transform: translateX(-100%);
         }
     </style>
+    <style>
+        /* Splash Screen Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes progress {
+            0% {
+                width: 0%;
+            }
+
+            100% {
+                width: 100%;
+            }
+        }
+
+        .animate-fade-in-up {
+            animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+
+        .animate-progress {
+            animation: progress 2.5s ease-out forwards;
+        }
+
+        .splash-hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+    </style>
 </head>
 
 <body>
+
+    <!-- Splash Screen -->
+    <div id="splash-screen"
+        class="fixed inset-0 z-[9999] bg-slate-50 flex flex-col items-center justify-center transition-opacity duration-700">
+        <div class="text-center space-y-6 p-8 animate-fade-in-up">
+            <div class="relative w-32 h-32 mx-auto mb-6">
+                <!-- Using the existing icon.svg -->
+                <img src="icon.svg" alt="ACC Visual Sandbox Logo" class="w-full h-full object-contain drop-shadow-xl">
+                <div class="absolute inset-0 bg-blue-500/10 rounded-full blur-xl -z-10"></div>
+            </div>
+            <h1 class="text-4xl md:text-5xl font-extrabold text-slate-800 tracking-tight">
+                ACC Visual <span class="text-blue-600">Sandbox</span>
+            </h1>
+            <p class="text-lg md:text-xl text-slate-500 max-w-md mx-auto font-medium leading-relaxed">
+                A visual sandbox for arranging images and symbols into AAC grids.
+            </p>
+            <div class="pt-8">
+                <div class="h-1.5 w-48 bg-slate-200 rounded-full mx-auto overflow-hidden">
+                    <div class="h-full bg-blue-600 rounded-full animate-progress"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Loading Overlay (Click to force dismiss) -->
     <div id="loading-overlay" class="hidden" title="Tap to cancel">
@@ -1713,6 +1773,21 @@
                     });
             });
         }
+
+        // --- Splash Screen Logic ---
+        window.addEventListener('load', () => {
+            const splash = document.getElementById('splash-screen');
+            if (splash) {
+                // Minimum display time of 2.5 seconds for branding
+                setTimeout(() => {
+                    splash.classList.add('splash-hidden');
+                    // Remove from DOM after transition to free up memory
+                    setTimeout(() => {
+                        splash.remove();
+                    }, 700);
+                }, 2500);
+            }
+        });
 
     </script>
 </body>
