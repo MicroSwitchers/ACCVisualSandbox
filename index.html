@@ -1337,17 +1337,47 @@
         };
         availableVoices = window.speechSynthesis.getVoices();
 
+        // Global array to prevent garbage collection of utterances
+        const activeUtterances = [];
+
         function speak(text, force = true) {
             if (!config.audioEnabled || !text) return;
-            if (force) window.speechSynthesis.cancel();
+
+            // Cancel any current speech if forcing new speech
+            if (force) {
+                window.speechSynthesis.cancel();
+            }
 
             const utterance = new SpeechSynthesisUtterance(text);
+
+            // Voice selection logic
+            if (availableVoices.length === 0) {
+                availableVoices = window.speechSynthesis.getVoices();
+            }
+
             let selectedVoice = availableVoices.find(v => v.name.includes('Google US English')) ||
                 availableVoices.find(v => v.name.includes('Samantha')) ||
                 availableVoices.find(v => v.lang.startsWith('en') && v.localService);
-            if (selectedVoice) utterance.voice = selectedVoice;
+
+            if (selectedVoice) {
+                utterance.voice = selectedVoice;
+            }
 
             utterance.rate = 1.0;
+
+            // Keep reference to prevent garbage collection
+            activeUtterances.push(utterance);
+
+            utterance.onend = () => {
+                const index = activeUtterances.indexOf(utterance);
+                if (index > -1) activeUtterances.splice(index, 1);
+            };
+
+            utterance.onerror = () => {
+                const index = activeUtterances.indexOf(utterance);
+                if (index > -1) activeUtterances.splice(index, 1);
+            };
+
             window.speechSynthesis.speak(utterance);
         }
 
@@ -1662,6 +1692,9 @@
             const target = document.elementFromPoint(clientX, clientY);
             const gridCell = target ? target.closest('.grid-cell.occupied') : null;
 
+            // Optimize and prevent repeated speech
+            if (currentMagnifiedEl === gridCell) return;
+
             if (currentMagnifiedEl && currentMagnifiedEl !== gridCell) {
                 currentMagnifiedEl.classList.remove('magnified');
                 currentMagnifiedEl.style.removeProperty('--zoom-level');
@@ -1761,6 +1794,15 @@
 
         function handleDragStart(e) {
             if (config.mode !== 'edit') { e.preventDefault(); return false; }
+
+            // Speak label on drag start (Edit Mode)
+            if (config.audioEnabled) {
+                const index = this.dataset.index;
+                if (gridData[index]) {
+                    speak(gridData[index].label);
+                }
+            }
+
             this.classList.add('dragging');
             dragSrcIndex = Number(this.dataset.index);
             e.dataTransfer.effectAllowed = 'move';
