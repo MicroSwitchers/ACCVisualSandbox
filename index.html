@@ -277,7 +277,7 @@
             text-align: center;
             padding: 4px;
             border-radius: 4px;
-            background: rgba(255, 255, 255, 0.9);
+            background: transparent;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -286,13 +286,73 @@
             margin-top: 2px;
         }
 
+        /* Text-only cell (no image) */
+        .grid-cell.text-only-cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .grid-cell.text-only-cell .text-only-label {
+            font-size: 2.5rem;
+            /* Initial size, will be adjusted dynamically */
+            font-weight: 800;
+            text-align: center;
+            padding: 8px;
+            max-width: 90%;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            white-space: nowrap;
+            line-height: 1.1;
+        }
+
+        /* Shape cell (emoji/symbol) */
+        .grid-cell.shape-cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .grid-cell.shape-cell .shape-symbol {
+            font-size: 4rem;
+            /* Will be dynamically adjusted */
+            line-height: 1;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Shape picker buttons */
+        .shape-btn {
+            width: 100%;
+            aspect-ratio: 1;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .shape-btn:hover {
+            background: #e0f2fe;
+            border-color: #3b82f6;
+            transform: scale(1.1);
+        }
+
         /* Delete Button */
         .delete-btn {
             position: absolute;
-            top: -10px;
-            right: -10px;
-            width: 24px;
-            height: 24px;
+            top: 4px;
+            right: 4px;
+            width: 28px;
+            height: 28px;
+            min-width: 28px;
+            min-height: 28px;
             background-color: #ef4444;
             color: white;
             border-radius: 50%;
@@ -319,10 +379,12 @@
         /* Preview Button */
         .preview-btn {
             position: absolute;
-            top: 38px;
-            right: -10px;
-            width: 24px;
-            height: 24px;
+            top: 36px;
+            right: 4px;
+            width: 28px;
+            height: 28px;
+            min-width: 28px;
+            min-height: 28px;
             background-color: #3b82f6;
             color: white;
             border-radius: 50%;
@@ -346,6 +408,126 @@
             pointer-events: none;
         }
 
+        /* Speech Label Button */
+        .label-btn {
+            position: absolute;
+            top: 68px;
+            right: 4px;
+            width: 28px;
+            height: 28px;
+            min-width: 28px;
+            min-height: 28px;
+            background-color: #8b5cf6;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            z-index: 20;
+            transition: transform 0.1s;
+        }
+
+        .label-btn:hover {
+            background-color: #7c3aed;
+            transform: scale(1.1);
+        }
+
+        .label-btn svg {
+            width: 14px;
+            height: 14px;
+            pointer-events: none;
+        }
+
+        .label-btn.has-label {
+            background-color: #10b981;
+        }
+
+        .label-btn.has-label:hover {
+            background-color: #059669;
+        }
+
+        /* Symbol Color Button */
+        .color-pick-btn {
+            position: absolute;
+            top: 100px;
+            right: 4px;
+            width: 28px;
+            height: 28px;
+            min-width: 28px;
+            min-height: 28px;
+            background-color: #f59e0b;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            z-index: 20;
+            transition: transform 0.1s;
+        }
+
+        .color-pick-btn:hover {
+            background-color: #d97706;
+            transform: scale(1.1);
+        }
+
+        .color-pick-btn svg {
+            width: 14px;
+            height: 14px;
+            pointer-events: none;
+        }
+
+        .color-pick-btn.has-custom {
+            background-color: #10b981;
+        }
+
+        .color-pick-btn.has-custom:hover {
+            background-color: #059669;
+        }
+
+        /* Compact Button Mode (for 4+ rows) */
+        .compact-buttons .delete-btn,
+        .compact-buttons .preview-btn,
+        .compact-buttons .label-btn,
+        .compact-buttons .color-pick-btn {
+            width: 22px;
+            height: 22px;
+            min-width: 22px;
+            min-height: 22px;
+        }
+
+        .compact-buttons .delete-btn svg,
+        .compact-buttons .preview-btn svg,
+        .compact-buttons .label-btn svg,
+        .compact-buttons .color-pick-btn svg {
+            width: 12px;
+            height: 12px;
+        }
+
+        /* 2x2 grid arrangement */
+        .compact-buttons .delete-btn {
+            top: 2px;
+            right: 28px;
+        }
+
+        .compact-buttons .preview-btn {
+            top: 2px;
+            right: 2px;
+        }
+
+        .compact-buttons .label-btn {
+            top: 28px;
+            right: 28px;
+        }
+
+        .compact-buttons .color-pick-btn {
+            top: 28px;
+            right: 2px;
+        }
+
         /* Drag and Drop Visual States */
         .dragging {
             opacity: 0.4;
@@ -360,8 +542,7 @@
 
         /* Color Selection */
         .color-btn.selected {
-            ring-width: 2px;
-            ring-color: #3b82f6;
+            box-shadow: 0 0 0 2px #3b82f6;
             transform: scale(1.1);
             border-color: #3b82f6;
         }
@@ -465,8 +646,6 @@
         /* Minimum Touch Target Sizes (44px x 44px for accessibility) */
         button,
         .color-btn,
-        .delete-btn,
-        .preview-btn,
         input[type="range"],
         select {
             min-height: 44px;
@@ -478,6 +657,7 @@
         /* Custom Slider Styling for better touch targets */
         input[type=range] {
             -webkit-appearance: none;
+            appearance: none;
             background: transparent;
         }
 
@@ -682,7 +862,7 @@
     <!-- Splash Help Modal -->
     <div id="splash-help-modal"
         class="fixed inset-0 z-[10000] bg-black/50 backdrop-blur-sm hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 transform scale-95 transition-transform duration-300"
+        <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full p-6 transform scale-95 transition-transform duration-300"
             id="splash-help-content">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-bold text-slate-800">How Naming Works</h3>
@@ -694,28 +874,104 @@
                 </button>
             </div>
 
-            <div class="space-y-4 text-slate-600">
-                <p class="leading-relaxed">
-                    The app uses your image filenames to determine what to say when a symbol is clicked.
-                </p>
+            <p class="text-slate-600 text-sm mb-4 leading-relaxed">
+                There are two ways to assign what the app says when a symbol is clicked:
+            </p>
 
-                <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-3">
-                    <div>
-                        <p class="font-semibold text-slate-900 text-sm">Basic Naming</p>
-                        <p class="text-sm mt-1">Name the file exactly what you want spoken.</p>
-                        <code
-                            class="block mt-1 bg-white px-2 py-1 rounded border border-slate-200 text-xs text-blue-600 font-mono">bear.png &rarr; speaks "Bear"</code>
+            <div class="grid md:grid-cols-2 gap-4">
+                <!-- Method 1: Filename -->
+                <div class="bg-slate-50 p-4 rounded-xl border-2 border-slate-300 flex flex-col">
+                    <div class="flex items-center gap-2 mb-3">
+                        <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-blue-600" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                            </svg>
+                        </div>
+                        <h4 class="font-bold text-slate-800">Using Filenames</h4>
                     </div>
 
-                    <div>
-                        <p class="font-semibold text-slate-900 text-sm">Variations</p>
-                        <p class="text-sm mt-1">Use a dash <code
-                                class="bg-white px-1 rounded border border-slate-200 text-xs">-</code> to add
-                            descriptions that won't be spoken. This lets you have multiple images for the same word.</p>
-                        <code
-                            class="block mt-1 bg-white px-2 py-1 rounded border border-slate-200 text-xs text-blue-600 font-mono">ball - red.jpg &rarr; speaks "Ball"</code>
-                        <code
-                            class="block mt-1 bg-white px-2 py-1 rounded border border-slate-200 text-xs text-blue-600 font-mono">ball - blue small.png &rarr; speaks "Ball"</code>
+                    <div class="space-y-3 text-slate-600 flex-1">
+                        <div>
+                            <p class="font-semibold text-slate-900 text-sm">Basic Naming</p>
+                            <p class="text-sm mt-1">Name the file exactly what you want spoken.</p>
+                            <code
+                                class="block mt-1 bg-white px-2 py-1 rounded border border-slate-200 text-xs text-blue-600 font-mono">bear.png &rarr; speaks "Bear"</code>
+                        </div>
+
+                        <div>
+                            <p class="font-semibold text-slate-900 text-sm">Variations</p>
+                            <p class="text-sm mt-1">Use a dash <code
+                                    class="bg-white px-1 rounded border border-slate-200 text-xs">-</code> to add
+                                descriptions that won't be spoken.</p>
+                            <code
+                                class="block mt-1 bg-white px-2 py-1 rounded border border-slate-200 text-xs text-blue-600 font-mono">ball - red.jpg &rarr; speaks "Ball"</code>
+                        </div>
+                    </div>
+
+                    <div class="mt-3 pt-3 border-t border-slate-200">
+                        <div class="flex items-start gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                            </svg>
+                            <p class="text-xs text-green-700"><strong>Recommended:</strong> This is the most reliable
+                                and permanent way to assign words. Labels travel with your files.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Method 2: Pencil Icon -->
+                <div class="bg-violet-50 p-4 rounded-xl border-2 border-slate-300 flex flex-col">
+                    <div class="flex items-center gap-2 mb-3">
+                        <div class="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-violet-600" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M12 20h9"></path>
+                                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                            </svg>
+                        </div>
+                        <h4 class="font-bold text-slate-800">Using the Pencil Icon</h4>
+                    </div>
+
+                    <div class="space-y-3 text-slate-600 flex-1">
+                        <div>
+                            <p class="font-semibold text-slate-900 text-sm">Custom Speech Labels</p>
+                            <p class="text-sm mt-1">Click the purple pencil icon beside each image to type a custom
+                                label that overrides the filename.</p>
+                        </div>
+
+                        <div>
+                            <p class="font-semibold text-slate-900 text-sm">How It Works</p>
+                            <p class="text-sm mt-1">The label is saved in your browser's memory. When you load the same
+                                file again, the label is automatically restored.</p>
+                        </div>
+
+                        <div>
+                            <p class="font-semibold text-slate-900 text-sm">Clearing Labels</p>
+                            <p class="text-sm mt-1">Click the pencil icon and choose "Clear Label" to return to using
+                                the filename.</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-3 pt-3 border-t border-slate-300">
+                        <div class="flex items-start gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="8" x2="12" y2="12"></line>
+                                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                            </svg>
+                            <p class="text-xs text-amber-700"><strong>Note:</strong> Labels are stored in this browser
+                                only. They may work when re-importing files, but are not embedded in the file and are
+                                not portable to other devices.</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -878,9 +1134,21 @@
 
                 <div id="file-status" class="hidden flex justify-between items-center bg-slate-100 p-2 rounded-lg mt-2">
                     <span id="file-count" class="text-xs font-bold text-slate-500 px-2">0 images</span>
-                    <button onclick="clearGrid()" class="text-red-500 hover:text-red-700 text-xs font-bold px-2">Clear
-                        All</button>
                 </div>
+
+                <!-- Clear All Button (always visible in edit mode when there's data) -->
+                <button id="clear-all-btn" onclick="clearGrid()"
+                    class="hidden w-full mt-3 py-3 px-4 bg-red-50 hover:bg-red-100 border-2 border-red-200 hover:border-red-300 text-red-600 hover:text-red-700 rounded-xl transition-all text-sm font-bold flex items-center justify-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 6h18" />
+                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                        <line x1="10" x2="10" y1="11" y2="17" />
+                        <line x1="14" x2="14" y1="11" y2="17" />
+                    </svg>
+                    Clear All Symbols
+                </button>
             </div>
 
             <!-- Hidden Icons Warning Drawer -->
@@ -1018,7 +1286,7 @@
                             <span id="col-val"
                                 class="text-sm font-mono font-bold text-blue-600 bg-blue-50 px-2 rounded">2</span>
                         </div>
-                        <input type="range" id="col-range" min="1" max="10" value="2"
+                        <input type="range" id="col-range" min="1" max="6" value="2"
                             class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
                     </div>
 
@@ -1028,7 +1296,7 @@
                             <span id="row-val"
                                 class="text-sm font-mono font-bold text-blue-600 bg-blue-50 px-2 rounded">2</span>
                         </div>
-                        <input type="range" id="row-range" min="1" max="10" value="2"
+                        <input type="range" id="row-range" min="1" max="6" value="2"
                             class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
                     </div>
 
@@ -1057,6 +1325,9 @@
                             <button onclick="setBackground('#f8fafc', this)"
                                 class="color-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none selected"
                                 style="background-color: #f8fafc;" title="White"></button>
+                            <button onclick="setBackground('#9ca3af', this)"
+                                class="color-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #9ca3af;" title="Grey"></button>
                             <button onclick="setBackground('#d4c5a0', this)"
                                 class="color-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none"
                                 style="background-color: #d4c5a0;" title="Beige"></button>
@@ -1076,6 +1347,9 @@
                             <button onclick="setBorderColor('#000000', this)"
                                 class="border-color-btn w-8 h-8 rounded-full border-2 border-slate-300 shadow-sm focus:outline-none selected"
                                 style="background-color: #000000;" title="Black"></button>
+                            <button onclick="setBorderColor('#6b7280', this)"
+                                class="border-color-btn w-8 h-8 rounded-full border-2 border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #6b7280;" title="Grey"></button>
                             <button onclick="setBorderColor('#ffffff', this)"
                                 class="border-color-btn w-8 h-8 rounded-full border-2 border-slate-300 shadow-sm focus:outline-none"
                                 style="background-color: #ffffff;" title="White"></button>
@@ -1231,6 +1505,18 @@
                             </div>
                         </div>
 
+                        <!-- Text Position (only when Text enabled) -->
+                        <div id="label-position-control" class="hidden pt-2 border-t border-slate-200">
+                            <div class="flex items-center justify-between">
+                                <label class="text-xs text-slate-600">Text Position</label>
+                                <select id="label-position-select"
+                                    class="px-2 py-1 text-sm border border-slate-300 rounded-lg bg-white">
+                                    <option value="below" selected>Below Symbol</option>
+                                    <option value="above">Above Symbol</option>
+                                </select>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 
@@ -1285,11 +1571,11 @@
                             </div>
                             <div class="flex items-center gap-2">
                                 <button id="hunt-btn" onclick="toggleHuntGame()"
-                                    class="px-4 py-2 bg-emerald-600 text-white text-sm font-bold rounded-lg shadow-sm hover:bg-emerald-700 transition-colors">
+                                    class="px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-lg shadow-sm hover:bg-blue-700 transition-colors">
                                     Start
                                 </button>
                                 <button onclick="openHuntPicker()" title="Choose picture"
-                                    class="p-2 bg-white border border-slate-200 text-slate-500 rounded-lg hover:bg-slate-50 hover:text-emerald-700 transition-colors">
+                                    class="p-2 bg-white border border-slate-200 text-slate-500 rounded-lg hover:bg-slate-50 hover:text-blue-600 transition-colors">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
                                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                         stroke-linejoin="round">
@@ -1415,6 +1701,529 @@
         </div>
     </div>
 
+    <!-- Speech Label Modal -->
+    <div id="speech-label-modal" class="fixed inset-0 z-[100] hidden">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity"
+            onclick="closeSpeechLabelModal()">
+        </div>
+
+        <!-- Modal Content -->
+        <div
+            class="absolute inset-x-0 bottom-0 md:inset-0 md:flex md:items-center md:justify-center pointer-events-none">
+            <div
+                class="bg-white w-full md:w-[400px] md:rounded-2xl shadow-2xl flex flex-col max-h-[90vh] pointer-events-auto transform transition-transform duration-300 translate-y-full md:translate-y-0">
+
+                <!-- Header -->
+                <div class="flex items-center justify-between p-4 border-b border-slate-100">
+                    <h3 class="text-lg font-bold text-slate-800">Set Speech Label</h3>
+                    <button onclick="closeSpeechLabelModal()"
+                        class="p-2 hover:bg-slate-100 rounded-full text-slate-500 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Content -->
+                <div class="flex-1 overflow-y-auto p-6 space-y-4">
+                    <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-slate-700">Default (Filename)</label>
+                        <div id="speech-label-default" class="text-sm text-slate-500 bg-slate-50 p-2 rounded-lg"></div>
+                    </div>
+                    <div class="space-y-2">
+                        <label for="speech-label-input" class="block text-sm font-semibold text-slate-700">Custom Speech
+                            Label</label>
+                        <input type="text" id="speech-label-input" placeholder="Type what should be spoken..."
+                            class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-slate-700">
+                        <p class="text-xs text-slate-500">Leave empty to use the filename.</p>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="p-4 border-t border-slate-100 bg-slate-50 md:rounded-b-2xl flex gap-3">
+                    <button onclick="clearSpeechLabel()"
+                        class="flex-1 py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl transition-all active:scale-95">
+                        Clear Label
+                    </button>
+                    <button onclick="saveSpeechLabel()"
+                        class="flex-1 py-3 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl shadow-lg shadow-violet-600/20 transition-all active:scale-95">
+                        Save Label
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Symbol Color Modal -->
+    <div id="symbol-color-modal" class="fixed inset-0 z-[100] hidden">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity"
+            onclick="closeSymbolColorModal()">
+        </div>
+
+        <!-- Modal Content -->
+        <div
+            class="absolute inset-x-0 bottom-0 md:inset-0 md:flex md:items-center md:justify-center pointer-events-none">
+            <div
+                class="bg-white w-full md:w-[400px] md:rounded-2xl shadow-2xl flex flex-col max-h-[90vh] pointer-events-auto transform transition-transform duration-300 translate-y-full md:translate-y-0">
+
+                <!-- Header -->
+                <div class="flex items-center justify-between p-4 border-b border-slate-100">
+                    <h3 class="text-lg font-bold text-slate-800">Symbol Colors</h3>
+                    <button onclick="closeSymbolColorModal()"
+                        class="p-2 hover:bg-slate-100 rounded-full text-slate-500 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Content -->
+                <div class="flex-1 overflow-y-auto p-6 space-y-6">
+                    <!-- Background Color -->
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <label class="block text-sm font-semibold text-slate-700">Background Color</label>
+                            <button onclick="clearSymbolBgColor()"
+                                class="text-xs text-slate-500 hover:text-red-600 transition-colors">Clear</button>
+                        </div>
+                        <div id="symbol-bg-colors" class="grid grid-cols-5 gap-2">
+                            <button onclick="setSymbolBgColor('#86efac')"
+                                class="w-10 h-10 rounded-lg border-2 border-slate-200 hover:border-slate-400 transition-colors"
+                                style="background-color: #86efac;" title="Light Green"></button>
+                            <button onclick="setSymbolBgColor('#fca5a5')"
+                                class="w-10 h-10 rounded-lg border-2 border-slate-200 hover:border-slate-400 transition-colors"
+                                style="background-color: #fca5a5;" title="Red"></button>
+                            <button onclick="setSymbolBgColor('#fbcfe8')"
+                                class="w-10 h-10 rounded-lg border-2 border-slate-200 hover:border-slate-400 transition-colors"
+                                style="background-color: #fbcfe8;" title="Pink"></button>
+                            <button onclick="setSymbolBgColor('#fef08a')"
+                                class="w-10 h-10 rounded-lg border-2 border-slate-200 hover:border-slate-400 transition-colors"
+                                style="background-color: #fef08a;" title="Yellow"></button>
+                            <button onclick="setSymbolBgColor('#fed7aa')"
+                                class="w-10 h-10 rounded-lg border-2 border-slate-200 hover:border-slate-400 transition-colors"
+                                style="background-color: #fed7aa;" title="Orange"></button>
+                            <button onclick="setSymbolBgColor('#93c5fd')"
+                                class="w-10 h-10 rounded-lg border-2 border-slate-200 hover:border-slate-400 transition-colors"
+                                style="background-color: #93c5fd;" title="Blue"></button>
+                            <button onclick="setSymbolBgColor('#c4b5fd')"
+                                class="w-10 h-10 rounded-lg border-2 border-slate-200 hover:border-slate-400 transition-colors"
+                                style="background-color: #c4b5fd;" title="Purple"></button>
+                            <button onclick="setSymbolBgColor('#d1d5db')"
+                                class="w-10 h-10 rounded-lg border-2 border-slate-200 hover:border-slate-400 transition-colors"
+                                style="background-color: #d1d5db;" title="Grey"></button>
+                            <button onclick="setSymbolBgColor('#1f2937')"
+                                class="w-10 h-10 rounded-lg border-2 border-slate-200 hover:border-slate-400 transition-colors"
+                                style="background-color: #1f2937;" title="Black"></button>
+                            <button onclick="setSymbolBgColor('#ffffff')"
+                                class="w-10 h-10 rounded-lg border-2 border-slate-300 hover:border-slate-400 transition-colors"
+                                style="background-color: #ffffff;" title="White"></button>
+                        </div>
+                        <div id="symbol-bg-preview" class="text-xs text-slate-500">Current: Default</div>
+                    </div>
+
+                    <!-- Border Color -->
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <label class="block text-sm font-semibold text-slate-700">Border Color</label>
+                            <button onclick="clearSymbolBorderColor()"
+                                class="text-xs text-slate-500 hover:text-red-600 transition-colors">Clear</button>
+                        </div>
+                        <div id="symbol-border-colors" class="grid grid-cols-5 gap-2">
+                            <button onclick="setSymbolBorderColor('#22c55e')"
+                                class="w-10 h-10 rounded-lg border-4 bg-white hover:scale-110 transition-transform"
+                                style="border-color: #22c55e;" title="Green"></button>
+                            <button onclick="setSymbolBorderColor('#ef4444')"
+                                class="w-10 h-10 rounded-lg border-4 bg-white hover:scale-110 transition-transform"
+                                style="border-color: #ef4444;" title="Red"></button>
+                            <button onclick="setSymbolBorderColor('#ec4899')"
+                                class="w-10 h-10 rounded-lg border-4 bg-white hover:scale-110 transition-transform"
+                                style="border-color: #ec4899;" title="Pink"></button>
+                            <button onclick="setSymbolBorderColor('#eab308')"
+                                class="w-10 h-10 rounded-lg border-4 bg-white hover:scale-110 transition-transform"
+                                style="border-color: #eab308;" title="Yellow"></button>
+                            <button onclick="setSymbolBorderColor('#f97316')"
+                                class="w-10 h-10 rounded-lg border-4 bg-white hover:scale-110 transition-transform"
+                                style="border-color: #f97316;" title="Orange"></button>
+                            <button onclick="setSymbolBorderColor('#3b82f6')"
+                                class="w-10 h-10 rounded-lg border-4 bg-white hover:scale-110 transition-transform"
+                                style="border-color: #3b82f6;" title="Blue"></button>
+                            <button onclick="setSymbolBorderColor('#8b5cf6')"
+                                class="w-10 h-10 rounded-lg border-4 bg-white hover:scale-110 transition-transform"
+                                style="border-color: #8b5cf6;" title="Purple"></button>
+                            <button onclick="setSymbolBorderColor('#6b7280')"
+                                class="w-10 h-10 rounded-lg border-4 bg-white hover:scale-110 transition-transform"
+                                style="border-color: #6b7280;" title="Grey"></button>
+                            <button onclick="setSymbolBorderColor('#000000')"
+                                class="w-10 h-10 rounded-lg border-4 bg-white hover:scale-110 transition-transform"
+                                style="border-color: #000000;" title="Black"></button>
+                            <button onclick="setSymbolBorderColor('#ffffff')"
+                                class="w-10 h-10 rounded-lg border-4 bg-slate-100 hover:scale-110 transition-transform"
+                                style="border-color: #ffffff;" title="White"></button>
+                        </div>
+                        <div id="symbol-border-preview" class="text-xs text-slate-500">Current: Default</div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="p-4 border-t border-slate-100 bg-slate-50 md:rounded-b-2xl flex gap-3">
+                    <button onclick="clearAllSymbolColors()"
+                        class="flex-1 py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl transition-all active:scale-95">
+                        Clear All
+                    </button>
+                    <button onclick="closeSymbolColorModal()"
+                        class="flex-1 py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl shadow-lg shadow-amber-500/20 transition-all active:scale-95">
+                        Done
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Text Label Modal (for text-only cells) -->
+    <div id="text-label-modal" class="fixed inset-0 z-[100] hidden">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity"
+            onclick="closeTextLabelModal()">
+        </div>
+
+        <!-- Modal Content -->
+        <div
+            class="absolute inset-x-0 bottom-0 md:inset-0 md:flex md:items-center md:justify-center pointer-events-none">
+            <div
+                class="bg-white w-full md:w-[400px] md:rounded-2xl shadow-2xl flex flex-col max-h-[90vh] pointer-events-auto transform transition-transform duration-300 translate-y-full md:translate-y-0">
+
+                <!-- Header -->
+                <div class="flex items-center justify-between p-4 border-b border-slate-100">
+                    <h3 class="text-lg font-bold text-slate-800">Add Text Label</h3>
+                    <button onclick="closeTextLabelModal()"
+                        class="p-2 hover:bg-slate-100 rounded-full text-slate-500 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Content -->
+                <div class="flex-1 overflow-y-auto p-6 space-y-4">
+                    <div class="space-y-2">
+                        <label for="text-label-input" class="block text-sm font-semibold text-slate-700">Text to
+                            Display</label>
+                        <input type="text" id="text-label-input" placeholder="Enter word or phrase..."
+                            class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-700 text-lg">
+                        <p class="text-xs text-slate-500">This text will appear in the center of the cell and will be
+                            spoken when activated.</p>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="p-4 border-t border-slate-100 bg-slate-50 md:rounded-b-2xl flex gap-3">
+                    <button onclick="closeTextLabelModal()"
+                        class="flex-1 py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl transition-all active:scale-95">
+                        Cancel
+                    </button>
+                    <button onclick="saveTextLabel()"
+                        class="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-600/20 transition-all active:scale-95">
+                        Add Label
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shapes Picker Modal -->
+    <div id="shapes-modal" class="fixed inset-0 z-[100] hidden">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" onclick="closeShapesModal()">
+        </div>
+
+        <!-- Modal Content -->
+        <div
+            class="absolute inset-x-0 bottom-0 md:inset-0 md:flex md:items-center md:justify-center pointer-events-none">
+            <div
+                class="bg-white w-full md:w-[500px] md:rounded-2xl shadow-2xl flex flex-col max-h-[90vh] pointer-events-auto transform transition-transform duration-300 translate-y-full md:translate-y-0">
+
+                <!-- Header -->
+                <div class="flex items-center justify-between p-4 border-b border-slate-100">
+                    <h3 class="text-lg font-bold text-slate-800">Add Shape or Symbol</h3>
+                    <button onclick="closeShapesModal()"
+                        class="p-2 hover:bg-slate-100 rounded-full text-slate-500 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Content -->
+                <div class="flex-1 overflow-y-auto p-4 space-y-4">
+                    <!-- Arrows & Directions -->
+                    <div>
+                        <h4 class="text-xs font-bold text-slate-400 uppercase mb-2">Arrows & Directions</h4>
+                        <div class="grid grid-cols-8 gap-1">
+                            <button class="shape-btn" data-symbol="⬆️" data-label="Up">⬆️</button>
+                            <button class="shape-btn" data-symbol="⬇️" data-label="Down">⬇️</button>
+                            <button class="shape-btn" data-symbol="⬅️" data-label="Left">⬅️</button>
+                            <button class="shape-btn" data-symbol="➡️" data-label="Right">➡️</button>
+                            <button class="shape-btn" data-symbol="✅" data-label="Yes">✅</button>
+                            <button class="shape-btn" data-symbol="❌" data-label="No">❌</button>
+                            <button class="shape-btn" data-symbol="▶️" data-label="Go">▶️</button>
+                            <button class="shape-btn" data-symbol="⏹️" data-label="Stop">⏹️</button>
+                        </div>
+                    </div>
+
+                    <!-- Shapes & Colors -->
+                    <div>
+                        <h4 class="text-xs font-bold text-slate-400 uppercase mb-2">Shapes & Colors</h4>
+                        <div class="grid grid-cols-8 gap-1">
+                            <button class="shape-btn" data-symbol="⭐" data-label="Star">⭐</button>
+                            <button class="shape-btn" data-symbol="❤️" data-label="Heart">❤️</button>
+                            <button class="shape-btn" data-symbol="🔵" data-label="Blue">🔵</button>
+                            <button class="shape-btn" data-symbol="🔴" data-label="Red">🔴</button>
+                            <button class="shape-btn" data-symbol="🟢" data-label="Green">🟢</button>
+                            <button class="shape-btn" data-symbol="🟡" data-label="Yellow">🟡</button>
+                            <button class="shape-btn" data-symbol="🟠" data-label="Orange">🟠</button>
+                            <button class="shape-btn" data-symbol="🟣" data-label="Purple">🟣</button>
+                            <button class="shape-btn" data-symbol="🟤" data-label="Brown">🟤</button>
+                            <button class="shape-btn" data-symbol="⚫" data-label="Black">⚫</button>
+                            <button class="shape-btn" data-symbol="⚪" data-label="White">⚪</button>
+                            <button class="shape-btn" data-symbol="🔺" data-label="Triangle">🔺</button>
+                            <button class="shape-btn" data-symbol="🟥" data-label="Square">🟥</button>
+                            <button class="shape-btn" data-symbol="🔶" data-label="Diamond">🔶</button>
+                            <button class="shape-btn" data-symbol="🌈" data-label="Rainbow">🌈</button>
+                            <button class="shape-btn" data-symbol="✨" data-label="Sparkle">✨</button>
+                        </div>
+                    </div>
+
+                    <!-- Feelings (Simple faces only) -->
+                    <div>
+                        <h4 class="text-xs font-bold text-slate-400 uppercase mb-2">Feelings</h4>
+                        <div class="grid grid-cols-8 gap-1">
+                            <button class="shape-btn" data-symbol="😊" data-label="Happy">😊</button>
+                            <button class="shape-btn" data-symbol="😢" data-label="Sad">😢</button>
+                            <button class="shape-btn" data-symbol="😠" data-label="Angry">😠</button>
+                            <button class="shape-btn" data-symbol="😨" data-label="Scared">😨</button>
+                            <button class="shape-btn" data-symbol="😴" data-label="Sleepy">😴</button>
+                            <button class="shape-btn" data-symbol="🤗" data-label="Hug">🤗</button>
+                            <button class="shape-btn" data-symbol="😮" data-label="Surprised">😮</button>
+                            <button class="shape-btn" data-symbol="🥳" data-label="Excited">🥳</button>
+                        </div>
+                    </div>
+
+                    <!-- People -->
+                    <div>
+                        <h4 class="text-xs font-bold text-slate-400 uppercase mb-2">People</h4>
+                        <div class="grid grid-cols-8 gap-1">
+                            <button class="shape-btn" data-symbol="👶" data-label="Baby">👶</button>
+                            <button class="shape-btn" data-symbol="👦" data-label="Boy">👦</button>
+                            <button class="shape-btn" data-symbol="👧" data-label="Girl">👧</button>
+                            <button class="shape-btn" data-symbol="👨" data-label="Dad">👨</button>
+                            <button class="shape-btn" data-symbol="👩" data-label="Mom">👩</button>
+                            <button class="shape-btn" data-symbol="👴" data-label="Grandpa">👴</button>
+                            <button class="shape-btn" data-symbol="👵" data-label="Grandma">👵</button>
+                            <button class="shape-btn" data-symbol="👋" data-label="Hello">👋</button>
+                        </div>
+                    </div>
+
+                    <!-- Body (Simple only) -->
+                    <div>
+                        <h4 class="text-xs font-bold text-slate-400 uppercase mb-2">Body</h4>
+                        <div class="grid grid-cols-8 gap-1">
+                            <button class="shape-btn" data-symbol="👀" data-label="Eyes">👀</button>
+                            <button class="shape-btn" data-symbol="👂" data-label="Ear">👂</button>
+                            <button class="shape-btn" data-symbol="✋" data-label="Hand">✋</button>
+                            <button class="shape-btn" data-symbol="👍" data-label="Good">👍</button>
+                            <button class="shape-btn" data-symbol="👎" data-label="Bad">👎</button>
+                            <button class="shape-btn" data-symbol="👆" data-label="Point">👆</button>
+                            <button class="shape-btn" data-symbol="🦶" data-label="Foot">🦶</button>
+                            <button class="shape-btn" data-symbol="💪" data-label="Strong">💪</button>
+                        </div>
+                    </div>
+
+                    <!-- Food & Drink -->
+                    <div>
+                        <h4 class="text-xs font-bold text-slate-400 uppercase mb-2">Food & Drink</h4>
+                        <div class="grid grid-cols-8 gap-1">
+                            <button class="shape-btn" data-symbol="🍎" data-label="Apple">🍎</button>
+                            <button class="shape-btn" data-symbol="🍌" data-label="Banana">🍌</button>
+                            <button class="shape-btn" data-symbol="🍊" data-label="Orange">🍊</button>
+                            <button class="shape-btn" data-symbol="🍇" data-label="Grapes">🍇</button>
+                            <button class="shape-btn" data-symbol="🥕" data-label="Carrot">🥕</button>
+                            <button class="shape-btn" data-symbol="🍞" data-label="Bread">🍞</button>
+                            <button class="shape-btn" data-symbol="🍪" data-label="Cookie">🍪</button>
+                            <button class="shape-btn" data-symbol="🍕" data-label="Pizza">🍕</button>
+                            <button class="shape-btn" data-symbol="🍔" data-label="Burger">🍔</button>
+                            <button class="shape-btn" data-symbol="🍟" data-label="Fries">🍟</button>
+                            <button class="shape-btn" data-symbol="🥛" data-label="Milk">🥛</button>
+                            <button class="shape-btn" data-symbol="🧃" data-label="Juice">🧃</button>
+                            <button class="shape-btn" data-symbol="💧" data-label="Water">💧</button>
+                            <button class="shape-btn" data-symbol="🍦" data-label="Ice Cream">🍦</button>
+                            <button class="shape-btn" data-symbol="🍰" data-label="Cake">🍰</button>
+                            <button class="shape-btn" data-symbol="🍬" data-label="Candy">🍬</button>
+                        </div>
+                    </div>
+
+                    <!-- Animals -->
+                    <div>
+                        <h4 class="text-xs font-bold text-slate-400 uppercase mb-2">Animals</h4>
+                        <div class="grid grid-cols-8 gap-1">
+                            <button class="shape-btn" data-symbol="🐕" data-label="Dog">🐕</button>
+                            <button class="shape-btn" data-symbol="🐈" data-label="Cat">🐈</button>
+                            <button class="shape-btn" data-symbol="🐟" data-label="Fish">🐟</button>
+                            <button class="shape-btn" data-symbol="🐦" data-label="Bird">🐦</button>
+                            <button class="shape-btn" data-symbol="🐰" data-label="Bunny">🐰</button>
+                            <button class="shape-btn" data-symbol="🐻" data-label="Bear">🐻</button>
+                            <button class="shape-btn" data-symbol="🦋" data-label="Butterfly">🦋</button>
+                            <button class="shape-btn" data-symbol="🐢" data-label="Turtle">🐢</button>
+                            <button class="shape-btn" data-symbol="🐴" data-label="Horse">🐴</button>
+                            <button class="shape-btn" data-symbol="🐄" data-label="Cow">🐄</button>
+                            <button class="shape-btn" data-symbol="🐷" data-label="Pig">🐷</button>
+                            <button class="shape-btn" data-symbol="🐑" data-label="Sheep">🐑</button>
+                            <button class="shape-btn" data-symbol="🐓" data-label="Chicken">🐓</button>
+                            <button class="shape-btn" data-symbol="🦆" data-label="Duck">🦆</button>
+                            <button class="shape-btn" data-symbol="🐸" data-label="Frog">🐸</button>
+                            <button class="shape-btn" data-symbol="🦁" data-label="Lion">🦁</button>
+                            <button class="shape-btn" data-symbol="🐘" data-label="Elephant">🐘</button>
+                            <button class="shape-btn" data-symbol="🦒" data-label="Giraffe">🦒</button>
+                            <button class="shape-btn" data-symbol="🐒" data-label="Monkey">🐒</button>
+                            <button class="shape-btn" data-symbol="🦕" data-label="Dinosaur">🦕</button>
+                            <button class="shape-btn" data-symbol="🐞" data-label="Ladybug">🐞</button>
+                            <button class="shape-btn" data-symbol="🐝" data-label="Bee">🐝</button>
+                            <button class="shape-btn" data-symbol="🐌" data-label="Snail">🐌</button>
+                            <button class="shape-btn" data-symbol="🐛" data-label="Bug">🐛</button>
+                        </div>
+                    </div>
+
+                    <!-- Activities -->
+                    <div>
+                        <h4 class="text-xs font-bold text-slate-400 uppercase mb-2">Activities</h4>
+                        <div class="grid grid-cols-8 gap-1">
+                            <button class="shape-btn" data-symbol="🎮" data-label="Play">🎮</button>
+                            <button class="shape-btn" data-symbol="📚" data-label="Read">📚</button>
+                            <button class="shape-btn" data-symbol="🎨" data-label="Draw">🎨</button>
+                            <button class="shape-btn" data-symbol="🎵" data-label="Music">🎵</button>
+                            <button class="shape-btn" data-symbol="⚽" data-label="Ball">⚽</button>
+                            <button class="shape-btn" data-symbol="🏊" data-label="Swim">🏊</button>
+                            <button class="shape-btn" data-symbol="🚴" data-label="Bike">🚴</button>
+                            <button class="shape-btn" data-symbol="🛁" data-label="Bath">🛁</button>
+                            <button class="shape-btn" data-symbol="🛏️" data-label="Sleep">🛏️</button>
+                            <button class="shape-btn" data-symbol="🍽️" data-label="Eat">🍽️</button>
+                            <button class="shape-btn" data-symbol="💃" data-label="Dance">💃</button>
+                            <button class="shape-btn" data-symbol="🧩" data-label="Puzzle">🧩</button>
+                            <button class="shape-btn" data-symbol="📺" data-label="Watch TV">📺</button>
+                            <button class="shape-btn" data-symbol="🤫" data-label="Quiet">🤫</button>
+                            <button class="shape-btn" data-symbol="🏃" data-label="Run">🏃</button>
+                            <button class="shape-btn" data-symbol="🚶" data-label="Walk">🚶</button>
+                        </div>
+                    </div>
+
+                    <!-- Objects & Toys -->
+                    <div>
+                        <h4 class="text-xs font-bold text-slate-400 uppercase mb-2">Things</h4>
+                        <div class="grid grid-cols-8 gap-1">
+                            <button class="shape-btn" data-symbol="🏠" data-label="Home">🏠</button>
+                            <button class="shape-btn" data-symbol="🚗" data-label="Car">🚗</button>
+                            <button class="shape-btn" data-symbol="🚌" data-label="Bus">🚌</button>
+                            <button class="shape-btn" data-symbol="✈️" data-label="Plane">✈️</button>
+                            <button class="shape-btn" data-symbol="🚂" data-label="Train">🚂</button>
+                            <button class="shape-btn" data-symbol="🧸" data-label="Toy">🧸</button>
+                            <button class="shape-btn" data-symbol="🎈" data-label="Balloon">🎈</button>
+                            <button class="shape-btn" data-symbol="🎁" data-label="Present">🎁</button>
+                            <button class="shape-btn" data-symbol="👕" data-label="Shirt">👕</button>
+                            <button class="shape-btn" data-symbol="👖" data-label="Pants">👖</button>
+                            <button class="shape-btn" data-symbol="👟" data-label="Shoes">👟</button>
+                            <button class="shape-btn" data-symbol="🧥" data-label="Coat">🧥</button>
+                            <button class="shape-btn" data-symbol="🚽" data-label="Toilet">🚽</button>
+                            <button class="shape-btn" data-symbol="🪥" data-label="Toothbrush">🪥</button>
+                            <button class="shape-btn" data-symbol="🛋️" data-label="Couch">🛋️</button>
+                            <button class="shape-btn" data-symbol="🚪" data-label="Door">🚪</button>
+                        </div>
+                    </div>
+
+                    <!-- Places -->
+                    <div>
+                        <h4 class="text-xs font-bold text-slate-400 uppercase mb-2">Places</h4>
+                        <div class="grid grid-cols-8 gap-1">
+                            <button class="shape-btn" data-symbol="🏠" data-label="Home">🏠</button>
+                            <button class="shape-btn" data-symbol="🏫" data-label="School">🏫</button>
+                            <button class="shape-btn" data-symbol="🏞️" data-label="Park">🏞️</button>
+                            <button class="shape-btn" data-symbol="🏖️" data-label="Beach">🏖️</button>
+                            <button class="shape-btn" data-symbol="🎢" data-label="Playground">🎢</button>
+                            <button class="shape-btn" data-symbol="🏪" data-label="Store">🏪</button>
+                            <button class="shape-btn" data-symbol="🏊" data-label="Pool">🏊</button>
+                            <button class="shape-btn" data-symbol="🛒" data-label="Shopping">🛒</button>
+                        </div>
+                    </div>
+
+                    <!-- Weather -->
+                    <div>
+                        <h4 class="text-xs font-bold text-slate-400 uppercase mb-2">Weather</h4>
+                        <div class="grid grid-cols-8 gap-1">
+                            <button class="shape-btn" data-symbol="☀️" data-label="Sunny">☀️</button>
+                            <button class="shape-btn" data-symbol="☁️" data-label="Cloudy">☁️</button>
+                            <button class="shape-btn" data-symbol="🌧️" data-label="Rain">🌧️</button>
+                            <button class="shape-btn" data-symbol="❄️" data-label="Snow">❄️</button>
+                            <button class="shape-btn" data-symbol="🌈" data-label="Rainbow">🌈</button>
+                            <button class="shape-btn" data-symbol="🌙" data-label="Night">🌙</button>
+                            <button class="shape-btn" data-symbol="🌳" data-label="Tree">🌳</button>
+                            <button class="shape-btn" data-symbol="🌸" data-label="Flower">🌸</button>
+                        </div>
+                    </div>
+
+                    <!-- Numbers -->
+                    <div>
+                        <h4 class="text-xs font-bold text-slate-400 uppercase mb-2">Numbers</h4>
+                        <div class="grid grid-cols-8 gap-1">
+                            <button class="shape-btn" data-symbol="1️⃣" data-label="One">1️⃣</button>
+                            <button class="shape-btn" data-symbol="2️⃣" data-label="Two">2️⃣</button>
+                            <button class="shape-btn" data-symbol="3️⃣" data-label="Three">3️⃣</button>
+                            <button class="shape-btn" data-symbol="4️⃣" data-label="Four">4️⃣</button>
+                            <button class="shape-btn" data-symbol="5️⃣" data-label="Five">5️⃣</button>
+                            <button class="shape-btn" data-symbol="6️⃣" data-label="Six">6️⃣</button>
+                            <button class="shape-btn" data-symbol="7️⃣" data-label="Seven">7️⃣</button>
+                            <button class="shape-btn" data-symbol="8️⃣" data-label="Eight">8️⃣</button>
+                            <button class="shape-btn" data-symbol="9️⃣" data-label="Nine">9️⃣</button>
+                            <button class="shape-btn" data-symbol="🔟" data-label="Ten">🔟</button>
+                            <button class="shape-btn" data-symbol="➕" data-label="More">➕</button>
+                            <button class="shape-btn" data-symbol="➖" data-label="Less">➖</button>
+                        </div>
+                    </div>
+
+                    <!-- Simple Actions -->
+                    <div>
+                        <h4 class="text-xs font-bold text-slate-400 uppercase mb-2">Words</h4>
+                        <div class="grid grid-cols-8 gap-1">
+                            <button class="shape-btn" data-symbol="❓" data-label="What">❓</button>
+                            <button class="shape-btn" data-symbol="❗" data-label="Look">❗</button>
+                            <button class="shape-btn" data-symbol="💬" data-label="Talk">💬</button>
+                            <button class="shape-btn" data-symbol="🆘" data-label="Help">🆘</button>
+                            <button class="shape-btn" data-symbol="⏰" data-label="Time">⏰</button>
+                            <button class="shape-btn" data-symbol="🔔" data-label="Listen">🔔</button>
+                            <button class="shape-btn" data-symbol="🙏" data-label="Please">🙏</button>
+                            <button class="shape-btn" data-symbol="💤" data-label="Tired">💤</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="p-4 border-t border-slate-100 bg-slate-50 md:rounded-b-2xl">
+                    <button onclick="closeShapesModal()"
+                        class="w-full py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl transition-all active:scale-95">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // --- State Management ---
         let gridData = Array(4).fill(null);
@@ -1432,6 +2241,7 @@
             showLabels: false,
             labelColor: '#000000',
             labelSize: 20,
+            labelPosition: 'below',
             dwellTime: 0,
             cooldownTime: 0,
             gameDelay: 2,
@@ -1457,6 +2267,120 @@
         let huntPendingChoice = null;
         // gamePhrases and reinforcementPhrases are now derived from config
 
+        // --- Persistence (IndexedDB + localStorage) ---
+        const DB_NAME = 'ACC_Sandbox_DB';
+        const DB_VERSION = 1;
+        const STORE_NAME = 'grid_store';
+        const KEY_GRID = 'grid_data';
+        const STORAGE_KEY_CONFIG = 'acc_sandbox_config';
+
+        // Helper: Convert File to Base64
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        // Initialize DB
+        function openDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+                request.onerror = event => reject('DB Error: ' + event.target.error);
+                request.onupgradeneeded = event => {
+                    const db = event.target.result;
+                    if (!db.objectStoreNames.contains(STORE_NAME)) {
+                        db.createObjectStore(STORE_NAME);
+                    }
+                };
+                request.onsuccess = event => resolve(event.target.result);
+            });
+        }
+
+        async function saveToLocalStorage() {
+            try {
+                // Save config to localStorage (lightweight)
+                const configToSave = { ...config };
+                localStorage.setItem(STORAGE_KEY_CONFIG, JSON.stringify(configToSave));
+
+                // Save gridData to IndexedDB (heavy updates)
+                const db = await openDB();
+                const transaction = db.transaction([STORE_NAME], 'readwrite');
+                const store = transaction.objectStore(STORE_NAME);
+                store.put(gridData, KEY_GRID);
+            } catch (e) {
+                console.warn('Persistence Error:', e);
+            }
+        }
+
+        async function loadFromLocalStorage() {
+            try {
+                // Load config
+                const savedConfig = localStorage.getItem(STORAGE_KEY_CONFIG);
+                if (savedConfig) {
+                    const parsed = JSON.parse(savedConfig);
+                    if (typeof parsed === 'object' && parsed !== null) {
+                        Object.assign(config, parsed);
+                        // Sync UI controls with loaded config
+                        syncUIFromConfig();
+                    }
+                }
+
+                // Load gridData
+                const db = await openDB();
+                const transaction = db.transaction([STORE_NAME], 'readonly');
+                const store = transaction.objectStore(STORE_NAME);
+                const request = store.get(KEY_GRID);
+
+                request.onsuccess = () => {
+                    if (request.result && Array.isArray(request.result)) {
+                        gridData = request.result;
+                        renderGrid(); // Re-render after loading data
+                    }
+                };
+            } catch (e) {
+                console.warn('Load Error:', e);
+            }
+        }
+
+        async function clearLocalStorage() {
+            try {
+                localStorage.removeItem(STORAGE_KEY_CONFIG);
+                const db = await openDB();
+                const transaction = db.transaction([STORE_NAME], 'readwrite');
+                const store = transaction.objectStore(STORE_NAME);
+                store.delete(KEY_GRID);
+            } catch (e) {
+                console.warn('Clear Error:', e);
+            }
+        }
+
+        // Helper to sync UI elements with config state
+        function syncUIFromConfig() {
+            if (colRange) colRange.value = config.cols;
+            if (rowRange) rowRange.value = config.rows;
+            if (gapRange) gapRange.value = config.gap;
+            if (fitSelect) fitSelect.value = config.fit;
+            if (magnifyToggle) magnifyToggle.checked = config.magnify;
+            if (zoomRange) zoomRange.value = config.zoomLevel;
+            if (audioToggle) audioToggle.checked = config.audioEnabled;
+            if (borderWidthRange) borderWidthRange.value = config.borderWidth;
+            if (labelSizeRange) labelSizeRange.value = config.labelSize;
+            if (gameDelayRange) gameDelayRange.value = config.gameDelay;
+            // Update labels
+            if (colVal) colVal.innerText = config.cols;
+            if (rowVal) rowVal.innerText = config.rows;
+            if (gapVal) gapVal.innerText = `${config.gap}px`;
+            if (zoomVal) zoomVal.innerText = config.zoomLevel + 'x';
+            if (borderWidthVal) borderWidthVal.innerText = `${config.borderWidth}px`;
+            if (labelSizeVal) labelSizeVal.innerText = `${config.labelSize}px`;
+        }
+
+        // Load saved state on startup
+        loadFromLocalStorage();
+
 
         // --- DOM Elements ---
         const drawer = document.getElementById('drawer');
@@ -1468,6 +2392,7 @@
         const emptyState = document.getElementById('empty-state');
         const fileStatus = document.getElementById('file-status');
         const fileCountSpan = document.getElementById('file-count');
+        const clearAllBtn = document.getElementById('clear-all-btn');
         const loadingOverlay = document.getElementById('loading-overlay');
 
         // Inputs
@@ -1635,6 +2560,7 @@
             labelSizeVal.innerText = `${config.labelSize}px`;
 
             updatePresetHighlight();
+            saveToLocalStorage(); // Persist changes
         }
 
         // --- Safe Unlock Logic ---
@@ -1808,6 +2734,9 @@
         });
 
         // Labels toggle listener
+        const labelPositionControl = document.getElementById('label-position-control');
+        const labelPositionSelect = document.getElementById('label-position-select');
+
         labelsToggle.addEventListener('change', () => {
             config.showLabels = labelsToggle.checked;
             if (config.showLabels) {
@@ -1815,12 +2744,21 @@
                 if (!config.labelColor) config.labelColor = '#000000';
                 labelSizeControl.classList.remove('hidden');
                 labelColorControl.classList.remove('hidden');
+                labelPositionControl.classList.remove('hidden');
                 labelColorSelect.value = config.labelColor;
                 labelColorPicker.value = config.labelColor;
+                labelPositionSelect.value = config.labelPosition || 'below';
             } else {
                 labelSizeControl.classList.add('hidden');
                 labelColorControl.classList.add('hidden');
+                labelPositionControl.classList.add('hidden');
             }
+            renderGrid();
+        });
+
+        // Label position listener
+        labelPositionSelect.addEventListener('change', () => {
+            config.labelPosition = labelPositionSelect.value;
             renderGrid();
         });
 
@@ -1917,7 +2855,7 @@
                             checkAnswer(parseInt(index));
                         } else {
                             if (config.audioEnabled) {
-                                speak(gridData[index].label);
+                                speak(getSpeechLabel(gridData[index]));
                             } else {
                                 playChime();
                             }
@@ -2044,6 +2982,8 @@
             if (!this.classList.contains('occupied')) return;
             if (e.target.closest('.delete-btn')) return;
             if (e.target.closest('.preview-btn')) return; // Ignore if preview clicked
+            if (e.target.closest('.label-btn')) return; // Ignore if speech label button clicked
+            if (e.target.closest('.color-pick-btn')) return; // Ignore if color button clicked
             if (e.touches.length > 1) return;
 
             touchDragItem = this;
@@ -2554,7 +3494,7 @@
 
                 // Audio feedback
                 if (config.audioEnabled) {
-                    speak(gridData[index].label);
+                    speak(getSpeechLabel(gridData[index]));
                 } else {
                     playChime();
                 }
@@ -2565,6 +3505,8 @@
 
         function handleCellClick(e) {
             if (e.target.closest('.delete-btn')) return;
+            if (e.target.closest('.label-btn')) return;
+            if (e.target.closest('.color-pick-btn')) return;
 
             // If using Magnify in Play Mode, speech is handled on release (handleMagnifyEnd)
             if (config.mode === 'play' && config.magnify) return;
@@ -2613,13 +3555,319 @@
             renderGrid();
         };
 
+        // --- Speech Label Modal Logic ---
+        let speechLabelEditingIndex = null;
+        const speechLabelModal = document.getElementById('speech-label-modal');
+        const speechLabelInput = document.getElementById('speech-label-input');
+        const speechLabelDefault = document.getElementById('speech-label-default');
+
+        // --- Speech Label Persistence (localStorage) ---
+        const SPEECH_LABELS_STORAGE_KEY = 'aac_speech_labels';
+
+        function loadSpeechLabelsFromStorage() {
+            try {
+                const stored = localStorage.getItem(SPEECH_LABELS_STORAGE_KEY);
+                return stored ? JSON.parse(stored) : {};
+            } catch (e) {
+                console.warn('Failed to load speech labels from storage:', e);
+                return {};
+            }
+        }
+
+        function saveSpeechLabelToStorage(filename, speechLabel) {
+            try {
+                const labels = loadSpeechLabelsFromStorage();
+                if (speechLabel && speechLabel.trim() !== '') {
+                    labels[filename] = speechLabel;
+                } else {
+                    delete labels[filename];
+                }
+                localStorage.setItem(SPEECH_LABELS_STORAGE_KEY, JSON.stringify(labels));
+            } catch (e) {
+                console.warn('Failed to save speech label to storage:', e);
+            }
+        }
+
+        function getSavedSpeechLabel(filename) {
+            const labels = loadSpeechLabelsFromStorage();
+            return labels[filename] || '';
+        }
+
+        // Helper function to fit text to a container (fills 75% of width)
+        function fitTextToContainer(textElement, containerElement, targetWidthPercent = 0.75) {
+            // Start with a large font size and reduce until it fits
+            const containerWidth = containerElement.offsetWidth;
+            const containerHeight = containerElement.offsetHeight;
+            const targetWidth = containerWidth * targetWidthPercent;
+            const maxHeight = containerHeight * 0.8; // Don't exceed 80% of height
+
+            let fontSize = 100; // Start large
+            const minFontSize = 12;
+
+            textElement.style.fontSize = fontSize + 'px';
+
+            // Binary search for optimal font size
+            let low = minFontSize;
+            let high = fontSize;
+
+            while (high - low > 1) {
+                fontSize = Math.floor((low + high) / 2);
+                textElement.style.fontSize = fontSize + 'px';
+
+                if (textElement.scrollWidth <= targetWidth && textElement.scrollHeight <= maxHeight) {
+                    low = fontSize;
+                } else {
+                    high = fontSize;
+                }
+            }
+
+            textElement.style.fontSize = low + 'px';
+        }
+
+        // Helper function to get the effective speech label
+        function getSpeechLabel(item) {
+            if (!item) return '';
+            // Use speechLabel if defined and non-empty, otherwise fall back to label
+            return (item.speechLabel && item.speechLabel.trim() !== '') ? item.speechLabel : item.label;
+        }
+
+        window.openSpeechLabelModal = function (index) {
+            speechLabelEditingIndex = index;
+            const item = gridData[index];
+            if (!item) return;
+
+            speechLabelDefault.textContent = item.label || '(No filename)';
+            speechLabelInput.value = item.speechLabel || '';
+            speechLabelModal.classList.remove('hidden');
+
+            // Focus the input after a short delay
+            setTimeout(() => speechLabelInput.focus(), 100);
+        };
+
+        window.closeSpeechLabelModal = function () {
+            speechLabelModal.classList.add('hidden');
+            speechLabelEditingIndex = null;
+        };
+
+        window.saveSpeechLabel = function () {
+            if (speechLabelEditingIndex === null) return;
+            const item = gridData[speechLabelEditingIndex];
+            if (!item) return;
+
+            const newLabel = speechLabelInput.value.trim();
+            item.speechLabel = newLabel;
+
+            // Persist to localStorage using the filename (label) as the key
+            saveSpeechLabelToStorage(item.label, newLabel);
+
+            closeSpeechLabelModal();
+            renderGrid();
+        };
+
+        window.clearSpeechLabel = function () {
+            if (speechLabelEditingIndex === null) return;
+            const item = gridData[speechLabelEditingIndex];
+            if (!item) return;
+
+            item.speechLabel = '';
+            speechLabelInput.value = '';
+
+            // Remove from localStorage
+            saveSpeechLabelToStorage(item.label, '');
+
+            closeSpeechLabelModal();
+            renderGrid();
+        };
+
+        // --- Text Label Modal Logic (for text-only cells) ---
+        let textLabelTargetIndex = null;
+        const textLabelModal = document.getElementById('text-label-modal');
+        const textLabelInput = document.getElementById('text-label-input');
+
+        window.openTextLabelModal = function (index) {
+            textLabelTargetIndex = index;
+            const existingItem = gridData[index];
+
+            // If editing an existing text-only cell, pre-fill the input
+            if (existingItem && existingItem.isTextOnly) {
+                textLabelInput.value = existingItem.label || '';
+                document.querySelector('#text-label-modal h3').textContent = 'Edit Text Label';
+            } else {
+                textLabelInput.value = '';
+                document.querySelector('#text-label-modal h3').textContent = 'Add Text Label';
+            }
+
+            textLabelModal.classList.remove('hidden');
+            setTimeout(() => textLabelInput.focus(), 100);
+        };
+
+        window.closeTextLabelModal = function () {
+            textLabelModal.classList.add('hidden');
+            textLabelTargetIndex = null;
+        };
+
+        window.saveTextLabel = function () {
+            if (textLabelTargetIndex === null) return;
+            const text = textLabelInput.value.trim();
+            if (!text) {
+                closeTextLabelModal();
+                return;
+            }
+
+            // Create or update a text-only cell
+            gridData[textLabelTargetIndex] = {
+                isTextOnly: true,
+                label: text,
+                src: null,
+                speechLabel: '', // For text-only, label IS the speech
+                customBgColor: gridData[textLabelTargetIndex]?.customBgColor || null,
+                customBorderColor: gridData[textLabelTargetIndex]?.customBorderColor || null
+            };
+
+            closeTextLabelModal();
+            renderGrid();
+        };
+
+        // --- Shapes Modal Logic (for emoji/symbol cells) ---
+        let shapesTargetIndex = null;
+        const shapesModal = document.getElementById('shapes-modal');
+
+        window.openShapesModal = function (index) {
+            shapesTargetIndex = index;
+            shapesModal.classList.remove('hidden');
+        };
+
+        window.closeShapesModal = function () {
+            shapesModal.classList.add('hidden');
+            shapesTargetIndex = null;
+        };
+
+        // Helper to handle shape button clicks
+        function selectShape(symbol, label) {
+            if (shapesTargetIndex === null) return;
+
+            // Create a shape cell
+            gridData[shapesTargetIndex] = {
+                isShape: true,
+                symbol: symbol,
+                label: label,
+                src: null,
+                speechLabel: '',
+                customBgColor: null,
+                customBorderColor: null,
+                symbolColor: null // For custom symbol color
+            };
+
+            closeShapesModal();
+            renderGrid();
+        }
+
+        // Attach click handlers to shape buttons
+        document.querySelectorAll('.shape-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const symbol = btn.dataset.symbol;
+                const label = btn.dataset.label;
+                selectShape(symbol, label);
+            });
+        });
+
+        // --- Symbol Color Modal Logic ---
+        let symbolColorEditingIndex = null;
+        const symbolColorModal = document.getElementById('symbol-color-modal');
+        const symbolBgPreview = document.getElementById('symbol-bg-preview');
+        const symbolBorderPreview = document.getElementById('symbol-border-preview');
+
+        window.openSymbolColorModal = function (index) {
+            symbolColorEditingIndex = index;
+            const item = gridData[index];
+            if (!item) return;
+
+            // Update preview text
+            updateSymbolColorPreviews(item);
+
+            symbolColorModal.classList.remove('hidden');
+        };
+
+        window.closeSymbolColorModal = function () {
+            symbolColorModal.classList.add('hidden');
+            symbolColorEditingIndex = null;
+        };
+
+        function updateSymbolColorPreviews(item) {
+            if (!item) return;
+            symbolBgPreview.textContent = item.customBgColor ? `Current: ${item.customBgColor}` : 'Current: Default';
+            symbolBorderPreview.textContent = item.customBorderColor ? `Current: ${item.customBorderColor}` : 'Current: Default';
+        }
+
+        window.setSymbolBgColor = function (color) {
+            if (symbolColorEditingIndex === null) return;
+            const item = gridData[symbolColorEditingIndex];
+            if (!item) return;
+
+            item.customBgColor = color;
+            updateSymbolColorPreviews(item);
+            renderGrid();
+        };
+
+        window.clearSymbolBgColor = function () {
+            if (symbolColorEditingIndex === null) return;
+            const item = gridData[symbolColorEditingIndex];
+            if (!item) return;
+
+            item.customBgColor = null;
+            updateSymbolColorPreviews(item);
+            renderGrid();
+        };
+
+        window.setSymbolBorderColor = function (color) {
+            if (symbolColorEditingIndex === null) return;
+            const item = gridData[symbolColorEditingIndex];
+            if (!item) return;
+
+            item.customBorderColor = color;
+            updateSymbolColorPreviews(item);
+            renderGrid();
+        };
+
+        window.clearSymbolBorderColor = function () {
+            if (symbolColorEditingIndex === null) return;
+            const item = gridData[symbolColorEditingIndex];
+            if (!item) return;
+
+            item.customBorderColor = null;
+            updateSymbolColorPreviews(item);
+            renderGrid();
+        };
+
+        window.clearAllSymbolColors = function () {
+            if (symbolColorEditingIndex === null) return;
+            const item = gridData[symbolColorEditingIndex];
+            if (!item) return;
+
+            item.customBgColor = null;
+            item.customBorderColor = null;
+            updateSymbolColorPreviews(item);
+            renderGrid();
+        };
+
         function renderGrid() {
             const hasImages = gridData.some(item => item !== null);
 
             gridContainer.classList.remove('hidden');
-            fileStatus.classList.remove('hidden');
+            gridContainer.classList.remove('hidden');
+
+            // Update counts
             const count = gridData.filter(i => i !== null).length;
-            fileCountSpan.innerText = `${count} images`;
+            fileCountSpan.innerText = `${count} symbols`;
+
+            // Toggle visibility of status and clear button
+            if (hasImages && config.mode === 'edit') {
+                fileStatus.classList.remove('hidden');
+                clearAllBtn.classList.remove('hidden');
+            } else {
+                fileStatus.classList.add('hidden');
+                clearAllBtn.classList.add('hidden');
+            }
 
             // Check for hidden icons
             const visibleCount = config.rows * config.cols;
@@ -2632,9 +3880,7 @@
                 warningEl.classList.add('hidden');
             }
 
-            if (!hasImages && config.mode === 'edit') {
-                fileStatus.classList.add('hidden');
-            }
+
 
             gridContainer.innerHTML = '';
             gridContainer.style.gridTemplateColumns = `repeat(${config.cols}, minmax(0, 1fr))`;
@@ -2654,18 +3900,30 @@
                 cell.className = 'grid-cell';
                 cell.dataset.index = index;
 
+                // Add compact-buttons class when there are 4+ rows (cells are shorter)
+                if (config.rows >= 4) {
+                    cell.classList.add('compact-buttons');
+                }
+
 
                 // Border styling:
                 // - Normal mode: occupied cells get the configured border; empty cells use dashed placeholders via CSS.
                 // - Pop-Up Finder (huntActive): ALL cells get the configured border so full grid outlines are visible.
+                // - Custom border color per symbol overrides the global setting
+                const borderColor = (item && item.customBorderColor) ? item.customBorderColor : config.borderColor;
                 if (config.borderWidth > 0) {
                     if (huntActive || item) {
-                        cell.style.border = `${config.borderWidth}px solid ${config.borderColor}`;
+                        cell.style.border = `${config.borderWidth}px solid ${borderColor}`;
                     }
                 } else {
                     if (huntActive || item) {
                         cell.style.border = '1px solid #e2e8f0';
                     }
+                }
+
+                // Custom background color per symbol
+                if (item && item.customBgColor) {
+                    cell.style.backgroundColor = item.customBgColor;
                 }
                 if (item) {
                     cell.classList.add('occupied');
@@ -2695,12 +3953,53 @@
                         previewBtn.onclick = (e) => {
                             e.stopPropagation();
                             if (config.audioEnabled) {
-                                speak(item.label);
+                                speak(getSpeechLabel(item));
                             } else {
                                 playChime();
                             }
                         };
                         cell.appendChild(previewBtn);
+
+                        // Speech Label / Edit Text Button
+                        // For text-only cells, this edits the text directly
+                        // For shape cells and image cells, used for speech labels
+                        if (item.isTextOnly || item.isShape || config.audioEnabled) {
+                            const labelBtn = document.createElement('div');
+                            if (item.isTextOnly) {
+                                // For text-only cells, always show and opens text editor
+                                labelBtn.className = 'label-btn has-label';
+                                labelBtn.title = 'Edit Text Label';
+                            } else if (item.isShape) {
+                                // For shape cells, edit speech label
+                                labelBtn.className = 'label-btn' + (item.speechLabel ? ' has-label' : '');
+                                labelBtn.title = item.speechLabel ? `Speech: ${item.speechLabel}` : 'Set Speech Label';
+                            } else {
+                                labelBtn.className = 'label-btn' + (item.speechLabel ? ' has-label' : '');
+                                labelBtn.title = item.speechLabel ? `Speech Label: ${item.speechLabel}` : 'Set Speech Label';
+                            }
+                            labelBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>`;
+                            labelBtn.onclick = (e) => {
+                                e.stopPropagation();
+                                if (item.isTextOnly) {
+                                    openTextLabelModal(index);
+                                } else {
+                                    openSpeechLabelModal(index);
+                                }
+                            };
+                            cell.appendChild(labelBtn);
+                        }
+
+                        // Symbol Color Button
+                        const colorPickBtn = document.createElement('div');
+                        const hasCustomColor = item.customBgColor || item.customBorderColor;
+                        colorPickBtn.className = 'color-pick-btn' + (hasCustomColor ? ' has-custom' : '');
+                        colorPickBtn.title = hasCustomColor ? 'Custom Colors Set' : 'Set Symbol Colors';
+                        colorPickBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="2.5"></circle><circle cx="17.5" cy="10.5" r="2.5"></circle><circle cx="8.5" cy="7.5" r="2.5"></circle><circle cx="6.5" cy="12.5" r="2.5"></circle><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.555C21.965 6.012 17.461 2 12 2z"></path></svg>`;
+                        colorPickBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            openSymbolColorModal(index);
+                        };
+                        cell.appendChild(colorPickBtn);
 
                         cell.addEventListener('dragstart', handleDragStart);
                         cell.addEventListener('touchstart', handleEditTouchStart, { passive: false });
@@ -2716,67 +4015,130 @@
                     const contentWrapper = document.createElement('div');
                     contentWrapper.className = 'cell-content';
 
-                    const imgContainer = document.createElement('div');
-                    imgContainer.className = 'image-container';
+                    if (item.isTextOnly) {
+                        // Text-only cell: show centered text (large, prominent)
+                        cell.classList.add('text-only-cell');
+                        const textLabel = document.createElement('div');
+                        textLabel.className = 'text-only-label';
+                        textLabel.textContent = item.label;
+                        // Use label color but let CSS handle the large size
+                        textLabel.style.color = config.labelColor || '#000000';
+                        contentWrapper.appendChild(textLabel);
+                    } else if (item.isShape) {
+                        // Shape cell: show emoji/symbol centered
+                        cell.classList.add('shape-cell');
+                        const shapeContainer = document.createElement('div');
+                        shapeContainer.className = 'image-container';
+                        shapeContainer.style.flexDirection = 'column';
 
-                    const img = document.createElement('img');
-                    img.src = item.src;
-                    img.style.objectFit = config.fit;
-                    imgContainer.appendChild(img);
+                        const shapeSymbol = document.createElement('div');
+                        shapeSymbol.className = 'shape-symbol';
+                        shapeSymbol.textContent = item.symbol;
+                        if (item.symbolColor) {
+                            shapeSymbol.style.color = item.symbolColor;
+                        }
+                        shapeContainer.appendChild(shapeSymbol);
 
-                    // Add text label if enabled
-                    if (config.showLabels) {
-                        const label = document.createElement('div');
-                        label.className = 'label-text';
-                        label.textContent = item.label;
-                        label.style.fontSize = `${config.labelSize}px`;
-                        label.style.color = (config.labelColor || '#000000');
-                        imgContainer.appendChild(label);
+                        // Add text label if enabled
+                        if (config.showLabels) {
+                            const label = document.createElement('div');
+                            label.className = 'label-text';
+                            label.textContent = getSpeechLabel(item);
+                            label.style.fontSize = `${config.labelSize}px`;
+                            label.style.color = (config.labelColor || '#000000');
+                            label.style.marginTop = '4px';
+                            shapeContainer.appendChild(label);
+                        }
+
+                        contentWrapper.appendChild(shapeContainer);
+                    } else {
+                        // Image cell: show image and optional label
+                        const imgContainer = document.createElement('div');
+                        imgContainer.className = 'image-container';
+
+                        const img = document.createElement('img');
+                        img.src = item.src;
+                        img.style.objectFit = config.fit;
+                        imgContainer.appendChild(img);
+
+                        // Add text label if enabled
+                        if (config.showLabels) {
+                            const label = document.createElement('div');
+                            label.className = 'label-text';
+                            label.textContent = getSpeechLabel(item);
+                            label.style.fontSize = `${config.labelSize}px`;
+                            label.style.color = (config.labelColor || '#000000');
+
+                            // Position label above or below based on config
+                            if (config.labelPosition === 'above') {
+                                label.style.marginTop = '0';
+                                label.style.marginBottom = '2px';
+                                imgContainer.style.flexDirection = 'column';
+                                imgContainer.insertBefore(label, imgContainer.firstChild);
+                            } else {
+                                label.style.marginTop = '2px';
+                                label.style.marginBottom = '0';
+                                imgContainer.style.flexDirection = 'column';
+                                imgContainer.appendChild(label);
+                            }
+                        }
+
+                        contentWrapper.appendChild(imgContainer);
                     }
-
-                    contentWrapper.appendChild(imgContainer);
                     cell.appendChild(contentWrapper);
 
                 } else {
                     cell.classList.add('empty');
 
                     if (config.mode === 'edit') {
-                        // Special "No images loaded" state for the very first cell if grid is empty
-                        if (index === 0 && !hasImages) {
-                            cell.innerHTML = `
-                                <div class="flex flex-col items-center justify-center text-slate-400 pointer-events-none h-full">
-                                    <svg class="w-12 h-12 mb-2 text-slate-300" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
-                                        <circle cx="9" cy="9" r="2" />
-                                        <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
-                                    </svg>
-                                    <p class="text-sm font-medium">No images loaded</p>
-                                    <p class="text-xs mt-1">Upload pictures</p>
+                        // Empty cell with three buttons: Add Image, Add Text, Add Shape
+                        cell.innerHTML = `
+                                <div class="flex items-center justify-center gap-4 h-full w-full">
+                                    <button class="add-image-btn flex flex-col items-center justify-center p-3 rounded-xl bg-slate-100 hover:bg-blue-100 text-slate-400 hover:text-blue-600 transition-colors" title="Add Image">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                            <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+                                            <circle cx="9" cy="9" r="2" />
+                                            <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+                                        </svg>
+                                    </button>
+                                    <button class="add-text-btn flex flex-col items-center justify-center p-3 rounded-xl bg-slate-100 hover:bg-blue-100 text-slate-400 hover:text-blue-600 transition-colors" title="Add Text Label">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                            <path d="M4 7V4h16v3"/>
+                                            <path d="M9 20h6"/>
+                                            <path d="M12 4v16"/>
+                                        </svg>
+                                    </button>
+                                    <button class="add-shape-btn flex flex-col items-center justify-center p-3 rounded-xl bg-slate-100 hover:bg-blue-100 text-slate-400 hover:text-blue-600 transition-colors" title="Add Shape/Emoji">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                            <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+                                        </svg>
+                                    </button>
                                 </div>
                             `;
-                        } else {
-                            // Standard empty cell with plus sign
-                            cell.innerHTML = `
-                                <div class="flex items-center justify-center h-full w-full pointer-events-none opacity-50 hover:opacity-100 transition-opacity">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                                    </svg>
-                                </div>
-                            `;
-                        }
 
-                        cell.addEventListener('dragover', handleDragOver);
-                        cell.addEventListener('dragenter', handleDragEnter);
+                        // Add click handlers for the buttons
+                        const addImageBtn = cell.querySelector('.add-image-btn');
+                        const addTextBtn = cell.querySelector('.add-text-btn');
+                        const addShapeBtn = cell.querySelector('.add-shape-btn');
 
-                        // Click to upload for empty cells
-                        cell.style.cursor = 'pointer';
-                        cell.addEventListener('click', () => {
+                        addImageBtn.addEventListener('click', (e) => {
+                            e.stopPropagation();
                             triggerSingleUpload(index);
                         });
+
+                        addTextBtn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            openTextLabelModal(index);
+                        });
+
+                        addShapeBtn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            openShapesModal(index);
+                        });
                     }
+
+                    cell.addEventListener('dragover', handleDragOver);
+                    cell.addEventListener('dragenter', handleDragEnter);
                 }
 
                 if (config.mode === 'edit') {
@@ -2788,6 +4150,31 @@
                 }
 
                 gridContainer.appendChild(cell);
+            }
+
+            // Fit text-only labels after DOM is updated
+            requestAnimationFrame(() => {
+                document.querySelectorAll('.text-only-cell').forEach(cell => {
+                    const textLabel = cell.querySelector('.text-only-label');
+                    if (textLabel) {
+                        fitTextToContainer(textLabel, cell, 0.75);
+                    }
+                });
+
+                // Size shape symbols to 75% of cell height
+                document.querySelectorAll('.shape-cell').forEach(cell => {
+                    const shapeSymbol = cell.querySelector('.shape-symbol');
+                    if (shapeSymbol) {
+                        const cellHeight = cell.offsetHeight;
+                        const targetSize = cellHeight * 0.75;
+                        shapeSymbol.style.fontSize = `${targetSize}px`;
+                    }
+                });
+            });
+
+            // Persist grid state (but not during game)
+            if (!huntActive) {
+                saveToLocalStorage();
             }
         }
 
@@ -2803,6 +4190,7 @@
             rowVal.innerText = config.rows;
             gapVal.innerText = `${config.gap}px`;
             renderGrid();
+            updatePresetHighlight();
         }
 
         colRange.addEventListener('input', updateSettings);
@@ -2811,47 +4199,63 @@
         fitSelect.addEventListener('change', updateSettings);
 
         // Simple, robust file loader
-        fileInput.addEventListener('change', (e) => {
+        fileInput.addEventListener('change', async (e) => {
             const files = Array.from(e.target.files);
             if (!files || files.length === 0) return;
 
             loadingOverlay.classList.remove('hidden');
 
-            setTimeout(() => {
-                try {
-                    const newItems = files.map(file => ({
-                        src: URL.createObjectURL(file),
-                        label: formatLabel(file.name)
-                    }));
+            try {
+                // Convert all files to Base64 in parallel
+                const newItemsPromises = files.map(async file => {
+                    const base64Src = await fileToBase64(file);
+                    const label = formatLabel(file.name);
+                    return {
+                        src: base64Src,
+                        label: label,
+                        speechLabel: getSavedSpeechLabel(label)
+                    };
+                });
 
-                    let emptySlots = gridData.filter(x => x === null).length;
-                    const required = newItems.length;
+                const newItems = await Promise.all(newItemsPromises);
 
-                    if (required > emptySlots) {
-                        const totalNeeded = gridData.filter(x => x !== null).length + required;
-                        const autoCols = Math.ceil(Math.sqrt(totalNeeded));
-                        const autoRows = Math.ceil(totalNeeded / autoCols);
-                        const safeCols = Math.min(Math.max(config.cols, autoCols), 10);
-                        const safeRows = Math.min(Math.max(config.rows, autoRows), 10);
-                        colRange.value = safeCols;
-                        rowRange.value = safeRows;
-                        resizeGrid(safeRows, safeCols);
-                    }
+                // Delay slightly to let UI update if needed, though we awaited already
+                setTimeout(() => {
+                    try {
+                        // processing continues...
 
-                    let idx = 0;
-                    for (let i = 0; i < gridData.length && idx < newItems.length; i++) {
-                        if (gridData[i] === null) {
-                            gridData[i] = newItems[idx++];
+                        let emptySlots = gridData.filter(x => x === null).length;
+                        const required = newItems.length;
+
+                        if (required > emptySlots) {
+                            const totalNeeded = gridData.filter(x => x !== null).length + required;
+                            const autoCols = Math.ceil(Math.sqrt(totalNeeded));
+                            const autoRows = Math.ceil(totalNeeded / autoCols);
+                            const safeCols = Math.min(Math.max(config.cols, autoCols), 6);
+                            const safeRows = Math.min(Math.max(config.rows, autoRows), 6);
+                            colRange.value = safeCols;
+                            rowRange.value = safeRows;
+                            resizeGrid(safeRows, safeCols);
                         }
+
+                        let idx = 0;
+                        for (let i = 0; i < gridData.length && idx < newItems.length; i++) {
+                            if (gridData[i] === null) {
+                                gridData[i] = newItems[idx++];
+                            }
+                        }
+                        renderGrid();
+                    } catch (err) {
+                        console.error(err);
+                    } finally {
+                        loadingOverlay.classList.add('hidden');
+                        fileInput.value = '';
                     }
-                    renderGrid();
-                } catch (err) {
-                    console.error(err);
-                } finally {
-                    loadingOverlay.classList.add('hidden');
-                    fileInput.value = '';
-                }
-            }, 50);
+                }, 50);
+            } catch (err) {
+                console.error("Upload error:", err);
+                loadingOverlay.classList.add('hidden');
+            }
         });
 
         // --- Single Cell Upload Logic ---
@@ -2863,17 +4267,25 @@
             singleFileInput.click();
         }
 
-        singleFileInput.addEventListener('change', (e) => {
+        singleFileInput.addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (!file || targetUploadIndex === null) return;
 
-            const newItem = {
-                src: URL.createObjectURL(file),
-                label: formatLabel(file.name)
-            };
+            try {
+                const base64Src = await fileToBase64(file);
+                const label = formatLabel(file.name);
+                const newItem = {
+                    src: base64Src,
+                    label: label,
+                    speechLabel: getSavedSpeechLabel(label)
+                };
 
-            gridData[targetUploadIndex] = newItem;
-            renderGrid();
+                gridData[targetUploadIndex] = newItem;
+                renderGrid();
+            } catch (err) {
+                console.error('File read error:', err);
+                alert('Error reading file. Please try again.');
+            }
 
             // Reset
             singleFileInput.value = '';
@@ -2887,9 +4299,13 @@
         }
 
         window.clearGrid = function () {
-            gridData = Array(config.rows * config.cols).fill(null);
-            warningDismissed = false; // Reset warning state on clear
-            renderGrid();
+            if (confirm('Clear all symbols and reset settings? This cannot be undone.')) {
+                gridData = Array(config.rows * config.cols).fill(null);
+                warningDismissed = false; // Reset warning state on clear
+                clearLocalStorage(); // Clear saved session data
+                saveToLocalStorage(); // Save the cleared state
+                renderGrid();
+            }
         }
 
         window.toggleFullScreen = function () {
@@ -3064,9 +4480,9 @@
             colRange.value = cols;
             rowRange.value = rows;
 
-            // Trigger update
+            // Trigger update (this will also call updatePresetHighlight via updateSettings)
             colRange.dispatchEvent(new Event('input'));
-        }
+        };
 
         function updatePresetHighlight() {
             const presets = document.querySelectorAll('.preset-btn');
