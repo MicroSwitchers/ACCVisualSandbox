@@ -447,6 +447,21 @@
             }
         }
 
+        .label-text {
+            pointer-events: none;
+            width: 100%;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding: 2px 4px;
+            background: rgba(255, 255, 255, 0.7);
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+        }
+
         /* Minimum Touch Target Sizes (44px x 44px for accessibility) */
         button,
         .color-btn,
@@ -1523,17 +1538,21 @@
 
             const utterance = new SpeechSynthesisUtterance(text);
 
-            // Voice selection logic
+            // Robust voice selection logic
             if (availableVoices.length === 0) {
                 availableVoices = window.speechSynthesis.getVoices();
             }
 
-            let selectedVoice = availableVoices.find(v => v.name.includes('Google US English')) ||
-                availableVoices.find(v => v.name.includes('Samantha')) ||
-                availableVoices.find(v => v.lang.startsWith('en') && v.localService);
+            // If still empty, it might load async later, but we proceed with default for now.
+            // Try to pick a preferred voice if available
+            if (availableVoices.length > 0) {
+                let selectedVoice = availableVoices.find(v => v.name.includes('Google US English')) ||
+                    availableVoices.find(v => v.name.includes('Samantha')) ||
+                    availableVoices.find(v => v.lang.startsWith('en') && v.localService);
 
-            if (selectedVoice) {
-                utterance.voice = selectedVoice;
+                if (selectedVoice) {
+                    utterance.voice = selectedVoice;
+                }
             }
 
             utterance.rate = 1.0;
@@ -1546,12 +1565,16 @@
                 if (index > -1) activeUtterances.splice(index, 1);
             };
 
-            utterance.onerror = () => {
+            utterance.onerror = (e) => {
+                console.warn('Speech error:', e);
                 const index = activeUtterances.indexOf(utterance);
                 if (index > -1) activeUtterances.splice(index, 1);
             };
 
-            window.speechSynthesis.speak(utterance);
+            // Small timeout to ensure browser is ready if called immediately after user gesture
+            setTimeout(() => {
+                window.speechSynthesis.speak(utterance);
+            }, 10);
         }
 
         // --- TTS Format Logic: Stop at first dash ---
