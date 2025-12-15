@@ -2944,6 +2944,18 @@
 
             if (!splash || !startBtn) return;
 
+            // Load saved audio preference from localStorage
+            const savedAudioPref = localStorage.getItem('aac_audioEnabled');
+            let initialLoadComplete = false;
+
+            if (savedAudioPref !== null) {
+                // User has a saved preference
+                const savedVal = savedAudioPref === 'true';
+                splashToggle.checked = savedVal;
+                config.audioEnabled = savedVal;
+                audioToggle.checked = savedVal;
+            }
+
             function updateSplashAudioLabels(isChecked) {
                 if (!labelTone || !labelVoice) return;
                 if (isChecked) {
@@ -2957,21 +2969,26 @@
                 }
             }
 
-            // Sync toggle
+            // Sync toggle - only show help on user-initiated change TO voice
             splashToggle.addEventListener('change', () => {
                 config.audioEnabled = splashToggle.checked;
                 audioToggle.checked = splashToggle.checked;
                 updateSplashAudioLabels(splashToggle.checked);
 
-                // If switching to Voice (checked), open Naming Help
-                if (splashToggle.checked) {
+                // Only show naming help if:
+                // 1. User is switching TO Voice (checked)
+                // 2. Initial load is complete (not loading from localStorage)
+                if (splashToggle.checked && initialLoadComplete) {
                     const helpBtn = document.getElementById('splash-help-btn');
                     if (helpBtn) helpBtn.click();
                 }
             });
 
-            // Initial state check
+            // Initial state check (visual only, no modal)
             updateSplashAudioLabels(splashToggle.checked);
+
+            // Mark initial load as complete after a brief delay
+            setTimeout(() => { initialLoadComplete = true; }, 100);
 
             // Generic Modal Logic
             function setupModal(triggerId, modalId, closeId, okId, contentId) {
@@ -3018,6 +3035,9 @@
                 config.audioEnabled = splashToggle.checked;
                 audioToggle.checked = splashToggle.checked;
                 updateFeatures();
+
+                // Save audio preference to localStorage
+                localStorage.setItem('aac_audioEnabled', String(splashToggle.checked));
 
                 // Prime TTS engine with a silent utterance to unlock audio context
                 // This is required by browsers to allow speech synthesis on future calls
