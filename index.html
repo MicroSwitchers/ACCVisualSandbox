@@ -316,6 +316,36 @@
             pointer-events: none;
         }
 
+        /* Preview Button */
+        .preview-btn {
+            position: absolute;
+            top: 38px;
+            right: -10px;
+            width: 24px;
+            height: 24px;
+            background-color: #3b82f6;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            z-index: 20;
+            transition: transform 0.1s;
+        }
+
+        .preview-btn:hover {
+            background-color: #2563eb;
+            transform: scale(1.1);
+        }
+
+        .preview-btn svg {
+            width: 14px;
+            height: 14px;
+            pointer-events: none;
+        }
+
         /* Drag and Drop Visual States */
         .dragging {
             opacity: 0.4;
@@ -421,6 +451,7 @@
         button,
         .color-btn,
         .delete-btn,
+        .preview-btn,
         input[type="range"],
         select {
             min-height: 44px;
@@ -539,60 +570,202 @@
     </style>
 
     <script>
-        /* Splash failsafe (scoped): ensures splash never blocks the app. */
-        (function () {
-            var MIN_MS = 600;
-            var MAX_MS = 8000;
-            var t0 = (window.performance && performance.now) ? performance.now() : Date.now();
-            var done = false;
-
-            function hideSplash() {
-                if (done) return;
-                var splash = document.getElementById('splash-screen');
-                if (!splash) return;
-                splash.style.opacity = '0';
-                setTimeout(function () {
-                    splash.classList.add('hidden');
-                    done = true;
-                }, 250);
-            }
-
-            function hideAfterMin() {
-                var now = (window.performance && performance.now) ? performance.now() : Date.now();
-                var elapsed = now - t0;
-                if (elapsed >= MIN_MS) hideSplash();
-                else setTimeout(hideSplash, MIN_MS - elapsed);
-            }
-
-            document.addEventListener('DOMContentLoaded', hideAfterMin, { once: true });
-            window.addEventListener('error', function () { hideSplash(); });
-            window.addEventListener('unhandledrejection', function () { hideSplash(); });
-            setTimeout(hideSplash, MAX_MS);
-        })();
+        // Splash logic moved to end of body
     </script>
 </head>
 
 <body>
 
     <!-- Splash Screen -->
+    <!-- Splash Screen -->
+    <!-- Splash Screen -->
+    <!-- Splash Screen -->
     <div id="splash-screen"
-        class="fixed inset-0 z-[9999] bg-slate-50 flex flex-col items-center justify-center transition-opacity duration-700">
-        <div class="text-center space-y-6 p-8 animate-fade-in-up">
-            <div class="relative w-32 h-32 mx-auto mb-6">
-                <!-- Using the existing icon.svg -->
-                <img src="icon.svg" alt="ACC Visual Sandbox Logo" class="w-full h-full object-contain drop-shadow-xl">
-                <div class="absolute inset-0 bg-blue-500/10 rounded-full blur-xl -z-10"></div>
-            </div>
-            <h1 class="text-4xl md:text-5xl font-extrabold text-slate-800 tracking-tight">
-                ACC Visual <span class="text-blue-600">Sandbox</span>
-            </h1>
-            <p class="text-lg md:text-xl text-slate-500 max-w-md mx-auto font-medium leading-relaxed">
-                A visual sandbox for arranging images and symbols into AAC grids.
-            </p>
-            <div class="pt-8">
-                <div class="h-1.5 w-48 bg-slate-200 rounded-full mx-auto overflow-hidden">
-                    <div class="h-full bg-blue-600 rounded-full animate-progress"></div>
+        class="fixed inset-0 z-[9999] bg-slate-50 flex flex-col items-center justify-center p-4 transition-opacity duration-700 overflow-y-auto">
+        <div
+            class="bg-white/90 backdrop-blur-sm p-6 rounded-3xl shadow-2xl max-w-lg w-full border border-white/50 animate-fade-in-up my-auto">
+            <div class="text-center space-y-4">
+                <!-- Logo -->
+                <div class="relative w-24 h-24 mx-auto mb-2">
+                    <img src="icon.svg" alt="ACC Visual Sandbox Logo"
+                        class="w-full h-full object-contain drop-shadow-xl">
+                    <div class="absolute inset-0 bg-blue-500/10 rounded-full blur-xl -z-10"></div>
                 </div>
+
+                <!-- Title -->
+                <div>
+                    <h1 class="text-3xl md:text-4xl font-extrabold text-slate-800 tracking-tight">
+                        ACC Visual <span class="text-blue-600">Sandbox</span>
+                    </h1>
+                    <p class="text-base text-slate-500 max-w-md mx-auto font-medium leading-relaxed mt-1">
+                        Arrange images and symbols for AAC interaction.
+                    </p>
+                </div>
+
+                <!-- Audio Settings Section -->
+                <div class="bg-slate-50 rounded-2xl p-4 border border-slate-200 text-left space-y-3">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-base">Feedback Style</h3>
+                            <p class="text-xs text-slate-500">How should the app respond to touch?</p>
+                        </div>
+
+                        <!-- Toggle Switch with Labels -->
+                        <div class="flex items-center gap-2">
+                            <span
+                                class="text-[10px] font-bold uppercase tracking-wider text-slate-400 transition-colors"
+                                id="label-tone">Tone</span>
+
+                            <div
+                                class="relative inline-block w-12 align-middle select-none transition duration-200 ease-in">
+                                <input type="checkbox" name="splash-audio-toggle" id="splash-audio-toggle"
+                                    class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-300" />
+                                <label for="splash-audio-toggle"
+                                    class="toggle-label block overflow-hidden h-6 rounded-full bg-slate-300 cursor-pointer"></label>
+                            </div>
+
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-blue-600 transition-colors"
+                                id="label-voice">Voice</span>
+                        </div>
+                    </div>
+
+                    <!-- Help Triggers -->
+                    <div class="flex flex-col items-start gap-y-3 pt-2">
+                        <button id="splash-help-btn"
+                            class="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                            </svg>
+                            How does naming work?
+                        </button>
+                        <button id="splash-image-help-btn"
+                            class="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+                                <circle cx="9" cy="9" r="2" />
+                                <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+                            </svg>
+                            What image Formats can be used?
+                        </button>
+                    </div>
+
+                </div>
+
+                <!-- Action Button -->
+                <button id="splash-start-btn"
+                    class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg rounded-xl shadow-lg shadow-blue-500/30 transition-all hover:scale-[1.02] active:scale-[0.98]">
+                    Start Creating
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Splash Help Modal -->
+    <div id="splash-help-modal"
+        class="fixed inset-0 z-[10000] bg-black/50 backdrop-blur-sm hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 transform scale-95 transition-transform duration-300"
+            id="splash-help-content">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-slate-800">How Naming Works</h3>
+                <button id="splash-help-close" class="text-slate-400 hover:text-slate-600 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <div class="space-y-4 text-slate-600">
+                <p class="leading-relaxed">
+                    The app uses your image filenames to determine what to say when a symbol is clicked.
+                </p>
+
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-3">
+                    <div>
+                        <p class="font-semibold text-slate-900 text-sm">Basic Naming</p>
+                        <p class="text-sm mt-1">Name the file exactly what you want spoken.</p>
+                        <code
+                            class="block mt-1 bg-white px-2 py-1 rounded border border-slate-200 text-xs text-blue-600 font-mono">bear.png &rarr; speaks "Bear"</code>
+                    </div>
+
+                    <div>
+                        <p class="font-semibold text-slate-900 text-sm">Variations</p>
+                        <p class="text-sm mt-1">Use a dash <code
+                                class="bg-white px-1 rounded border border-slate-200 text-xs">-</code> to add
+                            descriptions that won't be spoken. This lets you have multiple images for the same word.</p>
+                        <code
+                            class="block mt-1 bg-white px-2 py-1 rounded border border-slate-200 text-xs text-blue-600 font-mono">ball - red.jpg &rarr; speaks "Ball"</code>
+                        <code
+                            class="block mt-1 bg-white px-2 py-1 rounded border border-slate-200 text-xs text-blue-600 font-mono">ball - blue small.png &rarr; speaks "Ball"</code>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-slate-100 flex justify-end">
+                <button id="splash-help-ok-btn"
+                    class="px-5 py-2 bg-slate-800 hover:bg-slate-900 text-white font-medium rounded-lg transition-colors">
+                    Got it
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Splash Image Help Modal -->
+    <div id="splash-image-help-modal"
+        class="fixed inset-0 z-[10000] bg-black/50 backdrop-blur-sm hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 transform scale-95 transition-transform duration-300 relative"
+            id="splash-image-help-content">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-slate-800">Supported Images</h3>
+                <button id="splash-image-help-close" class="text-slate-400 hover:text-slate-600 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <div class="space-y-4 text-slate-600 text-sm leading-relaxed">
+                <p>
+                    You can upload almost any image from your device or internet browser.
+                </p>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                        <p class="font-bold text-slate-900 mb-1">Formats</p>
+                        <ul class="list-disc list-inside space-y-1 text-xs">
+                            <li>.JPG / .JPEG</li>
+                            <li>.PNG (preferred)</li>
+                            <li>.WEBP</li>
+                            <li>.GIF</li>
+                        </ul>
+                    </div>
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                        <p class="font-bold text-slate-900 mb-1">Best Practices</p>
+                        <ul class="list-disc list-inside space-y-1 text-xs">
+                            <li>Square or near square</li>
+                            <li>Simple drawings</li>
+                            <li>Transparent or white background</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
+                    <p class="text-blue-800 text-xs font-medium">
+                        <strong>Tip:</strong> You can upload multiple files at once to fill the grid quickly!
+                    </p>
+                </div>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-slate-100 flex justify-end">
+                <button id="splash-image-help-ok-btn"
+                    class="px-5 py-2 bg-slate-800 hover:bg-slate-900 text-white font-medium rounded-lg transition-colors">
+                    Got it
+                </button>
             </div>
         </div>
     </div>
@@ -1263,9 +1436,9 @@
 
         // --- Pop-Up Finder Game State ---
         let huntActive = false;
-        let huntSelected = null; // { src, label, fromIndex: number|null }
+        let huntSelected = null; // {src, label, fromIndex: number|null }
         let huntCurrentIndex = null;
-        let huntRestore = null;  // { fromIndex, item } for restoring original symbol on stop
+        let huntRestore = null;  // {fromIndex, item} for restoring original symbol on stop
         let huntPendingChoice = null;
         // gamePhrases and reinforcementPhrases are now derived from config
 
@@ -1443,7 +1616,7 @@
 
         // --- Safe Unlock Logic ---
         let unlockTimer = null;
-        const unlockDuration = 3000;
+        const unlockDuration = 1500;
 
         function startUnlock(e) {
             if (config.mode !== 'play') return;
@@ -1795,14 +1968,6 @@
         function handleDragStart(e) {
             if (config.mode !== 'edit') { e.preventDefault(); return false; }
 
-            // Speak label on drag start (Edit Mode)
-            if (config.audioEnabled) {
-                const index = this.dataset.index;
-                if (gridData[index]) {
-                    speak(gridData[index].label);
-                }
-            }
-
             this.classList.add('dragging');
             dragSrcIndex = Number(this.dataset.index);
             e.dataTransfer.effectAllowed = 'move';
@@ -1855,11 +2020,8 @@
             if (config.mode !== 'edit') return;
             if (!this.classList.contains('occupied')) return;
             if (e.target.closest('.delete-btn')) return;
+            if (e.target.closest('.preview-btn')) return; // Ignore if preview clicked
             if (e.touches.length > 1) return;
-
-            if (config.audioEnabled && gridData[this.dataset.index]) {
-                speak(gridData[this.dataset.index].label);
-            }
 
             touchDragItem = this;
             touchDragIndex = parseInt(this.dataset.index);
@@ -2374,10 +2536,7 @@
                     playChime();
                 }
             } else {
-                // In Edit Mode, just speak if audio is enabled
-                if (config.audioEnabled) {
-                    speak(gridData[index].label);
-                }
+                // In Edit Mode, no auto-speech on tap (use preview button)
             }
         }
 
@@ -2506,6 +2665,19 @@
                             deleteImage(index);
                         };
                         cell.appendChild(delBtn);
+
+                        const previewBtn = document.createElement('div');
+                        previewBtn.className = 'preview-btn';
+                        previewBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>`;
+                        previewBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            if (config.audioEnabled) {
+                                speak(item.label);
+                            } else {
+                                playChime();
+                            }
+                        };
+                        cell.appendChild(previewBtn);
 
                         cell.addEventListener('dragstart', handleDragStart);
                         cell.addEventListener('touchstart', handleEditTouchStart, { passive: false });
@@ -2737,39 +2909,97 @@
             });
         }
 
-        // --- Splash Screen Logic (robust) ---
-        // Do not depend on full window 'load' (external resources / SW can delay it).
+        // --- Splash Screen Logic ---
         (function initSplash() {
             const splash = document.getElementById('splash-screen');
-            if (!splash) return;
+            const startBtn = document.getElementById('splash-start-btn');
+            const splashToggle = document.getElementById('splash-audio-toggle');
 
-            let removed = false;
-            const hide = () => {
-                if (removed) return;
-                removed = true;
-                splash.classList.add('splash-hidden');
-                setTimeout(() => splash.remove(), 700);
-            };
+            // Label Elements
+            const labelTone = document.getElementById('label-tone');
+            const labelVoice = document.getElementById('label-voice');
 
-            // Minimum branding time
-            const minDelay = 2500;
-            const started = performance.now();
+            if (!splash || !startBtn) return;
 
-            const hideAfterMin = () => {
-                const elapsed = performance.now() - started;
-                const remaining = Math.max(0, minDelay - elapsed);
-                setTimeout(hide, remaining);
-            };
-
-            // Try to hide as soon as DOM is ready, but respect minDelay
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', hideAfterMin, { once: true });
-            } else {
-                hideAfterMin();
+            function updateSplashAudioLabels(isChecked) {
+                if (!labelTone || !labelVoice) return;
+                if (isChecked) {
+                    // Voice is ON
+                    labelVoice.classList.replace('text-slate-400', 'text-blue-600');
+                    labelTone.classList.replace('text-blue-600', 'text-slate-400');
+                } else {
+                    // Voice is OFF (Tone is ON)
+                    labelTone.classList.replace('text-slate-400', 'text-blue-600');
+                    labelVoice.classList.replace('text-blue-600', 'text-slate-400');
+                }
             }
 
-            // Failsafe: never block the app behind splash longer than 6s
-            setTimeout(hide, 6000);
+            // Sync toggle
+            splashToggle.addEventListener('change', () => {
+                config.audioEnabled = splashToggle.checked;
+                audioToggle.checked = splashToggle.checked;
+                updateSplashAudioLabels(splashToggle.checked);
+
+                // If switching to Voice (checked), open Naming Help
+                if (splashToggle.checked) {
+                    const helpBtn = document.getElementById('splash-help-btn');
+                    if (helpBtn) helpBtn.click();
+                }
+            });
+
+            // Initial state check
+            updateSplashAudioLabels(splashToggle.checked);
+
+            // Generic Modal Logic
+            function setupModal(triggerId, modalId, closeId, okId, contentId) {
+                const trigger = document.getElementById(triggerId);
+                const modal = document.getElementById(modalId);
+                const closeBtn = document.getElementById(closeId);
+                const okBtn = document.getElementById(okId);
+                const content = document.getElementById(contentId);
+
+                if (!trigger || !modal || !content) return;
+
+                function open() {
+                    modal.classList.remove('hidden');
+                    void modal.offsetWidth; // trigger reflow
+                    modal.classList.remove('opacity-0');
+                    content.classList.remove('scale-95');
+                    content.classList.add('scale-100');
+                }
+
+                function close() {
+                    modal.classList.add('opacity-0');
+                    content.classList.remove('scale-100');
+                    content.classList.add('scale-95');
+                    setTimeout(() => {
+                        modal.classList.add('hidden');
+                    }, 300);
+                }
+
+                trigger.addEventListener('click', open);
+                if (closeBtn) closeBtn.addEventListener('click', close);
+                if (okBtn) okBtn.addEventListener('click', close);
+
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) close();
+                });
+            }
+
+            // Setup modals
+            setupModal('splash-help-btn', 'splash-help-modal', 'splash-help-close', 'splash-help-ok-btn', 'splash-help-content');
+            setupModal('splash-image-help-btn', 'splash-image-help-modal', 'splash-image-help-close', 'splash-image-help-ok-btn', 'splash-image-help-content');
+
+            startBtn.addEventListener('click', () => {
+                // Final config sync
+                config.audioEnabled = splashToggle.checked;
+                audioToggle.checked = splashToggle.checked;
+                updateFeatures();
+
+                // Dismiss
+                splash.style.opacity = '0';
+                setTimeout(() => splash.remove(), 700);
+            });
         })();
 
 
@@ -2845,8 +3075,8 @@
         function createInputRow(value, placeholder) {
             const div = document.createElement('div');
             div.innerHTML = `
-                <input type="text" value="${value}" placeholder="${placeholder}" 
-                    class="w-full p-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-700 placeholder-slate-400">
+        <input type="text" value="${value}" placeholder="${placeholder}"
+            class="w-full p-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-700 placeholder-slate-400">
             `;
             return div;
         }
