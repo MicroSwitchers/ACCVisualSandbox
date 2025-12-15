@@ -3019,6 +3019,17 @@
                 audioToggle.checked = splashToggle.checked;
                 updateFeatures();
 
+                // Prime TTS engine with a silent utterance to unlock audio context
+                // This is required by browsers to allow speech synthesis on future calls
+                try {
+                    const primer = new SpeechSynthesisUtterance('');
+                    primer.volume = 0;
+                    window.speechSynthesis.speak(primer);
+                    window.speechSynthesis.cancel(); // Immediately cancel the silent utterance
+                } catch (e) {
+                    // Ignore errors; this is just a primer
+                }
+
                 // Dismiss
                 splash.style.opacity = '0';
                 setTimeout(() => splash.remove(), 700);
