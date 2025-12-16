@@ -17,47 +17,6 @@
     <title>ACC Visual Sandbox</title>
     <!-- Tailwind CSS for styling -->
 
-    <!-- Hunt Picker Modal -->
-    <div id="hunt-modal" class="fixed inset-0 z-50 hidden">
-        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="closeHuntModal()"></div>
-        <div class="absolute inset-0 flex items-center justify-center p-4">
-            <div class="w-full max-w-lg bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
-                <div class="p-4 border-b border-slate-200 flex items-center justify-between">
-                    <div>
-                        <div class="text-sm font-bold text-slate-800">Choose a picture for Pop-Up Finder</div>
-                        <div class="text-xs text-slate-500">Select an existing symbol, or load a new image.</div>
-                    </div>
-                    <button class="p-2 rounded-lg hover:bg-slate-100" onclick="closeHuntModal()" aria-label="Close">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                        </svg>
-                    </button>
-                </div>
-
-                <div class="p-4 space-y-3">
-                    <div id="hunt-picker-grid" class="grid grid-cols-3 sm:grid-cols-4 gap-3"></div>
-
-                    <div class="flex items-center justify-between pt-2 border-t border-slate-200">
-                        <button
-                            class="px-3 py-2 text-sm font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg"
-                            onclick="triggerHuntLoad()">
-                            Load Image
-                        </button>
-                        <button
-                            class="px-3 py-2 text-sm font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg"
-                            onclick="confirmHuntChoice()" id="hunt-confirm-btn" disabled>
-                            Use Selected
-                        </button>
-                    </div>
-
-                    <div id="hunt-picker-hint" class="text-xs text-slate-500"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Core Styles */
@@ -205,6 +164,31 @@
             animation: wiggle 0.35s ease-in-out;
         }
 
+        /* Gentle Shake Animation (Game Success) */
+        @keyframes gentle-shake {
+
+            0%,
+            100% {
+                transform: rotate(0deg);
+            }
+
+            25% {
+                transform: rotate(-3deg);
+            }
+
+            50% {
+                transform: rotate(3deg);
+            }
+
+            75% {
+                transform: rotate(-3deg);
+            }
+        }
+
+        .gentle-shake {
+            animation: gentle-shake 0.5s ease-in-out;
+        }
+
         /* Edit Mode Interactions */
         .grid-cell.occupied.editable {
             cursor: grab;
@@ -253,7 +237,8 @@
             align-items: center;
             justify-content: center;
             width: 100%;
-            height: 100%;
+            height: auto;
+            max-height: 100%;
             padding: 4px;
             overflow: hidden;
         }
@@ -311,6 +296,11 @@
             display: flex;
             align-items: center;
             justify-content: center;
+        }
+
+        .grid-cell.shape-cell .image-container {
+            height: auto;
+            flex-shrink: 0;
         }
 
         .grid-cell.shape-cell .shape-symbol {
@@ -713,6 +703,30 @@
             position: relative;
         }
 
+        /* Game Mode Pop-Out Animation */
+        @keyframes game-pop {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+            }
+
+            40% {
+                transform: scale(1.25);
+                box-shadow: 0 0 30px rgba(34, 197, 94, 0.8), 0 0 50px rgba(34, 197, 94, 0.4);
+            }
+
+            100% {
+                transform: scale(1);
+                box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+            }
+        }
+
+        .game-pop {
+            animation: game-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            z-index: 200 !important;
+            position: relative;
+        }
+
         /* Drawer Animation */
         #drawer {
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -724,6 +738,28 @@
 
         .drawer-closed {
             transform: translateX(-100%);
+        }
+
+        /* Wiggle Animation - No Scale */
+        .single-wiggle {
+            animation: single-wiggle 0.5s ease-in-out;
+            transform-origin: center;
+        }
+
+        @keyframes single-wiggle {
+
+            0%,
+            100% {
+                transform: rotate(0deg);
+            }
+
+            25% {
+                transform: rotate(-5deg);
+            }
+
+            75% {
+                transform: rotate(5deg);
+            }
         }
     </style>
     <style>
@@ -770,6 +806,47 @@
 </head>
 
 <body>
+
+    <!-- Hunt Picker Modal -->
+    <div id="hunt-modal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="closeHuntModal()"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="w-full max-w-lg bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+                <div class="p-4 border-b border-slate-200 flex items-center justify-between">
+                    <div>
+                        <div class="text-sm font-bold text-slate-800">Choose a picture for Pop-Up Finder</div>
+                        <div class="text-xs text-slate-500">Select an existing symbol, or load a new image.</div>
+                    </div>
+                    <button class="p-2 rounded-lg hover:bg-slate-100" onclick="closeHuntModal()" aria-label="Close">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="p-4 space-y-3">
+                    <div id="hunt-picker-grid" class="grid grid-cols-3 sm:grid-cols-4 gap-3"></div>
+
+                    <div class="flex items-center justify-between pt-2 border-t border-slate-200">
+                        <button
+                            class="px-4 py-2 text-sm font-semibold bg-white border border-slate-300 shadow-sm hover:bg-slate-50 hover:border-slate-400 text-slate-700 rounded-lg transition-all active:scale-95"
+                            onclick="triggerHuntLoad()">
+                            Load Image
+                        </button>
+                        <button
+                            class="px-3 py-2 text-sm font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg"
+                            onclick="confirmHuntChoice()" id="hunt-confirm-btn" disabled>
+                            Use Selected
+                        </button>
+                    </div>
+
+                    <div id="hunt-picker-hint" class="text-xs text-slate-500"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Splash Screen -->
     <!-- Splash Screen -->
@@ -1195,50 +1272,56 @@
 
             <!-- Dimensions -->
             <div id="section-dimensions" class="space-y-6 transition-opacity duration-300">
-                <div class="mb-4">
+                <!-- 1. Grid Configuration -->
+                <div class="space-y-4">
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Grid
+                        Configuration</label>
 
-                    <div class="mb-4">
-                        <label class="text-xs text-slate-500 mb-2 block">Quick Layouts</label>
-                        <div class="grid grid-cols-3 gap-2">
+                    <!-- Quick Layouts -->
+                    <div>
+                        <div class="flex justify-between items-baseline mb-2">
+                            <label class="text-xs text-slate-500">Quick Layouts</label>
+                        </div>
+                        <div class="grid grid-cols-4 gap-2">
                             <!-- 1x1 -->
                             <button onclick="setGridSize(1, 1)" data-cols="1" data-rows="1"
                                 class="preset-btn p-1.5 border border-slate-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all flex flex-col items-center gap-1 group"
                                 title="1 Column x 1 Row">
-                                <div class="grid grid-cols-1 gap-0.5 w-5 h-5 place-items-center">
+                                <div class="grid grid-cols-1 gap-0.5 w-4 h-4 place-items-center">
                                     <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400 w-full h-full"></div>
                                 </div>
                                 <span
-                                    class="preset-label text-[10px] font-medium text-slate-500 group-hover:text-blue-600">1x1</span>
+                                    class="preset-label text-[9px] font-medium text-slate-500 group-hover:text-blue-600">1x1</span>
                             </button>
                             <!-- 2x1 -->
                             <button onclick="setGridSize(2, 1)" data-cols="2" data-rows="1"
                                 class="preset-btn p-1.5 border border-slate-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all flex flex-col items-center gap-1 group"
                                 title="2 Columns x 1 Row">
-                                <div class="grid grid-cols-2 gap-0.5 w-5 h-5">
+                                <div class="grid grid-cols-2 gap-0.5 w-4 h-4">
                                     <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
                                     <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
                                 </div>
                                 <span
-                                    class="preset-label text-[10px] font-medium text-slate-500 group-hover:text-blue-600">2x1</span>
+                                    class="preset-label text-[9px] font-medium text-slate-500 group-hover:text-blue-600">2x1</span>
                             </button>
                             <!-- 2x2 -->
                             <button onclick="setGridSize(2, 2)" data-cols="2" data-rows="2"
                                 class="preset-btn p-1.5 border border-slate-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all flex flex-col items-center gap-1 group"
                                 title="2 Columns x 2 Rows">
-                                <div class="grid grid-cols-2 gap-0.5 w-5 h-5">
+                                <div class="grid grid-cols-2 gap-0.5 w-4 h-4">
                                     <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
                                     <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
                                     <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
                                     <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
                                 </div>
                                 <span
-                                    class="preset-label text-[10px] font-medium text-slate-500 group-hover:text-blue-600">2x2</span>
+                                    class="preset-label text-[9px] font-medium text-slate-500 group-hover:text-blue-600">2x2</span>
                             </button>
                             <!-- 3x2 -->
                             <button onclick="setGridSize(3, 2)" data-cols="3" data-rows="2"
                                 class="preset-btn p-1.5 border border-slate-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all flex flex-col items-center gap-1 group"
                                 title="3 Columns x 2 Rows">
-                                <div class="grid grid-cols-3 gap-0.5 w-5 h-5">
+                                <div class="grid grid-cols-3 gap-0.5 w-4 h-4">
                                     <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
                                     <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
                                     <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
@@ -1247,13 +1330,13 @@
                                     <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
                                 </div>
                                 <span
-                                    class="preset-label text-[10px] font-medium text-slate-500 group-hover:text-blue-600">3x2</span>
+                                    class="preset-label text-[9px] font-medium text-slate-500 group-hover:text-blue-600">3x2</span>
                             </button>
                             <!-- 3x3 -->
                             <button onclick="setGridSize(3, 3)" data-cols="3" data-rows="3"
                                 class="preset-btn p-1.5 border border-slate-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all flex flex-col items-center gap-1 group"
                                 title="3 Columns x 3 Rows">
-                                <div class="grid grid-cols-3 gap-0.5 w-5 h-5">
+                                <div class="grid grid-cols-3 gap-0.5 w-4 h-4">
                                     <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
                                     <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
                                     <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
@@ -1265,13 +1348,13 @@
                                     <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
                                 </div>
                                 <span
-                                    class="preset-label text-[10px] font-medium text-slate-500 group-hover:text-blue-600">3x3</span>
+                                    class="preset-label text-[9px] font-medium text-slate-500 group-hover:text-blue-600">3x3</span>
                             </button>
                             <!-- 4x3 -->
                             <button onclick="setGridSize(4, 3)" data-cols="4" data-rows="3"
                                 class="preset-btn p-1.5 border border-slate-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all flex flex-col items-center gap-1 group"
                                 title="4 Columns x 3 Rows">
-                                <div class="grid grid-cols-4 gap-0.5 w-5 h-5">
+                                <div class="grid grid-cols-4 gap-0.5 w-4 h-4">
                                     <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
                                     <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
                                     <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
@@ -1286,199 +1369,121 @@
                                     <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
                                 </div>
                                 <span
-                                    class="preset-label text-[10px] font-medium text-slate-500 group-hover:text-blue-600">4x3</span>
+                                    class="preset-label text-[9px] font-medium text-slate-500 group-hover:text-blue-600">4x3</span>
                             </button>
-                            </button>
                         </div>
                     </div>
 
-                    <div>
-                        <div class="flex justify-between mb-1">
-                            <label class="text-sm text-slate-700">Columns</label>
-                            <span id="col-val"
-                                class="text-sm font-mono font-bold text-blue-600 bg-blue-50 px-2 rounded">2</span>
+                    <!-- Sliders Grid to save space -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <label class="text-sm text-slate-700">Columns</label>
+                                <span id="col-val"
+                                    class="text-sm font-mono font-bold text-blue-600 bg-blue-50 px-2 rounded">2</span>
+                            </div>
+                            <input type="range" id="col-range" min="1" max="6" value="2"
+                                class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
                         </div>
-                        <input type="range" id="col-range" min="1" max="6" value="2"
-                            class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <label class="text-sm text-slate-700">Rows</label>
+                                <span id="row-val"
+                                    class="text-sm font-mono font-bold text-blue-600 bg-blue-50 px-2 rounded">2</span>
+                            </div>
+                            <input type="range" id="row-range" min="1" max="6" value="2"
+                                class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                        </div>
                     </div>
 
-                    <div>
-                        <div class="flex justify-between mb-1">
-                            <label class="text-sm text-slate-700">Rows</label>
-                            <span id="row-val"
-                                class="text-sm font-mono font-bold text-blue-600 bg-blue-50 px-2 rounded">2</span>
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <label class="text-sm text-slate-700">Padding</label>
+                                <span id="gap-val"
+                                    class="text-sm font-mono font-bold text-blue-600 bg-blue-50 px-2 rounded">10px</span>
+                            </div>
+                            <input type="range" id="gap-range" min="0" max="100" step="2" value="10"
+                                class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
                         </div>
-                        <input type="range" id="row-range" min="1" max="6" value="2"
-                            class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
-                    </div>
-
-                    <div>
-                        <div class="flex justify-between mb-1">
-                            <label class="text-sm text-slate-700">Padding</label>
-                            <span id="gap-val"
-                                class="text-sm font-mono font-bold text-blue-600 bg-blue-50 px-2 rounded">10px</span>
+                        <div class="flex flex-col gap-1">
+                            <label class="text-sm text-slate-700">Image Fit</label>
+                            <select id="fit-select"
+                                class="w-full h-9 text-sm border border-slate-200 rounded-lg bg-white text-slate-700 outline-none focus:border-blue-500 px-2">
+                                <option value="contain">Contain (Whole)</option>
+                                <option value="cover">Cover (Fill)</option>
+                            </select>
                         </div>
-                        <input type="range" id="gap-range" min="0" max="100" step="2" value="10"
-                            class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
                     </div>
-
-
                 </div>
 
-                <!-- Vision Adaptation -->
-                <div class="space-y-4">
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Vision
-                        Adaptation</label>
+                <!-- 2. Symbol Appearance -->
+                <div class="space-y-4 pt-2 border-t border-slate-100">
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Symbol
+                        Appearance</label>
 
-                    <!-- Background Color Selection -->
-                    <div class="space-y-2">
-                        <span class="text-sm text-slate-700 block">Background Color</span>
-                        <div class="flex gap-3">
-                            <button onclick="setBackground('#f8fafc', this)"
-                                class="color-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none selected"
-                                style="background-color: #f8fafc;" title="White"></button>
-                            <button onclick="setBackground('#9ca3af', this)"
-                                class="color-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none"
-                                style="background-color: #9ca3af;" title="Grey"></button>
-                            <button onclick="setBackground('#d4c5a0', this)"
-                                class="color-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none"
-                                style="background-color: #d4c5a0;" title="Beige"></button>
-                            <button onclick="setBackground('#334155', this)"
-                                class="color-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none"
-                                style="background-color: #334155;" title="Dark Grey"></button>
-                            <button onclick="setBackground('#000000', this)"
-                                class="color-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none"
-                                style="background-color: #000000;" title="Black"></button>
+                    <div class="grid grid-cols-1 gap-4">
+                        <!-- Background Color -->
+                        <div class="space-y-2">
+                            <span class="text-sm text-slate-700 block">Background Color</span>
+                            <div class="flex gap-3">
+                                <button onclick="setBackground('#f8fafc', this)"
+                                    class="color-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none selected"
+                                    style="background-color: #f8fafc;" title="White"></button>
+                                <button onclick="setBackground('#9ca3af', this)"
+                                    class="color-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                    style="background-color: #9ca3af;" title="Grey"></button>
+                                <button onclick="setBackground('#d4c5a0', this)"
+                                    class="color-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                    style="background-color: #d4c5a0;" title="Beige"></button>
+                                <button onclick="setBackground('#334155', this)"
+                                    class="color-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                    style="background-color: #334155;" title="Dark Grey"></button>
+                                <button onclick="setBackground('#000000', this)"
+                                    class="color-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                    style="background-color: #000000;" title="Black"></button>
+                            </div>
                         </div>
-                    </div>
 
-                    <!-- Symbol Border Option -->
-                    <div class="space-y-2">
-                        <span class="text-sm text-slate-700 block">Symbol Border</span>
-                        <div class="flex gap-3 items-center">
-                            <button onclick="setBorderColor('#000000', this)"
-                                class="border-color-btn w-8 h-8 rounded-full border-2 border-slate-300 shadow-sm focus:outline-none selected"
-                                style="background-color: #000000;" title="Black"></button>
-                            <button onclick="setBorderColor('#6b7280', this)"
-                                class="border-color-btn w-8 h-8 rounded-full border-2 border-slate-300 shadow-sm focus:outline-none"
-                                style="background-color: #6b7280;" title="Grey"></button>
-                            <button onclick="setBorderColor('#ffffff', this)"
-                                class="border-color-btn w-8 h-8 rounded-full border-2 border-slate-300 shadow-sm focus:outline-none"
-                                style="background-color: #ffffff;" title="White"></button>
-                            <button onclick="setBorderColor('#1e3a8a', this)"
-                                class="border-color-btn w-8 h-8 rounded-full border-2 border-slate-300 shadow-sm focus:outline-none"
-                                style="background-color: #1e3a8a;" title="Dark Blue"></button>
-                            <button onclick="setBorderColor('#991b1b', this)"
-                                class="border-color-btn w-8 h-8 rounded-full border-2 border-slate-300 shadow-sm focus:outline-none"
-                                style="background-color: #991b1b;" title="Dark Red"></button>
+                        <!-- Borders -->
+                        <!-- Border Color -->
+                        <div class="space-y-2">
+                            <span class="text-sm text-slate-700 block">Border Color</span>
+                            <div class="flex justify-start gap-3">
+                                <button onclick="setBorderColor('#000000', this)"
+                                    class="border-color-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none selected"
+                                    style="background-color: #000000;" title="Black"></button>
+                                <button onclick="setBorderColor('#ffffff', this)"
+                                    class="border-color-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                    style="background-color: #ffffff;" title="White"></button>
+                                <button onclick="setBorderColor('#1e3a8a', this)"
+                                    class="border-color-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                    style="background-color: #1e3a8a;" title="Blue"></button>
+                                <button onclick="setBorderColor('#991b1b', this)"
+                                    class="border-color-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                    style="background-color: #991b1b;" title="Red"></button>
+                            </div>
                         </div>
-                        <div class="mt-3">
+                        <!-- Border Width -->
+                        <div class="space-y-2">
                             <div class="flex justify-between mb-1">
-                                <label class="text-xs text-slate-600">Border Width</label>
+                                <label class="text-sm text-slate-600">Border Width</label>
                                 <span id="border-width-val" class="text-xs font-bold text-blue-600">4px</span>
                             </div>
                             <input type="range" id="border-width-range" min="0" max="12" step="1" value="4"
                                 class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
                         </div>
                     </div>
-                </div>
-                <!-- Magnify Setting -->
-                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-3">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <span class="text-sm font-semibold text-slate-700 block">Magnifier</span>
-                            <span class="text-xs text-amber-600 font-medium">(Active only in Play Mode)</span>
-                        </div>
-                        <div
-                            class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
-                            <input type="checkbox" name="toggle" id="magnify-toggle"
-                                class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-300" />
-                            <label for="magnify-toggle"
-                                class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-300 cursor-pointer"></label>
-                        </div>
-                    </div>
 
-                    <!-- Zoom Level Slider -->
-                    <div id="magnify-controls" class="pt-2 border-t border-slate-200 hidden">
-                        <div class="flex justify-between mb-1">
-                            <label class="text-xs text-slate-600">Zoom Strength</label>
-                            <span id="zoom-val" class="text-xs font-bold text-blue-600">1.35x</span>
-                        </div>
-                        <input type="range" id="zoom-range" min="1.2" max="2.5" step="0.05" value="1.35"
-                            class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
-                    </div>
-                </div>
-
-                <!-- Auditory Adaptation -->
-                <div class="space-y-4">
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Auditory
-                        Adaptation</label>
-
+                    <!-- Text Labels Block -->
                     <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-3">
                         <div class="flex items-center justify-between">
                             <div>
-                                <span class="text-sm font-semibold text-slate-700 block">Audio Labels</span>
-                                <span class="text-xs text-slate-500">Reads filename on press</span>
+                                <span class="text-sm font-semibold text-slate-700 block">Text Labels</span>
+                                <span class="text-xs text-slate-500">Display names under symbols</span>
                             </div>
-                            <div
-                                class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
-                                <input type="checkbox" name="toggle" id="audio-toggle"
-                                    class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-300" />
-                                <label for="audio-toggle"
-                                    class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-300 cursor-pointer"></label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Interaction Timing -->
-                <div class="space-y-4">
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Interaction
-                        Timing</label>
-
-                    <!-- Dwell Time -->
-                    <div class="space-y-2">
-                        <div class="flex justify-between mb-1">
-                            <div>
-                                <span class="text-sm text-slate-700 block">Dwell Time</span>
-                                <span class="text-xs text-slate-500">Hold duration to activate</span>
-                            </div>
-                            <span id="dwell-val" class="text-xs font-bold text-blue-600">Off</span>
-                        </div>
-                        <input type="range" id="dwell-range" min="0" max="0.5" step="0.1" value="0"
-                            class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
-                    </div>
-
-                    <!-- Cooldown Time -->
-                    <div class="space-y-2">
-                        <div class="flex justify-between mb-1">
-                            <div>
-                                <span class="text-sm text-slate-700 block">Cooldown Time</span>
-                                <span class="text-xs text-slate-500">Delay between activations</span>
-                            </div>
-                            <span id="cooldown-val" class="text-xs font-bold text-blue-600">Off</span>
-                        </div>
-                        <input type="range" id="cooldown-range" min="0" max="1.0" step="0.1" value="0"
-                            class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
-                    </div>
-                </div>
-
-
-
-                <!-- View Options -->
-                <!-- Text Labels Section -->
-                <div class="space-y-4">
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Text Labels</label>
-
-                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-3">
-                        <!-- Text Labels Toggle -->
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <span class="text-sm font-semibold text-slate-700 block">Show Labels</span>
-                                <span class="text-xs text-slate-500">Display text under symbols</span>
-                            </div>
-                            <div
-                                class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                            <div class="relative inline-block w-10 align-middle select-none">
                                 <input type="checkbox" name="toggle" id="labels-toggle"
                                     class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-300" />
                                 <label for="labels-toggle"
@@ -1486,84 +1491,135 @@
                             </div>
                         </div>
 
-                        <!-- Label Size Slider -->
+                        <!-- Hidden Label Controls -->
                         <div id="label-size-control" class="hidden pt-2 border-t border-slate-200">
                             <div class="flex justify-between mb-1">
-                                <label class="text-xs text-slate-600">Text Size</label>
+                                <label class="text-xs text-slate-600">Size</label>
                                 <span id="label-size-val" class="text-xs font-bold text-blue-600">20px</span>
                             </div>
                             <input type="range" id="label-size-range" min="12" max="48" step="1" value="20"
                                 class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
                         </div>
 
-                        <!-- Text Color (only when Text enabled) -->
-                        <div id="label-color-control" class="hidden pt-2 border-t border-slate-200">
-                            <div class="flex justify-between mb-1">
-                                <label class="text-xs text-slate-600">Text Color</label>
-                            </div>
+                        <div id="label-color-control"
+                            class="hidden pt-2 border-t border-slate-200 flex items-center justify-between">
+                            <label class="text-xs text-slate-600">Color</label>
                             <div class="flex items-center gap-2">
+                                <input id="label-color-picker" type="color" value="#000000"
+                                    class="w-8 h-8 p-0 border border-slate-300 rounded-lg cursor-pointer" />
                                 <select id="label-color-select"
-                                    class="w-full px-2 py-1 text-sm border border-slate-300 rounded-lg bg-white">
+                                    class="px-2 py-1 text-xs border border-slate-300 rounded-lg bg-white h-8">
                                     <option value="#000000" selected>Black</option>
                                     <option value="#ffffff">White</option>
                                     <option value="#1e3a8a">Navy</option>
                                     <option value="#b91c1c">Red</option>
-                                    <option value="#1d4ed8">Blue</option>
                                     <option value="#16a34a">Green</option>
                                 </select>
-                                <input id="label-color-picker" type="color" value="#000000"
-                                    class="w-10 h-9 p-0 border border-slate-300 rounded-lg cursor-pointer"
-                                    title="Custom color" />
                             </div>
                         </div>
 
-                        <!-- Text Position (only when Text enabled) -->
-                        <div id="label-position-control" class="hidden pt-2 border-t border-slate-200">
-                            <div class="flex items-center justify-between">
-                                <label class="text-xs text-slate-600">Text Position</label>
-                                <select id="label-position-select"
-                                    class="px-2 py-1 text-sm border border-slate-300 rounded-lg bg-white">
-                                    <option value="below" selected>Below Symbol</option>
-                                    <option value="above">Above Symbol</option>
-                                </select>
-                            </div>
+                        <div id="label-position-control"
+                            class="hidden pt-2 border-t border-slate-200 flex items-center justify-between">
+                            <label class="text-xs text-slate-600">Position</label>
+                            <select id="label-position-select"
+                                class="px-2 py-1 text-xs border border-slate-300 rounded-lg bg-white h-8">
+                                <option value="below" selected>Below</option>
+                                <option value="above">Above</option>
+                            </select>
                         </div>
-
                     </div>
                 </div>
 
-                <!-- Other Settings -->
-                <div class="space-y-4">
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Other
-                        Settings</label>
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm text-slate-700">Image Fit</span>
-                        <select id="fit-select" class="text-sm border rounded p-1 bg-white text-slate-700">
-                            <option value="contain">Contain (Whole)</option>
-                            <option value="cover">Cover (Fill)</option>
-                        </select>
+                <!-- 3. Interaction & Audio -->
+                <div class="space-y-4 pt-2 border-t border-slate-100">
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Interaction &
+                        Audio</label>
+
+                    <!-- Audio Toggle -->
+                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 flex items-center justify-between">
+                        <div>
+                            <span class="text-sm font-semibold text-slate-700 block">Voice Output</span>
+                            <span class="text-xs text-slate-500">Read names aloud</span>
+                        </div>
+                        <div class="relative inline-block w-10 align-middle select-none">
+                            <input type="checkbox" name="toggle" id="audio-toggle"
+                                class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-300" />
+                            <label for="audio-toggle"
+                                class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-300 cursor-pointer"></label>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Games Section -->
-                <div class="space-y-4">
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Games</label>
-
+                    <!-- Magnifier -->
                     <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-3">
-                        <!-- Find-It Game Toggle -->
                         <div class="flex items-center justify-between">
                             <div>
-                                <span class="text-sm font-semibold text-slate-700 block">Find-It Game</span>
-                                <span class="text-xs text-slate-500">Practice identifying symbols</span>
+                                <span class="text-sm font-semibold text-slate-700 block">Touch Magnification</span>
+                                <span class="text-xs text-amber-600 font-medium">(Play Mode Only)</span>
+                            </div>
+                            <div class="relative inline-block w-10 align-middle select-none">
+                                <input type="checkbox" name="toggle" id="magnify-toggle"
+                                    class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-300" />
+                                <label for="magnify-toggle"
+                                    class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-300 cursor-pointer"></label>
+                            </div>
+                        </div>
+                        <div id="magnify-controls" class="pt-2 border-t border-slate-200 hidden">
+                            <div class="flex justify-between mb-1">
+                                <label class="text-xs text-slate-600">Zoom Level</label>
+                                <span id="zoom-val" class="text-xs font-bold text-blue-600">1.35x</span>
+                            </div>
+                            <input type="range" id="zoom-range" min="1.2" max="2.5" step="0.05" value="1.35"
+                                class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                        </div>
+                    </div>
+
+                    <!-- Timing Sliders -->
+                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-4">
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <div>
+                                    <span class="text-sm font-semibold text-slate-700 block">Dwell Time</span>
+                                    <span class="text-xs text-slate-500">Hold to activate</span>
+                                </div>
+                                <span id="dwell-val" class="text-xs font-bold text-blue-600">Off</span>
+                            </div>
+                            <input type="range" id="dwell-range" min="0" max="0.5" step="0.1" value="0"
+                                class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                        </div>
+                        <div class="pt-2 border-t border-slate-200">
+                            <div class="flex justify-between mb-1">
+                                <div>
+                                    <span class="text-sm font-semibold text-slate-700 block">Cooldown</span>
+                                    <span class="text-xs text-slate-500">Delay between taps</span>
+                                </div>
+                                <span id="cooldown-val" class="text-xs font-bold text-blue-600">Off</span>
+                            </div>
+                            <input type="range" id="cooldown-range" min="0" max="2.0" step="0.1" value="0"
+                                class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Games & Practice -->
+                <div class="space-y-4 pt-2 border-t border-slate-100">
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Games &
+                        Practice</label>
+
+                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-3">
+                        <!-- Find-It Game -->
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <span class="text-sm font-semibold text-slate-700 block">Find-It</span>
+                                <span class="text-xs text-slate-500">Identify symbols</span>
                             </div>
                             <div class="flex items-center gap-2">
                                 <button id="game-btn" onclick="toggleGame()"
-                                    class="px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-lg shadow-sm hover:bg-blue-700 transition-colors">
+                                    class="px-3 py-1.5 bg-blue-600 text-white text-xs font-bold rounded shadow-sm hover:bg-blue-700 transition-colors">
                                     Start
                                 </button>
                                 <button onclick="openPromptsModal()" title="Game Settings"
-                                    class="p-2 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 hover:text-blue-600 transition-colors">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                    class="p-1.5 bg-white border border-slate-200 text-slate-600 rounded hover:bg-slate-50 hover:text-blue-600 transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
                                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                         stroke-linejoin="round">
                                         <path
@@ -1575,20 +1631,20 @@
                             </div>
                         </div>
 
-                        <!-- Pop-Up Finder Game -->
+                        <!-- Pop-Up Finder -->
                         <div class="flex items-center justify-between pt-2 border-t border-slate-200">
                             <div>
                                 <span class="text-sm font-semibold text-slate-700 block">Pop-Up Finder</span>
-                                <span class="text-xs text-slate-500">One picture pops up; child taps to find it</span>
+                                <span class="text-xs text-slate-500">Tap to find</span>
                             </div>
                             <div class="flex items-center gap-2">
                                 <button id="hunt-btn" onclick="toggleHuntGame()"
-                                    class="px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-lg shadow-sm hover:bg-blue-700 transition-colors">
+                                    class="px-3 py-1.5 bg-blue-600 text-white text-xs font-bold rounded shadow-sm hover:bg-blue-700 transition-colors">
                                     Start
                                 </button>
                                 <button onclick="openHuntPicker()" title="Choose picture"
-                                    class="p-2 bg-white border border-slate-200 text-slate-500 rounded-lg hover:bg-slate-50 hover:text-blue-600 transition-colors">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                    class="p-1.5 bg-white border border-slate-200 text-slate-500 rounded hover:bg-slate-50 hover:text-blue-600 transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
                                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                         stroke-linejoin="round">
                                         <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
@@ -1599,9 +1655,16 @@
                             </div>
                         </div>
 
+                        <!-- Game Delay -->
+                        <div class="pt-2 border-t border-slate-200">
+                            <div class="flex justify-between mb-1">
+                                <label class="text-xs text-slate-600">Game Speed (Delay)</label>
+                                <span id="game-delay-val" class="text-xs font-bold text-blue-600">2s</span>
+                            </div>
+                            <input type="range" id="game-delay-range" min="1" max="4" step="0.5" value="2"
+                                class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                        </div>
                     </div>
-
-
                 </div>
             </div>
 
@@ -2335,8 +2398,16 @@
                     const parsed = JSON.parse(savedConfig);
                     if (typeof parsed === 'object' && parsed !== null) {
                         Object.assign(config, parsed);
+
+                        // FORCE Edit Mode on startup
+                        config.mode = 'edit';
+
                         // Sync UI controls with loaded config
                         syncUIFromConfig();
+
+                        // Apply mode visuals & ensure drawer is open
+                        setMode('edit');
+                        toggleDrawer(true);
                     }
                 }
 
@@ -2381,18 +2452,25 @@
             if (borderWidthRange) borderWidthRange.value = config.borderWidth;
             if (labelSizeRange) labelSizeRange.value = config.labelSize;
             if (gameDelayRange) gameDelayRange.value = config.gameDelay;
-            // Update labels
+            if (dwellRange) dwellRange.value = config.dwellTime;
+            if (cooldownRange) cooldownRange.value = config.cooldownTime;
+
+            // Sync label settings
+            if (labelPositionSelect) labelPositionSelect.value = config.labelPosition || 'below';
+            if (labelColorSelect) labelColorSelect.value = config.labelColor || '#000000';
+            if (labelColorPicker) labelColorPicker.value = config.labelColor || '#000000';
+
+            // Update display labels
             if (colVal) colVal.innerText = config.cols;
             if (rowVal) rowVal.innerText = config.rows;
             if (gapVal) gapVal.innerText = `${config.gap}px`;
             if (zoomVal) zoomVal.innerText = config.zoomLevel + 'x';
             if (borderWidthVal) borderWidthVal.innerText = `${config.borderWidth}px`;
             if (labelSizeVal) labelSizeVal.innerText = `${config.labelSize}px`;
+            if (dwellVal) dwellVal.innerText = config.dwellTime === 0 ? 'Off' : `${config.dwellTime}s`;
+            if (cooldownVal) cooldownVal.innerText = config.cooldownTime === 0 ? 'Off' : `${config.cooldownTime}s`;
+            if (gameDelayVal) gameDelayVal.innerText = `${config.gameDelay}s`;
         }
-
-        // Load saved state on startup
-        loadFromLocalStorage();
-
 
         // --- DOM Elements ---
         const drawer = document.getElementById('drawer');
@@ -2464,11 +2542,18 @@
 
         // Global array to prevent garbage collection of utterances
         const activeUtterances = [];
+        let speechTimeout = null;
 
         function speak(text, force = true) {
             if (!config.audioEnabled || !text) return;
 
-            // Cancel any current speech if forcing new speech
+            // If forcing, clear any pending speech that hasn't started yet
+            if (force && speechTimeout) {
+                clearTimeout(speechTimeout);
+                speechTimeout = null;
+            }
+
+            // Cancel current audio immediately if forcing
             if (force) {
                 window.speechSynthesis.cancel();
             }
@@ -2494,23 +2579,27 @@
 
             utterance.rate = 1.0;
 
-            // Keep reference to prevent garbage collection
-            activeUtterances.push(utterance);
+            // Delay speaking slightly to ensure browser is ready and allow for precise cancellation
+            speechTimeout = setTimeout(() => {
+                // Keep reference to prevent garbage collection
+                activeUtterances.push(utterance);
 
-            utterance.onend = () => {
-                const index = activeUtterances.indexOf(utterance);
-                if (index > -1) activeUtterances.splice(index, 1);
-            };
+                utterance.onend = () => {
+                    const index = activeUtterances.indexOf(utterance);
+                    if (index > -1) activeUtterances.splice(index, 1);
+                };
 
-            utterance.onerror = (e) => {
-                console.warn('Speech error:', e);
-                const index = activeUtterances.indexOf(utterance);
-                if (index > -1) activeUtterances.splice(index, 1);
-            };
+                utterance.onerror = (e) => {
+                    // Ignore expected interruptions (e.g., when tapping quickly)
+                    if (e.error !== 'interrupted' && e.error !== 'canceled') {
+                        console.warn('Speech error:', e);
+                    }
+                    const index = activeUtterances.indexOf(utterance);
+                    if (index > -1) activeUtterances.splice(index, 1);
+                };
 
-            // Small timeout to ensure browser is ready if called immediately after user gesture
-            setTimeout(() => {
                 window.speechSynthesis.speak(utterance);
+                speechTimeout = null;
             }, 10);
         }
 
@@ -2563,6 +2652,8 @@
             config.borderWidth = parseInt(borderWidthRange.value);
             config.labelSize = parseInt(labelSizeRange.value);
             config.gameDelay = parseFloat(gameDelayRange.value);
+            // Label settings are usually event-driven but sync here for completeness
+            if (labelPositionSelect) config.labelPosition = labelPositionSelect.value;
 
             colVal.innerText = config.cols;
             rowVal.innerText = config.rows;
@@ -2612,7 +2703,6 @@
             }
         });
 
-        // --- Resize Logic ---
         // --- Resize Logic ---
         function resizeGrid(newRows, newCols) {
             const newSize = newRows * newCols;
@@ -2784,22 +2874,27 @@
                 el.style.fontSize = `${config.labelSize}px`;
             });
 
-            // Label color listeners
-            function setLabelColor(hex) {
-                config.labelColor = hex;
-                if (labelColorSelect.value !== hex) labelColorSelect.value = hex;
-                if (labelColorPicker.value !== hex) labelColorPicker.value = hex;
-                renderGrid();
+        });
+
+        // Label color listeners
+        function setLabelColor(hex) {
+            config.labelColor = hex;
+            if (labelColorSelect.value !== hex) {
+                // Check if matching option exists, else custom
+                // Simple logic: just set select value, if invalid (custom) it usually stays on previous or empty
+                // But better to just try setting it.
+                labelColorSelect.value = hex;
             }
+            if (labelColorPicker.value !== hex) labelColorPicker.value = hex;
+            renderGrid();
+        }
 
-            labelColorSelect.addEventListener('change', () => {
-                setLabelColor(labelColorSelect.value);
-            });
+        labelColorSelect.addEventListener('change', () => {
+            setLabelColor(labelColorSelect.value);
+        });
 
-            labelColorPicker.addEventListener('input', () => {
-                setLabelColor(labelColorPicker.value);
-            });
-
+        labelColorPicker.addEventListener('input', () => {
+            setLabelColor(labelColorPicker.value);
         });
 
         // Dwell time listener
@@ -2858,12 +2953,25 @@
             const isRelease = e && (e.type === 'touchend' || e.type === 'mouseup' || e.type === 'pointerup');
 
             if (currentMagnifiedEl) {
+                // Store reference before clearing magnified state
+                const cellElement = currentMagnifiedEl;
+                const index = cellElement.dataset.index;
+
+                // Clear magnified visual first
+                cellElement.classList.remove('magnified');
+                cellElement.style.removeProperty('--zoom-level');
+                currentMagnifiedEl = null;
+
                 if (isRelease && config.magnify && config.mode === 'play') {
-                    const index = currentMagnifiedEl.dataset.index;
                     if (gridData[index]) {
                         if (huntActive) {
-                            handleHuntPress(parseInt(index), currentMagnifiedEl);
+                            handleHuntPress(parseInt(index), cellElement);
                         } else if (gameActive) {
+                            // Apply pop animation to the cell directly for game mode
+                            cellElement.classList.add('game-pop', 'ring-4', 'ring-green-500');
+                            setTimeout(() => {
+                                cellElement.classList.remove('game-pop', 'ring-4', 'ring-green-500');
+                            }, 550);
                             checkAnswer(parseInt(index));
                         } else {
                             if (config.audioEnabled) {
@@ -2874,9 +2982,6 @@
                         }
                     }
                 }
-                currentMagnifiedEl.classList.remove('magnified');
-                currentMagnifiedEl.style.removeProperty('--zoom-level');
-                currentMagnifiedEl = null;
             }
         }
 
@@ -3001,8 +3106,38 @@
             touchDragItem = this;
             touchDragIndex = parseInt(this.dataset.index);
 
+            // Create drag ghost - handle image, shape, or text-only cells
             const img = this.querySelector('img');
-            touchGhost = img.cloneNode(true);
+            const shapeSymbol = this.querySelector('.shape-symbol');
+            const textLabel = this.querySelector('.text-only-label');
+
+            if (img) {
+                touchGhost = img.cloneNode(true);
+            } else if (shapeSymbol) {
+                touchGhost = document.createElement('div');
+                touchGhost.textContent = shapeSymbol.textContent;
+                touchGhost.style.fontSize = '3rem';
+                touchGhost.style.display = 'flex';
+                touchGhost.style.alignItems = 'center';
+                touchGhost.style.justifyContent = 'center';
+                touchGhost.style.background = 'white';
+                touchGhost.style.borderRadius = '8px';
+            } else if (textLabel) {
+                touchGhost = document.createElement('div');
+                touchGhost.textContent = textLabel.textContent;
+                touchGhost.style.fontSize = '1.5rem';
+                touchGhost.style.fontWeight = 'bold';
+                touchGhost.style.display = 'flex';
+                touchGhost.style.alignItems = 'center';
+                touchGhost.style.justifyContent = 'center';
+                touchGhost.style.background = 'white';
+                touchGhost.style.borderRadius = '8px';
+                touchGhost.style.padding = '8px';
+            } else {
+                // Fallback: clone entire cell content
+                touchGhost = this.cloneNode(true);
+            }
+
             touchGhost.style.position = 'fixed';
             touchGhost.style.width = `${this.offsetWidth}px`;
             touchGhost.style.height = `${this.offsetHeight}px`;
@@ -3111,6 +3246,11 @@
         };
 
         function startHuntGame() {
+            // Stop other game if running
+            if (typeof gameActive !== 'undefined' && gameActive) {
+                stopGame();
+            }
+
             // Audio Labels setting is respected in Pop-Up Finder.
 
 
@@ -3168,6 +3308,7 @@
 
         function stopHuntGame() {
             huntActive = false;
+            huntMoving = false;
             gridContainer.classList.remove('hunt-outlines');
             gridContainer.style.removeProperty('--hunt-border-width');
             gridContainer.style.removeProperty('--hunt-border-color');
@@ -3214,13 +3355,16 @@
             huntCurrentIndex = nextIndex;
 
             // Place the target (ephemeral item)
-            gridData[huntCurrentIndex] = { src: huntSelected.src, label: huntSelected.label };
+            // Use spread to copy all properties (src, label, isShape, symbol, isTextOnly, colors, etc.)
+            gridData[huntCurrentIndex] = { ...huntSelected };
 
             renderGrid();
 
+            huntMoving = false;
+
             if (first) {
                 // Give a short instruction once at start (voice mode only)
-                if (config.audioEnabled) speak(`Find the ${huntSelected.label}.`);
+                if (config.audioEnabled) speak(`Find ${huntSelected.label}.`);
             }
         }
 
@@ -3233,20 +3377,28 @@
         }
 
 
+        let huntMoving = false;
         function huntConfirmAndMove(cellElement) {
-            // Confirmation: voice if enabled, otherwise beep + wiggle
-            if (config.audioEnabled) {
-                speak(`You found the ${huntSelected.label}.`);
-            } else {
-                playBeep();
-                if (cellElement) {
-                    cellElement.classList.add('wiggle');
-                    setTimeout(() => cellElement.classList.remove('wiggle'), 380);
-                }
+            if (huntMoving) return;
+            huntMoving = true;
+
+            // Visual feedback - Pop out animation
+            if (cellElement) {
+                cellElement.classList.add('game-pop', 'ring-4', 'ring-green-500');
+                setTimeout(() => {
+                    cellElement.classList.remove('game-pop', 'ring-4', 'ring-green-500');
+                }, 550);
             }
 
-            // Move after a short delay so feedback is perceived
-            setTimeout(() => moveHuntTarget(false), 420);
+            // Confirmation: voice if enabled, otherwise beep
+            if (config.audioEnabled) {
+                speak(`You found ${huntSelected.label}.`);
+            } else {
+                playBeep();
+            }
+
+            // Move after animation completes
+            setTimeout(() => moveHuntTarget(false), 600);
         }
 
 
@@ -3278,20 +3430,33 @@
                         [...huntPickerGrid.querySelectorAll('button')].forEach(b => b.classList.remove('ring-2', 'ring-emerald-500'));
                         btn.classList.add('ring-2', 'ring-emerald-500');
 
-                        huntPendingChoice = { src: item.src, label: item.label || "item", fromIndex: index };
+                        // Copy all properties so shapes/text/colors work in the game
+                        huntPendingChoice = { ...item, fromIndex: index };
                         huntConfirmBtn.disabled = false;
                     };
 
-                    const img = document.createElement('img');
-                    img.src = item.src;
-                    img.alt = item.label || "symbol";
-                    img.className = "w-full h-full object-contain p-2";
+                    // Render content based on type
+                    let contentEl;
+                    if (item.isShape) {
+                        contentEl = document.createElement('div');
+                        contentEl.className = "w-full h-full flex items-center justify-center text-4xl";
+                        contentEl.textContent = item.symbol;
+                    } else if (item.isTextOnly) {
+                        contentEl = document.createElement('div');
+                        contentEl.className = "w-full h-full flex items-center justify-center text-sm font-bold p-1 text-center break-words";
+                        contentEl.textContent = item.label;
+                    } else {
+                        contentEl = document.createElement('img');
+                        contentEl.src = item.src;
+                        contentEl.alt = item.label || "symbol";
+                        contentEl.className = "w-full h-full object-contain p-2";
+                    }
 
                     const cap = document.createElement('div');
                     cap.className = "absolute bottom-0 left-0 right-0 text-[11px] leading-tight bg-white/90 text-slate-700 px-1 py-0.5 truncate opacity-0 group-hover:opacity-100 transition-opacity";
                     cap.textContent = item.label || "";
 
-                    btn.appendChild(img);
+                    btn.appendChild(contentEl);
                     btn.appendChild(cap);
                     huntPickerGrid.appendChild(btn);
                 }
@@ -3325,13 +3490,40 @@
                 const file = e.target.files && e.target.files[0];
                 if (!file) return;
 
-                const label = (file.name || "item").replace(/\.[^.]+$/, "");
+                const label = formatLabel(file.name);
                 const reader = new FileReader();
                 reader.onload = () => {
-                    huntSelected = { src: reader.result, label, fromIndex: null };
-                    huntPendingChoice = { ...huntSelected };
-                    huntConfirmBtn.disabled = false;
-                    huntPickerHint.textContent = `Loaded: ${label}. Click “Use Selected” to start.`;
+                    const newItem = { src: reader.result, label, fromIndex: null };
+
+                    // Create visual button for the new item
+                    const btn = document.createElement('button');
+                    btn.type = "button";
+                    btn.className = "group relative aspect-square rounded-xl border border-slate-200 overflow-hidden bg-slate-50 hover:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 animate-fade-in-up";
+
+                    const img = document.createElement('img');
+                    img.src = reader.result;
+                    img.className = "w-full h-full object-contain p-2";
+
+                    const cap = document.createElement('div');
+                    cap.className = "absolute bottom-0 left-0 right-0 text-[11px] leading-tight bg-white/90 text-slate-700 px-1 py-0.5 truncate opacity-0 group-hover:opacity-100 transition-opacity";
+                    cap.textContent = label;
+
+                    btn.appendChild(img);
+                    btn.appendChild(cap);
+
+                    btn.onclick = () => {
+                        [...huntPickerGrid.querySelectorAll('button')].forEach(b => b.classList.remove('ring-2', 'ring-emerald-500'));
+                        btn.classList.add('ring-2', 'ring-emerald-500');
+                        huntPendingChoice = { ...newItem };
+                        huntConfirmBtn.disabled = false;
+                    };
+
+                    // Add to grid and select it
+                    huntPickerGrid.appendChild(btn);
+                    btn.click();
+                    btn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+                    huntPickerHint.textContent = `Loaded: ${label}.`;
                 };
                 reader.readAsDataURL(file);
 
@@ -3345,6 +3537,11 @@
 
         // --- Find-It Game Logic ---
         function startGame() {
+            // Stop other game if running
+            if (typeof huntActive !== 'undefined' && huntActive) {
+                stopHuntGame();
+            }
+
             gameActive = true;
             gameBtn.innerText = "Stop";
             gameBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
@@ -3416,19 +3613,19 @@
                 // Correct!
                 playChime();
 
-                // Visual feedback (green flash)
+                // Visual feedback - Pop out animation (skip if already applied by magnify mode)
                 const cell = gridContainer.children[index];
-                if (cell) {
-                    cell.classList.add('ring-4', 'ring-green-500', 'scale-110', 'z-50');
+                if (cell && !cell.classList.contains('game-pop')) {
+                    // Pop-out animation with green glow
+                    cell.classList.add('game-pop', 'ring-4', 'ring-green-500');
                     setTimeout(() => {
-                        cell.classList.remove('ring-4', 'ring-green-500', 'scale-110', 'z-50');
-                    }, 500);
+                        cell.classList.remove('game-pop', 'ring-4', 'ring-green-500');
+                    }, 550);
                 }
 
                 // 1. Speak the name immediately
                 speak(targetItem.label, true);
 
-                // 2. Pause then Reinforcement
                 // 2. Pause then Reinforcement
                 setTimeout(() => {
                     const validReinforcements = config.correctFeedback.filter(p => p.trim() !== "");
@@ -3443,7 +3640,6 @@
                     startFindItRound();
                 }, 1500 + (config.gameDelay * 1000));
             } else {
-                // Incorrect
                 // Incorrect
                 if (clickedItem) {
                     const validIncorrect = config.incorrectFeedback.filter(p => p.trim() !== "");
@@ -3515,7 +3711,14 @@
             }
         }
 
+        let lastTouchTime = 0;
         function handleCellClick(e) {
+            // Ignore mouse events if they occur shortly after a touch event (fixes ghost clicks resetting dwell timer)
+            if (e.type === 'touchstart') {
+                lastTouchTime = Date.now();
+            } else if (e.type === 'mousedown' && Date.now() - lastTouchTime < 800) {
+                return;
+            }
             if (e.target.closest('.delete-btn')) return;
             if (e.target.closest('.label-btn')) return;
             if (e.target.closest('.color-pick-btn')) return;
@@ -3523,9 +3726,10 @@
             // If using Magnify in Play Mode, speech is handled on release (handleMagnifyEnd)
             if (config.mode === 'play' && config.magnify) return;
 
-            // Pop-Up Finder: always activate immediately on press (ignore dwell), so taps work reliably
-            if (huntActive && config.mode === 'play' && !config.magnify) {
+            // Games (Pop-Up Finder & Find-It): always activate immediately on press (ignore dwell)
+            if ((huntActive || gameActive) && config.mode === 'play' && !config.magnify) {
                 const index = this.dataset.index;
+                // For Find-It game, check if cell has data; for Pop-Up finder, logic handles it
                 if (gridData[index]) activateCell(index, this);
                 return;
             }
@@ -3640,7 +3844,7 @@
         function getSpeechLabel(item) {
             if (!item) return '';
             // Use speechLabel if defined and non-empty, otherwise fall back to label
-            return (item.speechLabel && item.speechLabel.trim() !== '') ? item.speechLabel : item.label;
+            return (item.speechLabel && item.speechLabel.trim() !== '') ? item.speechLabel : (item.label || '');
         }
 
         window.openSpeechLabelModal = function (index) {
@@ -3866,7 +4070,6 @@
             const hasImages = gridData.some(item => item !== null);
 
             gridContainer.classList.remove('hidden');
-            gridContainer.classList.remove('hidden');
 
             // Update counts
             const count = gridData.filter(i => i !== null).length;
@@ -4058,8 +4261,17 @@
                             label.textContent = getSpeechLabel(item);
                             label.style.fontSize = `${config.labelSize}px`;
                             label.style.color = (config.labelColor || '#000000');
-                            label.style.marginTop = '4px';
-                            shapeContainer.appendChild(label);
+
+                            // Position label above or below based on config
+                            if (config.labelPosition === 'above') {
+                                label.style.marginTop = '0';
+                                label.style.marginBottom = '2px';
+                                shapeContainer.insertBefore(label, shapeContainer.firstChild);
+                            } else {
+                                label.style.marginTop = '4px';
+                                label.style.marginBottom = '0';
+                                shapeContainer.appendChild(label);
+                            }
                         }
 
                         contentWrapper.appendChild(shapeContainer);
@@ -4173,12 +4385,12 @@
                     }
                 });
 
-                // Size shape symbols to 75% of cell height
+                // Size shape symbols to 60% of cell height
                 document.querySelectorAll('.shape-cell').forEach(cell => {
                     const shapeSymbol = cell.querySelector('.shape-symbol');
                     if (shapeSymbol) {
                         const cellHeight = cell.offsetHeight;
-                        const targetSize = cellHeight * 0.75;
+                        const targetSize = cellHeight * 0.60;
                         shapeSymbol.style.fontSize = `${targetSize}px`;
                     }
                 });
@@ -4330,7 +4542,8 @@
             }
         }
 
-        syncConfig();
+        // Load saved state on startup (must be after DOM elements defined)
+        loadFromLocalStorage();
 
         // Initial label UI state
         labelsToggle.checked = !!config.showLabels;
@@ -4338,11 +4551,21 @@
             if (!config.labelColor) config.labelColor = '#000000';
             labelSizeControl.classList.remove('hidden');
             labelColorControl.classList.remove('hidden');
+            labelPositionControl.classList.remove('hidden');
             labelColorSelect.value = config.labelColor;
             labelColorPicker.value = config.labelColor;
+            labelPositionSelect.value = config.labelPosition || 'below';
         } else {
             labelSizeControl.classList.add('hidden');
             labelColorControl.classList.add('hidden');
+            labelPositionControl.classList.add('hidden');
+        }
+
+        // Initial magnifier UI state
+        if (config.magnify) {
+            magnifyControls.classList.remove('hidden');
+        } else {
+            magnifyControls.classList.add('hidden');
         }
 
         renderGrid();
