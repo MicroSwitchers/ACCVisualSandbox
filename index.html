@@ -266,9 +266,50 @@
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+            line-height: 1.2;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        /* Contour Effect for Text-Only Cells (Double Stroke) */
+        /* Contour Effect for Text-Only Cells (Double Stroke) */
+        .text-cell-contour {
+            position: relative;
             z-index: 10;
-            flex-shrink: 0;
-            margin-top: 2px;
+        }
+
+        .text-cell-contour::after {
+            /* The Gap Layer (Inner Stroke via Dilate Filter) */
+            content: attr(data-text);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            display: flex;
+            /* Ensure centered alignment matching parent */
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            filter: var(--contour-filter-gap);
+        }
+
+        .text-cell-contour::before {
+            /* The Outline Layer (Outer Stroke via Dilate Filter) */
+            content: attr(data-text);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            display: flex;
+            /* Ensure centered alignment matching parent */
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            filter: var(--contour-filter-outline);
         }
 
         /* Text-only cell (no image) */
@@ -282,7 +323,9 @@
             font-size: 2.5rem;
             /* Initial size, will be adjusted dynamically */
             font-weight: 800;
-            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             padding: 8px;
             max-width: 90%;
             word-wrap: break-word;
@@ -1463,6 +1506,16 @@
                                 <button onclick="setBorderColor('#991b1b', this)"
                                     class="border-color-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none"
                                     style="background-color: #991b1b;" title="Red"></button>
+                                <button onclick="setBorderColor('transparent', this)"
+                                    class="border-color-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none flex items-center justify-center bg-slate-50"
+                                    title="Transparent">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                        fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+                                    </svg>
+                                </button>
                             </div>
                         </div>
                         <!-- Border Width -->
@@ -1940,6 +1993,16 @@
                             <button onclick="setSymbolBorderColor('#ffffff')"
                                 class="w-10 h-10 rounded-lg border-4 bg-slate-100 hover:scale-110 transition-transform"
                                 style="border-color: #ffffff;" title="White"></button>
+                            <button onclick="setSymbolBorderColor('transparent')"
+                                class="w-10 h-10 rounded-lg border-4 border-slate-200 bg-white hover:scale-110 transition-transform flex items-center justify-center"
+                                title="Transparent">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                    fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+                                </svg>
+                            </button>
                         </div>
                         <div id="symbol-border-preview" class="text-xs text-slate-500">Current: Default</div>
                     </div>
@@ -1987,14 +2050,119 @@
                 </div>
 
                 <!-- Content -->
-                <div class="flex-1 overflow-y-auto p-6 space-y-4">
-                    <div class="space-y-2">
-                        <label for="text-label-input" class="block text-sm font-semibold text-slate-700">Text to
-                            Display</label>
+                <div class="flex-1 overflow-y-auto p-5 space-y-5">
+
+                    <!-- Section 1: Text Input -->
+                    <div class="bg-slate-50 rounded-xl p-4 space-y-3">
+                        <div class="flex items-center gap-2 mb-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" class="text-blue-600">
+                                <polyline points="4 7 4 4 20 4 20 7"></polyline>
+                                <line x1="9" y1="20" x2="15" y2="20"></line>
+                                <line x1="12" y1="4" x2="12" y2="20"></line>
+                            </svg>
+                            <span class="text-sm font-bold text-slate-700">Text to Display</span>
+                        </div>
                         <input type="text" id="text-label-input" placeholder="Enter word or phrase..."
-                            class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-700 text-lg">
-                        <p class="text-xs text-slate-500">This text will appear in the center of the cell and will be
-                            spoken when activated.</p>
+                            class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-700 text-lg bg-white">
+                        <p class="text-xs text-slate-500">This text will appear in the cell and be spoken when
+                            activated.</p>
+                    </div>
+
+                    <!-- Section 2: Word Bubbling -->
+                    <div
+                        class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-4 space-y-4 border border-amber-200/50">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" class="text-amber-600">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                                    <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                                    <line x1="15" y1="9" x2="15.01" y2="9"></line>
+                                </svg>
+                                <div>
+                                    <span class="text-sm font-bold text-slate-700">Word Bubbling</span>
+                                    <p class="text-xs text-amber-700/70">Dr. Christine Roman-Lanzy Method</p>
+                                </div>
+                            </div>
+                            <div class="relative inline-block w-10 align-middle select-none">
+                                <input type="checkbox" id="text-contour-toggle"
+                                    class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-300" />
+                                <label for="text-contour-toggle"
+                                    class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-300 cursor-pointer"></label>
+                            </div>
+                        </div>
+
+                        <div id="contour-controls" class="space-y-4 hidden transition-all duration-300">
+                            <!-- Bubble Color -->
+                            <div class="space-y-2">
+                                <span class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Bubble
+                                    Color</span>
+                                <div class="flex gap-2">
+                                    <button onclick="setTextContourColor('#ef4444', this)"
+                                        class="contour-color-btn w-9 h-9 rounded-full border-2 border-white shadow-md focus:outline-none ring-2 ring-offset-1 ring-transparent hover:scale-110 transition-transform"
+                                        style="background-color: #ef4444;" title="Red"></button>
+                                    <button onclick="setTextContourColor('#eab308', this)"
+                                        class="contour-color-btn w-9 h-9 rounded-full border-2 border-white shadow-md focus:outline-none ring-2 ring-offset-1 ring-transparent hover:scale-110 transition-transform"
+                                        style="background-color: #eab308;" title="Yellow"></button>
+                                    <button onclick="setTextContourColor('#22c55e', this)"
+                                        class="contour-color-btn w-9 h-9 rounded-full border-2 border-white shadow-md focus:outline-none ring-2 ring-offset-1 ring-transparent hover:scale-110 transition-transform"
+                                        style="background-color: #22c55e;" title="Green"></button>
+                                    <button onclick="setTextContourColor('#3b82f6', this)"
+                                        class="contour-color-btn w-9 h-9 rounded-full border-2 border-white shadow-md focus:outline-none ring-2 ring-offset-1 ring-transparent hover:scale-110 transition-transform"
+                                        style="background-color: #3b82f6;" title="Blue"></button>
+                                    <button onclick="setTextContourColor('#f97316', this)"
+                                        class="contour-color-btn w-9 h-9 rounded-full border-2 border-white shadow-md focus:outline-none ring-2 ring-offset-1 ring-transparent hover:scale-110 transition-transform"
+                                        style="background-color: #f97316;" title="Orange"></button>
+                                </div>
+                            </div>
+
+                            <!-- Bubble Thickness -->
+                            <div class="space-y-2 bg-white/60 rounded-lg p-3">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-xs font-semibold text-slate-600">Bubble Thickness</span>
+                                    <span id="contour-width-val"
+                                        class="text-xs font-bold text-amber-600 bg-amber-100 px-2 py-0.5 rounded">6px</span>
+                                </div>
+                                <input type="range" id="contour-width-range" min="4" max="8" step="1" value="6"
+                                    class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-amber-500">
+                            </div>
+
+                            <!-- Gap Width -->
+                            <div class="space-y-2 bg-white/60 rounded-lg p-3">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-xs font-semibold text-slate-600">Gap Width</span>
+                                    <span id="contour-gap-val"
+                                        class="text-xs font-bold text-amber-600 bg-amber-100 px-2 py-0.5 rounded">3px</span>
+                                </div>
+                                <input type="range" id="contour-gap-range" min="0" max="8" step="1" value="3"
+                                    class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-amber-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 3: Live Preview -->
+                    <div class="space-y-2">
+                        <div class="flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" class="text-slate-500">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Live
+                                Preview</span>
+                        </div>
+                        <div id="text-label-preview-container"
+                            class="w-full h-28 bg-white border-2 border-dashed border-slate-200 rounded-xl flex items-center justify-center overflow-hidden shadow-inner">
+                            <div id="text-label-preview" class="text-4xl font-extrabold text-center transition-all"
+                                style="color: #000000; line-height: 1.1;">
+                                Preview
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -2465,7 +2633,7 @@
             if (rowVal) rowVal.innerText = config.rows;
             if (gapVal) gapVal.innerText = `${config.gap}px`;
             if (zoomVal) zoomVal.innerText = config.zoomLevel + 'x';
-            if (borderWidthVal) borderWidthVal.innerText = `${config.borderWidth}px`;
+            if (borderWidthVal) borderWidthVal.innerText = config.borderWidth === 0 ? 'None' : `${config.borderWidth}px`;
             if (labelSizeVal) labelSizeVal.innerText = `${config.labelSize}px`;
             if (dwellVal) dwellVal.innerText = config.dwellTime === 0 ? 'Off' : `${config.dwellTime}s`;
             if (cooldownVal) cooldownVal.innerText = config.cooldownTime === 0 ? 'Off' : `${config.cooldownTime}s`;
@@ -2659,7 +2827,7 @@
             rowVal.innerText = config.rows;
             gapVal.innerText = `${config.gap}px`;
             zoomVal.innerText = config.zoomLevel + 'x';
-            borderWidthVal.innerText = `${config.borderWidth}px`;
+            borderWidthVal.innerText = config.borderWidth === 0 ? 'None' : `${config.borderWidth}px`;
             labelSizeVal.innerText = `${config.labelSize}px`;
 
             updatePresetHighlight();
@@ -2831,7 +2999,7 @@
         // Border width listener
         borderWidthRange.addEventListener('input', () => {
             config.borderWidth = parseInt(borderWidthRange.value);
-            borderWidthVal.innerText = `${config.borderWidth}px`;
+            borderWidthVal.innerText = config.borderWidth === 0 ? 'None' : `${config.borderWidth}px`;
             renderGrid();
         });
 
@@ -3364,7 +3532,7 @@
 
             if (first) {
                 // Give a short instruction once at start (voice mode only)
-                if (config.audioEnabled) speak(`Find ${huntSelected.label}.`);
+                if (config.audioEnabled) speak(`Find ${getSpeechLabel(huntSelected)}.`);
             }
         }
 
@@ -3392,7 +3560,7 @@
 
             // Confirmation: voice if enabled, otherwise beep
             if (config.audioEnabled) {
-                speak(`You found ${huntSelected.label}.`);
+                speak(`You found ${getSpeechLabel(huntSelected)}.`);
             } else {
                 playBeep();
             }
@@ -3598,7 +3766,7 @@
 
             // Speak prompt after a short delay
             setTimeout(() => {
-                speak(`${randomPhrase} ${targetItem.label}`);
+                speak(`${randomPhrase} ${getSpeechLabel(targetItem)}`);
             }, 1000);
         }
 
@@ -3624,14 +3792,14 @@
                 }
 
                 // 1. Speak the name immediately
-                speak(targetItem.label, true);
+                speak(getSpeechLabel(targetItem), true);
 
                 // 2. Pause then Reinforcement
                 setTimeout(() => {
                     const validReinforcements = config.correctFeedback.filter(p => p.trim() !== "");
                     if (validReinforcements.length > 0) {
                         const randomReinforcement = validReinforcements[Math.floor(Math.random() * validReinforcements.length)];
-                        speak(`${randomReinforcement} ${targetItem.label}`, true);
+                        speak(`${randomReinforcement} ${getSpeechLabel(targetItem)}`, true);
                     }
                 }, 1500);
 
@@ -3645,13 +3813,13 @@
                     const validIncorrect = config.incorrectFeedback.filter(p => p.trim() !== "");
                     if (validIncorrect.length > 0) {
                         let phrase = validIncorrect[Math.floor(Math.random() * validIncorrect.length)];
-                        phrase = phrase.replace("[word]", clickedItem.label);
-                        speak(`${phrase} ${targetItem.label}`, true);
+                        phrase = phrase.replace("[word]", getSpeechLabel(clickedItem));
+                        speak(`${phrase} ${getSpeechLabel(targetItem)}`, true);
                     } else {
-                        speak(`That's ${clickedItem.label}. Find ${targetItem.label}`, true);
+                        speak(`That's ${getSpeechLabel(clickedItem)}. Find ${getSpeechLabel(targetItem)}`, true);
                     }
                 } else {
-                    speak(`Look for ${targetItem.label}`, true);
+                    speak(`Look for ${getSpeechLabel(targetItem)}`, true);
                 }
             }
         }
@@ -3897,22 +4065,183 @@
 
         // --- Text Label Modal Logic (for text-only cells) ---
         let textLabelTargetIndex = null;
+        let currentContourColor = '#ef4444'; // Default red
         const textLabelModal = document.getElementById('text-label-modal');
         const textLabelInput = document.getElementById('text-label-input');
+        const textLabelPreview = document.getElementById('text-label-preview');
+        const textContourToggle = document.getElementById('text-contour-toggle');
+        const contourControls = document.getElementById('contour-controls');
+        const contourWidthRange = document.getElementById('contour-width-range');
+        const contourWidthVal = document.getElementById('contour-width-val');
+        const contourGapRange = document.getElementById('contour-gap-range');
+        const contourGapVal = document.getElementById('contour-gap-val');
+
+        let previewUpdateFrame = null;
+
+        function getContourFilterUrl(radius, color) {
+            const encodedColor = encodeURIComponent(color);
+            // High-quality outline filter:
+            // 1. Dilate: Expand the text shape outward
+            // 2. Blur: Smooth the jagged edges from dilation
+            // 3. ComponentTransfer: Re-sharpen the blurred edges for crisp but smooth result
+            // 4. Flood + Composite: Apply the solid color
+            return `url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"><filter id="f" x="-50%" y="-50%" width="200%" height="200%"><feMorphology operator="dilate" radius="${radius}" in="SourceAlpha" result="dilate"/><feGaussianBlur stdDeviation="1.2" in="dilate" result="blur"/><feComponentTransfer in="blur" result="sharp"><feFuncA type="gamma" amplitude="2" exponent="0.8"/></feComponentTransfer><feFlood flood-color="${encodedColor}" result="color"/><feComposite operator="in" in="color" in2="sharp"/></filter></svg>#f')`;
+        }
+
+        function updateTextLabelPreview() {
+            if (!textLabelPreview) return;
+
+            if (previewUpdateFrame) cancelAnimationFrame(previewUpdateFrame);
+
+            previewUpdateFrame = requestAnimationFrame(() => {
+                const text = textLabelInput.value.trim() || 'Preview';
+                textLabelPreview.textContent = text;
+                textLabelPreview.setAttribute('data-text', text);
+                textLabelPreview.style.color = config.labelColor || '#000000';
+
+                const active = textContourToggle ? textContourToggle.checked : false;
+
+                if (active) {
+                    const width = contourWidthRange ? parseInt(contourWidthRange.value) : 6;
+                    const gap = contourGapRange ? parseInt(contourGapRange.value) : 3;
+                    const color = currentContourColor;
+
+                    // Use SVG Filters (Dilation) instead of Stroke to avoid inner artifacts
+                    // Dilation radius ~ Stroke Width / 2
+                    // We want Total Outline to extend (Gap + Width)
+                    // We want Gap (White) to extend (Gap)
+
+                    const gapRadius = gap;
+                    const totalRadius = gap + width;
+
+                    textLabelPreview.classList.add('text-cell-contour');
+
+                    // Set Filter URLs
+                    const gapFilter = getContourFilterUrl(gapRadius, '#ffffff'); // Use white for gap
+                    const outlineFilter = getContourFilterUrl(totalRadius, color);
+
+                    textLabelPreview.style.setProperty('--contour-filter-gap', gapFilter);
+                    textLabelPreview.style.setProperty('--contour-filter-outline', outlineFilter);
+
+                    // Legacy cleanup
+                    textLabelPreview.style.removeProperty('--contour-gap-width');
+                    textLabelPreview.style.removeProperty('--contour-total-width');
+                    textLabelPreview.style.removeProperty('--contour-color');
+                    textLabelPreview.style.webkitTextStroke = 'initial';
+                } else {
+                    textLabelPreview.classList.remove('text-cell-contour');
+                    textLabelPreview.style.removeProperty('--contour-filter-gap');
+                    textLabelPreview.style.removeProperty('--contour-filter-outline');
+                }
+                previewUpdateFrame = null;
+            });
+        }
+
+        // Text Contour Event Listeners
+        if (textContourToggle) {
+            textContourToggle.addEventListener('change', () => {
+                if (textContourToggle.checked) {
+                    contourControls.classList.remove('hidden');
+                } else {
+                    contourControls.classList.add('hidden');
+                }
+                updateTextLabelPreview();
+            });
+        }
+        if (contourWidthRange) {
+            contourWidthRange.addEventListener('input', () => {
+                contourWidthVal.innerText = `${contourWidthRange.value}px`;
+                updateTextLabelPreview();
+            });
+        }
+        if (contourGapRange) {
+            contourGapRange.addEventListener('input', () => {
+                contourGapVal.innerText = `${contourGapRange.value}px`;
+                updateTextLabelPreview();
+            });
+        }
+        if (textLabelInput) {
+            textLabelInput.addEventListener('input', updateTextLabelPreview);
+        }
+
+        window.setTextContourColor = function (color, btn) {
+            currentContourColor = color;
+            document.querySelectorAll('.contour-color-btn').forEach(b => {
+                b.classList.remove('ring-blue-500', 'ring-offset-2');
+                b.classList.add('ring-transparent');
+                b.style.transform = 'scale(1)';
+            });
+            if (btn) {
+                btn.classList.remove('ring-transparent');
+                btn.classList.add('ring-blue-500', 'ring-offset-2');
+                btn.style.transform = 'scale(1.1)';
+            }
+            updateTextLabelPreview();
+        };
 
         window.openTextLabelModal = function (index) {
             textLabelTargetIndex = index;
             const existingItem = gridData[index];
 
+            // Reset UI Defaults
+            if (textContourToggle) textContourToggle.checked = false;
+            if (contourControls) contourControls.classList.add('hidden');
+            currentContourColor = '#ef4444';
+            if (contourWidthRange) contourWidthRange.value = 6;
+            if (contourGapRange) contourGapRange.value = 3;
+            if (contourWidthVal) contourWidthVal.innerText = '6px';
+            if (contourGapVal) contourGapVal.innerText = '3px';
+
+            // Reset visual selection of color buttons
+            document.querySelectorAll('.contour-color-btn').forEach(btn => {
+                btn.classList.remove('ring-blue-500', 'ring-offset-2');
+                btn.classList.add('ring-transparent');
+                btn.style.transform = 'scale(1)';
+                // Default select red if no existing item
+                if (btn.getAttribute('style').includes('#ef4444') && (!existingItem || !existingItem.contourActive)) {
+                    btn.classList.remove('ring-transparent');
+                    btn.classList.add('ring-blue-500', 'ring-offset-2');
+                    btn.style.transform = 'scale(1.1)';
+                }
+            });
+
             // If editing an existing text-only cell, pre-fill the input
             if (existingItem && existingItem.isTextOnly) {
                 textLabelInput.value = existingItem.label || '';
                 document.querySelector('#text-label-modal h3').textContent = 'Edit Text Label';
+
+                // Load contour settings
+                if (existingItem.contourActive) {
+                    if (textContourToggle) textContourToggle.checked = true;
+                    if (contourControls) contourControls.classList.remove('hidden');
+                    currentContourColor = existingItem.contourColor || '#ef4444';
+                    if (contourWidthRange) contourWidthRange.value = existingItem.contourWidth || 6;
+                    if (contourGapRange) contourGapRange.value = (existingItem.contourGap !== undefined) ? existingItem.contourGap : 3;
+                    if (contourWidthVal) contourWidthVal.innerText = `${contourWidthRange.value}px`;
+                    if (contourGapVal) contourGapVal.innerText = `${contourGapRange.value}px`;
+
+                    // Update button selection
+                    document.querySelectorAll('.contour-color-btn').forEach(btn => {
+                        // Normalize color check (simple containment)
+                        if (btn.getAttribute('style').includes(currentContourColor)) {
+                            // De-select others (already done above, but safe to ensure)
+                            document.querySelectorAll('.contour-color-btn').forEach(b => {
+                                b.classList.remove('ring-blue-500', 'ring-offset-2');
+                                b.classList.add('ring-transparent');
+                                b.style.transform = 'scale(1)';
+                            });
+                            btn.classList.remove('ring-transparent');
+                            btn.classList.add('ring-blue-500', 'ring-offset-2');
+                            btn.style.transform = 'scale(1.1)';
+                        }
+                    });
+                }
             } else {
                 textLabelInput.value = '';
                 document.querySelector('#text-label-modal h3').textContent = 'Add Text Label';
             }
 
+            updateTextLabelPreview();
             textLabelModal.classList.remove('hidden');
             setTimeout(() => textLabelInput.focus(), 100);
         };
@@ -3930,6 +4259,10 @@
                 return;
             }
 
+            const contourActive = textContourToggle ? textContourToggle.checked : false;
+            const contourWidth = contourWidthRange ? parseInt(contourWidthRange.value) : 6;
+            const contourGap = contourGapRange ? parseInt(contourGapRange.value) : 3;
+
             // Create or update a text-only cell
             gridData[textLabelTargetIndex] = {
                 isTextOnly: true,
@@ -3937,7 +4270,12 @@
                 src: null,
                 speechLabel: '', // For text-only, label IS the speech
                 customBgColor: gridData[textLabelTargetIndex]?.customBgColor || null,
-                customBorderColor: gridData[textLabelTargetIndex]?.customBorderColor || null
+                customBorderColor: gridData[textLabelTargetIndex]?.customBorderColor || null,
+                // Contour Data
+                contourActive: contourActive,
+                contourColor: currentContourColor,
+                contourWidth: contourWidth,
+                contourGap: contourGap
             };
 
             closeTextLabelModal();
@@ -4125,13 +4463,18 @@
                 // - Normal mode: occupied cells get the configured border; empty cells use dashed placeholders via CSS.
                 // - Pop-Up Finder (huntActive): ALL cells get the configured border so full grid outlines are visible.
                 // - Custom border color per symbol overrides the global setting
+                // - borderWidth 0 = no border on occupied cells
                 const borderColor = (item && item.customBorderColor) ? item.customBorderColor : config.borderColor;
                 if (config.borderWidth > 0) {
                     if (huntActive || item) {
                         cell.style.border = `${config.borderWidth}px solid ${borderColor}`;
                     }
                 } else {
-                    if (huntActive || item) {
+                    // No border when borderWidth is 0
+                    if (item) {
+                        cell.style.border = 'none';
+                    } else if (huntActive) {
+                        // Still show borders in hunt mode for empty cells
                         cell.style.border = '1px solid #e2e8f0';
                     }
                 }
@@ -4176,9 +4519,10 @@
                         cell.appendChild(previewBtn);
 
                         // Speech Label / Edit Text Button
+                        // Always show in edit mode for all cell types
                         // For text-only cells, this edits the text directly
                         // For shape cells and image cells, used for speech labels
-                        if (item.isTextOnly || item.isShape || config.audioEnabled) {
+                        {
                             const labelBtn = document.createElement('div');
                             if (item.isTextOnly) {
                                 // For text-only cells, always show and opens text editor
@@ -4238,6 +4582,31 @@
                         textLabel.textContent = item.label;
                         // Use label color but let CSS handle the large size
                         textLabel.style.color = config.labelColor || '#000000';
+
+                        // Apply Word Shape Contour (if active)
+                        // Apply Word Shape Contour (if active)
+                        if (item.contourActive) {
+                            textLabel.setAttribute('data-text', item.label);
+                            textLabel.classList.add('text-cell-contour');
+
+                            const width = item.contourWidth || 6;
+                            const gap = (item.contourGap !== undefined) ? item.contourGap : 3;
+                            const color = item.contourColor || '#ef4444';
+
+                            // Determine gap background color (default to white if no custom BG)
+                            const gapColor = item.customBgColor || '#ffffff';
+
+                            // Use SVG Filter logic
+                            const gapRadius = gap;
+                            const totalRadius = gap + width;
+
+                            const gapFilter = getContourFilterUrl(gapRadius, gapColor);
+                            const outlineFilter = getContourFilterUrl(totalRadius, color);
+
+                            textLabel.style.setProperty('--contour-filter-gap', gapFilter);
+                            textLabel.style.setProperty('--contour-filter-outline', outlineFilter);
+                        }
+
                         contentWrapper.appendChild(textLabel);
                     } else if (item.isShape) {
                         // Shape cell: show emoji/symbol centered
