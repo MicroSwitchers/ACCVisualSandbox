@@ -219,11 +219,11 @@
         }
 
         /* Image Styling */
-        /* Inner content wrapper to clip images */
+        /* Inner content wrapper - visible overflow for labels */
         .grid-cell .cell-content {
             position: absolute;
             inset: 0;
-            overflow: hidden;
+            overflow: visible;
             border-radius: 8px;
             display: flex;
             align-items: center;
@@ -240,7 +240,7 @@
             height: auto;
             max-height: 100%;
             padding: 4px;
-            overflow: hidden;
+            overflow: visible;
         }
 
         .grid-cell img {
@@ -263,9 +263,10 @@
             padding: 4px;
             border-radius: 4px;
             background: transparent;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            overflow: visible;
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+            white-space: normal;
             line-height: 1.2;
             pointer-events: none;
             z-index: 2;
@@ -327,10 +328,11 @@
             align-items: center;
             justify-content: center;
             padding: 8px;
-            max-width: 90%;
+            max-width: 95%;
             word-wrap: break-word;
             overflow-wrap: break-word;
-            white-space: nowrap;
+            white-space: normal;
+            text-align: center;
             line-height: 1.1;
         }
 
@@ -665,15 +667,14 @@
             pointer-events: none;
             width: 100%;
             text-align: center;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            white-space: normal;
+            overflow: visible;
+            overflow-wrap: break-word;
+            word-wrap: break-word;
             padding: 2px 4px;
             background: rgba(255, 255, 255, 0.7);
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
+            position: relative;
+            flex-shrink: 0;
         }
 
         /* Minimum Touch Target Sizes (44px x 44px for accessibility) */
@@ -3455,7 +3456,7 @@
             // Apply current border settings to the full-grid outlines in this game mode
             const bw = (typeof config.borderWidth === 'number' ? config.borderWidth : 0);
             gridContainer.style.setProperty('--hunt-border-width', `${(bw > 0 ? bw : 1)}px`);
-            gridContainer.style.setProperty('--hunt-border-color', config.borderColor || '#cbd5e1');
+            gridContainer.style.setProperty('--hunt-border-color', config.borderColor || '#000000');
 
             huntBtn.innerText = "Stop";
             huntBtn.classList.remove('bg-emerald-600', 'hover:bg-emerald-700');
@@ -3740,24 +3741,48 @@
         function startFindItRound() {
             if (!gameActive) return;
 
-            // Find all occupied cells
+            // Helper function to check if an element is visible on screen
+            function isElementVisible(element) {
+                if (!element) return false;
+                const rect = element.getBoundingClientRect();
+                const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+                const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+
+                // Check if the element is at least partially visible in the viewport
+                return (
+                    rect.bottom > 0 &&
+                    rect.right > 0 &&
+                    rect.top < viewportHeight &&
+                    rect.left < viewportWidth
+                );
+            }
+
+            // Find all occupied cells that are visible on screen
             const occupiedIndices = gridData
                 .map((item, index) => item !== null ? index : null)
                 .filter(index => index !== null);
 
-            if (occupiedIndices.length === 0) {
-                speak("Please add some symbols first.");
+            // Filter to only include cells that are currently visible
+            const visibleIndices = occupiedIndices.filter(index => {
+                const cellElement = gridContainer.children[index];
+                return isElementVisible(cellElement);
+            });
 
+            if (visibleIndices.length === 0) {
+                if (occupiedIndices.length > 0) {
+                    speak("No symbols are visible on screen.");
+                } else {
+                    speak("Please add some symbols first.");
+                }
                 stopGame();
                 return;
             }
 
-            // Pick random target
-            const randomIndex = Math.floor(Math.random() * occupiedIndices.length);
-            currentTargetIndex = occupiedIndices[randomIndex];
+            // Pick random target from visible cells only
+            const randomIndex = Math.floor(Math.random() * visibleIndices.length);
+            currentTargetIndex = visibleIndices[randomIndex];
             const targetItem = gridData[currentTargetIndex];
 
-            // Pick random phrase
             // Pick random phrase from config
             const validPhrases = config.prompts.filter(p => p.trim() !== "");
             const randomPhrase = validPhrases.length > 0
