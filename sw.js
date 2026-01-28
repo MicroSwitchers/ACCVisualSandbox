@@ -1,3 +1,9 @@
+/**
+ * AAC Visual Sandbox - Service Worker
+ * Provides offline support and caching for the PWA
+ * Version: 1.0
+ */
+
 const CACHE_PREFIX = 'aac-sandbox-';
 const CACHE_NAME = `${CACHE_PREFIX}v2`;
 

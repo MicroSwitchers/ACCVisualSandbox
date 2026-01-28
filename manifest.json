@@ -1,11 +1,12 @@
 {
-    "name": "ACC Visual Sandbox",
-    "short_name": "ACC Sandbox",
+    "name": "AAC Visual Sandbox",
+    "short_name": "AAC Sandbox",
+    "description": "An interactive tool for arranging images and symbols for AAC (Augmentative and Alternative Communication) interaction and assessment.",
     "start_url": "./",
     "scope": "./",
     "display": "standalone",
     "background_color": "#f8fafc",
-    "theme_color": "#ffffff",
+    "theme_color": "#3b82f6",
     "orientation": "any",
     "icons": [
         {
@@ -14,5 +15,6 @@
             "type": "image/svg+xml",
             "purpose": "any maskable"
         }
-    ]
+    ],
+    "categories": ["education", "accessibility"]
 }
