@@ -15,17 +15,73 @@
     <meta name="mobile-web-app-capable" content="yes">
 
     <title>AAC Visual Sandbox</title>
+    <!-- Premium Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
     <!-- Tailwind CSS for styling -->
 
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'system-ui', 'sans-serif'],
+                        display: ['Poppins', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            900: '#0c4a6e',
+                        }
+                    },
+                    animation: {
+                        'gradient-x': 'gradient-x 15s ease infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        'gradient-x': {
+                            '0%, 100%': {
+                                'background-size': '200% 200%',
+                                'background-position': 'left center'
+                            },
+                            '50%': {
+                                'background-size': '200% 200%',
+                                'background-position': 'right center'
+                            },
+                        },
+                        'float': {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
         /* Core Styles */
+        html,
+        body {
+            height: 100%;
+        }
+
         body {
             margin: 0;
             padding: 0;
             overflow: hidden;
-            background-color: #f8fafc;
-            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            /* Modern Dynamic Mesh Gradient Background */
+            background: linear-gradient(-45deg, #f8fafc, #e0e7ff, #f3e8ff, #f8fafc);
+            background-size: 400% 400%;
+            animation: gradient-x 15s ease infinite;
+            font-family: 'Outfit', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             user-select: none;
             -webkit-user-select: none;
             touch-action: pan-x pan-y;
@@ -33,6 +89,7 @@
             padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
         }
 
         /* Drawer Transitions */
@@ -88,9 +145,9 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            border-radius: 8px;
+            border-radius: 16px;
             overflow: visible;
-            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s, opacity 0.2s;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s;
             touch-action: none;
             background-color: transparent;
             z-index: 1;
@@ -104,20 +161,43 @@
         }
 
         /* Occupied Cell Styles */
+        .square-mode {
+            align-content: center;
+            /* Center rows vertically */
+            justify-content: center;
+            /* Center columns horizontally */
+            grid-template-rows: auto !important;
+            /* Let content dictate height, override inline if needed (though we clear inline) */
+        }
+
+        .square-mode .grid-cell {
+            aspect-ratio: 1 / 1;
+        }
+
         .grid-cell.occupied {
             background: white;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.08);
+            /* Border set via JS for customization - only use fallback if not set */
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
             cursor: pointer;
         }
 
         .grid-cell.occupied:hover {
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+            z-index: 10;
         }
 
         /* Empty Cell Styles (Target) */
         .grid-cell.empty {
-            border: 2px dashed #cbd5e1;
+            border: 2px dashed rgba(148, 163, 184, 0.4);
+            background-color: rgba(248, 250, 252, 0.5);
+            backdrop-filter: blur(4px);
+        }
+
+        /* Hide empty cell borders in play mode for cleaner appearance */
+        .play-mode .grid-cell.empty {
+            border: none;
+            background: transparent;
         }
 
 
@@ -219,11 +299,6 @@
             transform: translateZ(0) scale(var(--zoom-level, 1.5));
         }
 
-        /* Hiding dashed lines in play mode */
-        .play-mode .grid-cell.empty {
-            border: none;
-        }
-
         /* Image Styling */
         /* Inner content wrapper - visible overflow for labels */
         .grid-cell .cell-content {
@@ -243,10 +318,10 @@
             align-items: center;
             justify-content: center;
             width: 100%;
-            height: auto;
-            max-height: 100%;
+            height: 100%;
             padding: 4px;
-            overflow: visible;
+            overflow: hidden;
+            box-sizing: border-box;
         }
 
         .grid-cell img {
@@ -348,15 +423,7 @@
             line-height: 1.1;
         }
 
-        /* Generic Image Container for Image/Arasaac/Mulberry cells */
-        .image-container {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
+        /* Generic Image Container for Image/Arasaac/Mulberry cells - handled by .grid-cell .image-container above */
 
         /* Shape cell (emoji/symbol) */
         .grid-cell.shape-cell {
@@ -410,21 +477,23 @@
             height: 28px;
             min-width: 28px;
             min-height: 28px;
-            background-color: #ef4444;
+            background: linear-gradient(135deg, #f87171, #ef4444);
             color: white;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             z-index: 20;
-            transition: transform 0.1s;
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         .delete-btn:hover {
-            background-color: #dc2626;
-            transform: scale(1.1);
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            transform: scale(1.15) translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         .delete-btn svg {
@@ -442,21 +511,23 @@
             height: 28px;
             min-width: 28px;
             min-height: 28px;
-            background-color: #3b82f6;
+            background: linear-gradient(135deg, #60a5fa, #3b82f6);
             color: white;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             z-index: 20;
-            transition: transform 0.1s;
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         .preview-btn:hover {
-            background-color: #2563eb;
-            transform: scale(1.1);
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            transform: scale(1.15) translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         .preview-btn svg {
@@ -474,21 +545,23 @@
             height: 28px;
             min-width: 28px;
             min-height: 28px;
-            background-color: #8b5cf6;
+            background: linear-gradient(135deg, #a78bfa, #8b5cf6);
             color: white;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             z-index: 20;
-            transition: transform 0.1s;
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         .label-btn:hover {
-            background-color: #7c3aed;
-            transform: scale(1.1);
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            transform: scale(1.15) translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         .label-btn svg {
@@ -498,11 +571,13 @@
         }
 
         .label-btn.has-label {
-            background-color: #10b981;
+            background: linear-gradient(135deg, #34d399, #10b981);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
         }
 
         .label-btn.has-label:hover {
-            background-color: #059669;
+            background: linear-gradient(135deg, #10b981, #059669);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         /* Symbol Color Button */
@@ -514,21 +589,23 @@
             height: 28px;
             min-width: 28px;
             min-height: 28px;
-            background-color: #f59e0b;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
             color: white;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             z-index: 20;
-            transition: transform 0.1s;
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         .color-pick-btn:hover {
-            background-color: #d97706;
-            transform: scale(1.1);
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            transform: scale(1.15) translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         .color-pick-btn svg {
@@ -538,11 +615,13 @@
         }
 
         .color-pick-btn.has-custom {
-            background-color: #10b981;
+            background: linear-gradient(135deg, #34d399, #10b981);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
         }
 
         .color-pick-btn.has-custom:hover {
-            background-color: #059669;
+            background: linear-gradient(135deg, #10b981, #059669);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         /* Compact Button Mode (for 4+ rows) */
@@ -1006,6 +1085,7 @@
             text-overflow: ellipsis;
             display: -webkit-box;
             -webkit-line-clamp: 2;
+            line-clamp: 2;
             -webkit-box-orient: vertical;
         }
 
@@ -1230,6 +1310,7 @@
             text-overflow: ellipsis;
             display: -webkit-box;
             -webkit-line-clamp: 2;
+            line-clamp: 2;
             -webkit-box-orient: vertical;
         }
 
@@ -1296,13 +1377,20 @@
 
         .mulberry-popular-symbols {
             display: flex;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
+            overflow-x: auto;
             gap: 6px;
             margin-top: 8px;
+            padding-bottom: 4px;
+            scrollbar-width: none;
+        }
+
+        .mulberry-popular-symbols::-webkit-scrollbar {
+            display: none;
         }
 
         .mulberry-popular-btn {
-            padding: 6px 12px;
+            padding: 4px 10px;
             background: #f1f5f9;
             border: 1px solid #e2e8f0;
             border-radius: 16px;
@@ -1310,12 +1398,47 @@
             color: #64748b;
             cursor: pointer;
             transition: all 0.15s;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
         .mulberry-popular-btn:hover {
             background: #d1fae5;
             border-color: #10b981;
             color: #059669;
+        }
+
+        .arasaac-popular-symbols {
+            display: flex;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            gap: 6px;
+            margin-top: 8px;
+            padding-bottom: 4px;
+            scrollbar-width: none;
+        }
+
+        .arasaac-popular-symbols::-webkit-scrollbar {
+            display: none;
+        }
+
+        .arasaac-popular-btn {
+            padding: 4px 10px;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            font-size: 0.75rem;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .arasaac-popular-btn:hover {
+            background: #dbeafe;
+            border-color: #3b82f6;
+            color: #1d4ed8;
         }
 
         /* Mulberry image in grid cells */
@@ -1360,6 +1483,49 @@
             opacity: 0;
             pointer-events: none;
         }
+
+        /* Themed Custom Scrollbars */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(241, 245, 249, 0.5);
+            /* slate-100 with opacity */
+            border-radius: 10px;
+        }
+
+        #splash-inner-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        #splash-inner-scroll::-webkit-scrollbar-button {
+            display: none;
+            width: 0;
+            height: 0;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.5);
+            /* slate-400 with opacity */
+            border-radius: 10px;
+            border: 2px solid transparent;
+            background-clip: padding-box;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(100, 116, 139, 0.8);
+            /* slate-500 */
+            border: 2px solid transparent;
+            background-clip: padding-box;
+        }
+
+        /* Firefox Support */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(148, 163, 184, 0.5) rgba(241, 245, 249, 0.5);
+        }
     </style>
 
     <script>
@@ -1371,9 +1537,10 @@
 
     <!-- Hunt Picker Modal -->
     <div id="hunt-modal" class="fixed inset-0 z-50 hidden">
-        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="closeHuntModal()"></div>
+        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-md" onclick="closeHuntModal()"></div>
         <div class="absolute inset-0 flex items-center justify-center p-4">
-            <div class="w-full max-w-lg bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+            <div
+                class="w-full max-w-lg bg-white/90 backdrop-blur-xl rounded-3xl shadow-xl border border-white/50 overflow-y-auto max-h-[90vh] flex flex-col transform transition-all">
                 <div class="p-4 border-b border-slate-200 flex items-center justify-between">
                     <div>
                         <div class="text-sm font-bold text-slate-800">Choose a picture for Pop-Up Finder</div>
@@ -1391,14 +1558,14 @@
                 <div class="p-4 space-y-3">
                     <div id="hunt-picker-grid" class="grid grid-cols-3 sm:grid-cols-4 gap-3"></div>
 
-                    <div class="flex items-center justify-between pt-2 border-t border-slate-200">
+                    <div class="flex items-center justify-between pt-4 border-t border-slate-200">
                         <button
-                            class="px-4 py-2 text-sm font-semibold bg-white border border-slate-300 shadow-sm hover:bg-slate-50 hover:border-slate-400 text-slate-700 rounded-lg transition-all active:scale-95"
+                            class="px-5 py-2.5 text-sm font-bold bg-white border border-slate-300 shadow-sm hover:bg-slate-50 hover:border-slate-400 hover:shadow-md text-slate-700 rounded-xl transition-all active:scale-95"
                             onclick="triggerHuntLoad()">
                             Load Image
                         </button>
                         <button
-                            class="px-3 py-2 text-sm font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg"
+                            class="px-5 py-2.5 text-sm font-bold bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white rounded-xl shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95"
                             onclick="confirmHuntChoice()" id="hunt-confirm-btn" disabled>
                             Use Selected
                         </button>
@@ -1413,15 +1580,15 @@
     <!-- Bulk Symbol Modal -->
     <div id="bulk-symbol-modal" class="fixed inset-0 z-[100] hidden">
         <!-- Backdrop -->
-        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity"
+        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-md transition-opacity"
             onclick="closeBulkSymbolModal()">
         </div>
 
         <!-- Modal Content -->
         <div
-            class="absolute inset-x-0 bottom-0 md:inset-0 md:flex md:items-center md:justify-center pointer-events-none">
+            class="absolute inset-x-0 bottom-0 md:inset-0 md:flex md:items-center md:justify-center pointer-events-none p-4">
             <div
-                class="bg-white w-full md:w-[800px] md:h-[80vh] md:rounded-2xl shadow-2xl flex flex-col h-[90vh] pointer-events-auto transform transition-transform duration-300 translate-y-full md:translate-y-0">
+                class="bg-white/95 backdrop-blur-xl w-full md:w-[800px] md:h-[80vh] md:rounded-3xl shadow-xl border border-white/50 flex flex-col h-[90vh] pointer-events-auto transform transition-transform duration-300 translate-y-full md:translate-y-0 overflow-hidden">
 
                 <!-- Header -->
                 <div
@@ -1441,8 +1608,9 @@
                 </div>
 
                 <!-- Tabs -->
-                <div class="symbol-picker-tabs mx-4 mt-2">
-                    <button id="bulk-tab-arasaac" class="symbol-picker-tab active"
+                <div
+                    class="symbol-picker-tabs mx-4 mt-4 bg-slate-100/50 backdrop-blur-sm border border-white p-1 rounded-2xl">
+                    <button id="bulk-tab-arasaac" class="symbol-picker-tab active rounded-xl"
                         onclick="switchBulkSymbolTab('arasaac')">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1491,7 +1659,8 @@
                             </div>
 
                             <!-- Popular Searches (Dynamic based on tab) -->
-                            <div id="bulk-popular-tags" class="mt-3 flex flex-wrap gap-2">
+                            <div id="bulk-popular-tags" class="mt-3 flex flex-nowrap overflow-x-auto gap-2 pb-1"
+                                style="scrollbar-width: none;">
                                 <!-- Populated by JS -->
                             </div>
                         </div>
@@ -1517,7 +1686,7 @@
 
                     <!-- RIGHT: Collection Tray (Visible as sidebar on Desktop, Bottom sheet on Mobile) -->
                     <div
-                        class="h-48 md:h-auto md:w-64 bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] md:shadow-none flex flex-col z-10 transition-all">
+                        class="h-48 md:h-auto md:w-64 bg-white shadow-sm md:shadow-none flex flex-col z-10 transition-all">
                         <div class="p-3 bg-blue-50/50 border-b border-blue-100 flex justify-between items-center">
                             <h4 class="font-bold text-blue-900 text-sm">Collection Library</h4>
                             <span id="bulk-count-badge"
@@ -1541,9 +1710,9 @@
                         </div>
 
                         <!-- Footer Actions -->
-                        <div class="p-3 border-t border-slate-100 bg-slate-50">
+                        <div class="p-4 border-t border-slate-100/50 bg-slate-50/50 backdrop-blur-md">
                             <button onclick="confirmBulkImport()" id="bulk-import-btn" disabled
-                                class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold rounded-xl shadow-lg shadow-blue-600/20 transition-all active:scale-[0.98]">
+                                class="w-full py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:from-slate-300 disabled:to-slate-300 disabled:cursor-not-allowed text-white font-bold rounded-2xl shadow-md hover:shadow-lg transition-all active:scale-[0.98]">
                                 Import All
                             </button>
                         </div>
@@ -1559,89 +1728,133 @@
     <!-- Splash Screen -->
     <!-- Splash Screen -->
     <div id="splash-screen"
-        class="fixed inset-0 z-[9999] bg-slate-50 flex flex-col items-center justify-center p-4 transition-opacity duration-700 overflow-y-auto">
-        <div
-            class="bg-white/95 backdrop-blur-md p-8 rounded-3xl shadow-2xl shadow-slate-900/10 max-w-lg w-full border border-white/60 animate-fade-in-up my-auto">
-            <div class="text-center space-y-4">
-                <!-- Logo -->
-                <div class="relative w-28 h-28 mx-auto mb-3">
-                    <img src="icon.svg" alt="AAC Visual Sandbox Logo"
-                        class="w-full h-full object-contain drop-shadow-2xl">
-                    <div
-                        class="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-indigo-500/20 rounded-full blur-2xl -z-10 scale-150">
-                    </div>
-                </div>
-
-                <!-- Title -->
-                <div>
-                    <h1 class="text-3xl md:text-4xl font-extrabold text-slate-800 tracking-tight">
-                        AAC Visual <span
-                            class="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Sandbox</span>
-                    </h1>
-                    <p class="text-base text-slate-500 max-w-md mx-auto font-medium leading-relaxed mt-1">
-                        Arrange images and symbols for AAC interaction.
-                    </p>
-                </div>
-
-                <!-- Audio Settings Section -->
+        class="fixed inset-0 z-[9999] bg-slate-900/40 backdrop-blur-md flex flex-col items-center p-4 transition-opacity duration-700 overflow-y-auto overflow-x-hidden">
+        <div id="splash-content"
+            class="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl max-w-lg w-full border border-white/60 animate-fade-in-up my-auto relative overflow-hidden">
+            <div id="splash-inner-scroll" class="p-6 md:p-10 overflow-y-auto overflow-x-hidden max-h-[90vh]">
+                <!-- Decorative background elements inside splash -->
                 <div
-                    class="bg-gradient-to-br from-slate-50 to-slate-100/80 rounded-2xl p-5 border border-slate-200/80 text-left space-y-4 shadow-inner">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h3 class="font-bold text-slate-800 text-base">Feedback Style</h3>
-                            <p class="text-xs text-slate-500">How should the app respond to touch?</p>
+                    class="absolute -top-24 -right-24 w-48 h-48 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob">
+                </div>
+                <div
+                    class="absolute -bottom-24 -left-24 w-48 h-48 bg-indigo-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000">
+                </div>
+                <div class="text-center space-y-4">
+                    <!-- Logo -->
+                    <div class="relative w-28 h-28 mx-auto mb-3">
+                        <img src="icon.svg" alt="AAC Visual Sandbox Logo"
+                            class="w-full h-full object-contain drop-shadow-2xl">
+                        <div
+                            class="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-indigo-500/20 rounded-full blur-2xl -z-10 scale-150">
                         </div>
+                    </div>
 
-                        <!-- Toggle Switch with Labels -->
-                        <div class="flex items-center gap-2">
-                            <span
-                                class="text-[10px] font-bold uppercase tracking-wider text-slate-400 transition-colors"
-                                id="label-tone">Tone</span>
+                    <!-- Title -->
+                    <div class="relative z-10">
+                        <h1 class="text-4xl md:text-5xl font-extrabold text-slate-800 tracking-tight">
+                            AAC Visual <br /><span
+                                class="bg-gradient-to-r from-blue-600 via-indigo-500 to-violet-600 bg-clip-text text-transparent">Sandbox</span>
+                        </h1>
+                        <p class="text-base text-slate-500 max-w-md mx-auto font-medium leading-relaxed mt-1">
+                            Quickly arrange images, symbols and simple AAC grids to support assessment and planning
+                            discussions.
+                        </p>
+                    </div>
 
-                            <div
-                                class="relative inline-block w-12 align-middle select-none transition duration-200 ease-in">
-                                <input type="checkbox" name="splash-audio-toggle" id="splash-audio-toggle"
-                                    class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-300" />
-                                <label for="splash-audio-toggle"
-                                    class="toggle-label block overflow-hidden h-6 rounded-full bg-slate-300 cursor-pointer"></label>
+                    <!-- Audio Settings Section -->
+                    <div
+                        class="bg-white/50 backdrop-blur-sm rounded-2xl p-6 border border-white shadow-sm text-left space-y-4 relative z-10">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="font-bold text-slate-800 text-base">Feedback Style</h3>
+                                <p class="text-xs text-slate-500">How should the app respond to touch?</p>
                             </div>
 
-                            <span class="text-[10px] font-bold uppercase tracking-wider text-blue-600 transition-colors"
-                                id="label-voice">Voice</span>
+                            <!-- Toggle Switch with Labels -->
+                            <div class="flex items-center gap-2">
+                                <span
+                                    class="text-[10px] font-bold uppercase tracking-wider text-slate-400 transition-colors"
+                                    id="label-tone">Tone</span>
+
+                                <div
+                                    class="relative inline-block w-12 align-middle select-none transition duration-200 ease-in">
+                                    <input type="checkbox" name="splash-audio-toggle" id="splash-audio-toggle"
+                                        class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-300" />
+                                    <label for="splash-audio-toggle"
+                                        class="toggle-label block overflow-hidden h-6 rounded-full bg-slate-300 cursor-pointer"></label>
+                                </div>
+
+                                <span
+                                    class="text-[10px] font-bold uppercase tracking-wider text-blue-600 transition-colors"
+                                    id="label-voice">Voice</span>
+                            </div>
+                        </div>
+
+                        <!-- Help Triggers -->
+                        <div class="flex flex-col items-start gap-y-3 pt-2">
+                            <button id="splash-help-btn"
+                                class="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                </svg>
+                                How does naming work?
+                            </button>
+                            <button id="splash-image-help-btn"
+                                class="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+                                    <circle cx="9" cy="9" r="2" />
+                                    <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+                                </svg>
+                                What image Formats can be used?
+                            </button>
+                        </div>
+
+                    </div>
+
+                    <!-- Action Button -->
+                    <button id="splash-start-btn"
+                        class="w-full py-4 mt-2 relative z-10 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 hover:from-blue-700 hover:via-indigo-700 hover:to-violet-700 text-white font-bold text-lg rounded-2xl shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-1 active:scale-[0.98] active:translate-y-0 flex justify-center items-center gap-2">
+                        Start Creating
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 12h14" />
+                            <path d="m12 5 7 7-7 7" />
+                        </svg>
+                    </button>
+
+                    <!-- Caution notices -->
+                    <div class="space-y-2 mt-3 relative z-10">
+                        <div class="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10" />
+                                <line x1="12" y1="8" x2="12" y2="12" />
+                                <line x1="12" y1="16" x2="12.01" y2="16" />
+                            </svg>
+                            <p class="text-xs text-amber-800 font-medium">This app is for assessment and discussion
+                                purposes.</p>
+                        </div>
+                        <div class="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10" />
+                                <line x1="12" y1="8" x2="12" y2="12" />
+                                <line x1="12" y1="16" x2="12.01" y2="16" />
+                            </svg>
+                            <p class="text-xs text-amber-800 font-medium">This app is not designed to create or save
+                                complex AAC grids.</p>
                         </div>
                     </div>
-
-                    <!-- Help Triggers -->
-                    <div class="flex flex-col items-start gap-y-3 pt-2">
-                        <button id="splash-help-btn"
-                            class="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1 transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                            </svg>
-                            How does naming work?
-                        </button>
-                        <button id="splash-image-help-btn"
-                            class="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1 transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
-                                <circle cx="9" cy="9" r="2" />
-                                <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
-                            </svg>
-                            What image Formats can be used?
-                        </button>
-                    </div>
-
                 </div>
-
-                <!-- Action Button -->
-                <button id="splash-start-btn"
-                    class="w-full py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-lg rounded-xl shadow-lg shadow-blue-500/25 transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-blue-500/30 active:scale-[0.98]">
-                    Start Creating
-                </button>
             </div>
         </div>
     </div>
@@ -1849,8 +2062,8 @@
 
     <!-- Toggle Button (Drawer Handle) -->
     <button id="open-btn"
-        class="fixed z-50 p-2.5 bg-white rounded-xl shadow-lg hover:bg-slate-50 text-slate-600 hidden border border-slate-200/50 hover:shadow-xl transition-all active:scale-95"
-        style="top: max(1rem, env(safe-area-inset-top, 1rem)); left: max(1rem, env(safe-area-inset-left, 1rem));">
+        class="fixed z-50 p-3 bg-white/80 backdrop-blur-md rounded-2xl shadow-md hover:bg-white text-slate-700 hidden border border-white/50 hover:shadow-lg transition-all duration-300 active:scale-95 group"
+        style="top: max(1rem, env(safe-area-inset-top, 1rem)); left: max(1rem, env(safe-area-inset-left, 1rem)); border-radius: 16px;">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="4" x2="20" y1="12" y2="12" />
@@ -1861,12 +2074,14 @@
 
     <!-- Settings Drawer -->
     <aside id="drawer"
-        class="fixed inset-y-0 left-0 z-50 w-80 bg-white shadow-2xl flex flex-col drawer-open overflow-hidden border-r border-slate-200/80"
+        class="fixed inset-y-0 left-0 z-50 w-80 bg-white shadow-2xl flex flex-col drawer-open overflow-hidden border-r border-slate-200"
         style="padding-top: env(safe-area-inset-top, 0); padding-bottom: env(safe-area-inset-bottom, 0);">
         <!-- Header -->
         <div
-            class="p-4 border-b border-slate-200 flex justify-between items-center bg-gradient-to-r from-slate-50 to-blue-50/50">
-            <h2 class="font-bold text-slate-800 text-lg tracking-tight">AAC Visual Sandbox</h2>
+            class="p-5 border-b border-white/40 flex justify-between items-center bg-gradient-to-r from-white/60 to-blue-50/40">
+            <h2
+                class="font-extrabold text-slate-800 text-xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600">
+                AAC Sandbox</h2>
             <button id="close-btn"
                 class="p-2 hover:bg-slate-200/80 rounded-lg text-slate-500 hover:text-slate-700 transition-all flex items-center justify-center active:scale-95">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
@@ -1883,7 +2098,7 @@
 
             <!-- Fullscreen Toggle (Top Priority) -->
             <button onclick="toggleFullScreen()"
-                class="w-full py-2.5 bg-gradient-to-r from-slate-800 to-slate-900 text-white rounded-xl hover:from-slate-900 hover:to-slate-950 transition-all text-sm font-semibold flex justify-center items-center gap-2 shadow-md hover:shadow-lg active:scale-[0.98]">
+                class="w-full py-3 bg-gradient-to-r from-slate-800 to-slate-900 text-white rounded-2xl hover:from-slate-700 hover:to-slate-800 transition-all duration-300 text-sm font-bold flex justify-center items-center gap-2 shadow-md hover:shadow-lg hover:-translate-y-0.5 active:scale-[0.98] active:translate-y-0">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M15 3h6v6" />
@@ -1895,9 +2110,12 @@
             </button>
 
             <!-- Mode Toggle -->
-            <div class="bg-slate-100 p-1.5 rounded-xl flex shadow-inner border border-slate-200/50">
+            <div
+                class="bg-slate-200/50 backdrop-blur-sm p-1.5 rounded-2xl flex shadow-inner border border-white/50 relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-b from-black/[0.03] to-transparent pointer-events-none">
+                </div>
                 <button id="btn-mode-edit" onclick="setMode('edit')"
-                    class="mode-btn flex-1 py-2.5 rounded-lg text-sm font-bold shadow-sm bg-white text-blue-600 flex items-center justify-center gap-2 transition-all">
+                    class="mode-btn flex-1 py-3 rounded-xl text-sm font-bold shadow-sm bg-white text-blue-600 flex items-center justify-center gap-2 transition-all relative z-10">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
@@ -1906,7 +2124,7 @@
                     Edit
                 </button>
                 <button id="btn-mode-play" onclick="setMode('play')"
-                    class="mode-btn flex-1 py-2.5 rounded-lg text-sm font-bold text-slate-500 hover:text-slate-700 flex items-center justify-center gap-2 transition-all">
+                    class="mode-btn flex-1 py-3 rounded-xl text-sm font-bold text-slate-600 hover:text-slate-800 hover:bg-white/50 flex items-center justify-center gap-2 transition-all relative z-10">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polygon points="5 3 19 12 5 21 5 3" />
@@ -1917,13 +2135,13 @@
 
             <!-- Upload (Only visible in Edit Mode) -->
             <div id="section-upload" class="space-y-2 transition-opacity duration-300">
-                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">1. Images &
+                <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">1. Images &
                     Symbols</label>
 
                 <div class="grid grid-cols-2 gap-3">
                     <!-- Upload Button -->
                     <div onclick="document.getElementById('file-input').click()"
-                        class="aspect-square border-2 border-dashed border-slate-300 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-50/50 transition-all duration-200 group hover:shadow-sm">
+                        class="aspect-square bg-white/50 backdrop-blur-sm border-2 border-dashed border-slate-300 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-50/80 transition-all duration-300 group hover:shadow-md hover:-translate-y-1">
                         <svg class="text-slate-400 group-hover:text-blue-500 mb-2" xmlns="http://www.w3.org/2000/svg"
                             width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1937,7 +2155,7 @@
 
                     <!-- Bulk Button -->
                     <div onclick="openBulkSymbolModal()"
-                        class="aspect-square border-2 border-dashed border-slate-300 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-50/50 transition-all duration-200 group hover:shadow-sm">
+                        class="aspect-square bg-white/50 backdrop-blur-sm border-2 border-dashed border-slate-300 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-50/80 transition-all duration-300 group hover:shadow-md hover:-translate-y-1">
                         <svg class="text-slate-400 group-hover:text-blue-500 mb-2" xmlns="http://www.w3.org/2000/svg"
                             width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1960,7 +2178,7 @@
 
                 <!-- Clear All Button (always visible in edit mode when there's data) -->
                 <button id="clear-all-btn" onclick="clearGrid()"
-                    class="hidden w-full mt-3 py-3 px-4 bg-red-50 hover:bg-red-100 border border-red-200 hover:border-red-300 text-red-600 hover:text-red-700 rounded-xl transition-all text-sm font-semibold flex items-center justify-center gap-2 active:scale-[0.98]">
+                    class="hidden w-full mt-4 py-3.5 px-4 bg-red-50/80 hover:bg-red-100 border border-red-200 text-red-600 hover:text-red-700 rounded-2xl transition-all duration-300 text-sm font-bold flex items-center justify-center gap-2 shadow-sm hover:shadow-md active:scale-[0.98]">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M3 6h18" />
@@ -2005,105 +2223,356 @@
 
             <!-- Dimensions -->
             <div id="section-dimensions" class="space-y-6 transition-opacity duration-300">
-                <!-- 1. Grid Configuration -->
+                <!-- 2. Grid Configuration -->
                 <div class="space-y-4">
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Grid
+                    <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider px-1">2. Grid
                         Configuration</label>
 
+                    <!-- Advanced Viewport Control (Zoom/Pan) -->
+                    <div class="px-1 pt-2">
+                        <h3 class="text-[13px] font-bold text-slate-700 italic opacity-80 mb-2">Advanced Viewport
+                            Control</h3>
+                    </div>
                     <!-- Quick Layouts -->
-                    <div>
-                        <div class="flex justify-between items-baseline mb-3">
-                            <label class="text-xs font-medium text-slate-600">Quick Layouts</label>
+                    <!-- Layout Presets -->
+                    <div class="space-y-4">
+                        <!-- Square Presets -->
+                        <div>
+                            <label
+                                class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3">Individual
+                                Row</label>
+                            <div class="grid grid-cols-3 gap-3">
+                                <!-- 1 Symbol -->
+                                <button onclick="setSquareGrid(1)"
+                                    class="preset-btn p-3 border border-slate-200 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition-all flex flex-col items-center gap-2 group"
+                                    title="1 Large Square Symbol">
+                                    <div
+                                        class="w-6 h-6 bg-slate-300 rounded-sm group-hover:bg-blue-500 transition-colors">
+                                    </div>
+                                    <span class="text-sm font-bold text-slate-600 group-hover:text-blue-700">1</span>
+                                </button>
+                                <!-- 2 Symbols -->
+                                <button onclick="setSquareGrid(2)"
+                                    class="preset-btn p-3 border border-slate-200 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition-all flex flex-col items-center gap-2 group"
+                                    title="2 Square Symbols">
+                                    <div class="flex gap-1 items-center h-6">
+                                        <div
+                                            class="w-4 h-4 bg-slate-300 rounded-sm group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="w-4 h-4 bg-slate-300 rounded-sm group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                    </div>
+                                    <span class="text-sm font-bold text-slate-600 group-hover:text-blue-700">2</span>
+                                </button>
+                                <!-- 3 Symbols -->
+                                <button onclick="setSquareGrid(3)"
+                                    class="preset-btn p-3 border border-slate-200 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition-all flex flex-col items-center gap-2 group"
+                                    title="3 Square Symbols">
+                                    <div class="flex gap-1 items-center h-6">
+                                        <div
+                                            class="w-3 h-3 bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="w-3 h-3 bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="w-3 h-3 bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                    </div>
+                                    <span class="text-sm font-bold text-slate-600 group-hover:text-blue-700">3</span>
+                                </button>
+                            </div>
                         </div>
-                        <div class="grid grid-cols-4 gap-2">
-                            <!-- 1x1 -->
-                            <button onclick="setGridSize(1, 1)" data-cols="1" data-rows="1"
-                                class="preset-btn p-1.5 border border-slate-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all flex flex-col items-center gap-1 group"
-                                title="1 Column x 1 Row">
-                                <div class="grid grid-cols-1 gap-0.5 w-4 h-4 place-items-center">
-                                    <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400 w-full h-full"></div>
-                                </div>
-                                <span
-                                    class="preset-label text-[9px] font-medium text-slate-500 group-hover:text-blue-600">1x1</span>
-                            </button>
-                            <!-- 2x1 -->
-                            <button onclick="setGridSize(2, 1)" data-cols="2" data-rows="1"
-                                class="preset-btn p-1.5 border border-slate-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all flex flex-col items-center gap-1 group"
-                                title="2 Columns x 1 Row">
-                                <div class="grid grid-cols-2 gap-0.5 w-4 h-4">
-                                    <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
-                                    <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
-                                </div>
-                                <span
-                                    class="preset-label text-[9px] font-medium text-slate-500 group-hover:text-blue-600">2x1</span>
-                            </button>
-                            <!-- 2x2 -->
-                            <button onclick="setGridSize(2, 2)" data-cols="2" data-rows="2"
-                                class="preset-btn p-1.5 border border-slate-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all flex flex-col items-center gap-1 group"
-                                title="2 Columns x 2 Rows">
-                                <div class="grid grid-cols-2 gap-0.5 w-4 h-4">
-                                    <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
-                                    <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
-                                    <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
-                                    <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
-                                </div>
-                                <span
-                                    class="preset-label text-[9px] font-medium text-slate-500 group-hover:text-blue-600">2x2</span>
-                            </button>
-                            <!-- 3x2 -->
-                            <button onclick="setGridSize(3, 2)" data-cols="3" data-rows="2"
-                                class="preset-btn p-1.5 border border-slate-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all flex flex-col items-center gap-1 group"
-                                title="3 Columns x 2 Rows">
-                                <div class="grid grid-cols-3 gap-0.5 w-4 h-4">
-                                    <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
-                                    <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
-                                    <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
-                                    <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
-                                    <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
-                                    <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
-                                </div>
-                                <span
-                                    class="preset-label text-[9px] font-medium text-slate-500 group-hover:text-blue-600">3x2</span>
-                            </button>
-                            <!-- 3x3 -->
-                            <button onclick="setGridSize(3, 3)" data-cols="3" data-rows="3"
-                                class="preset-btn p-1.5 border border-slate-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all flex flex-col items-center gap-1 group"
-                                title="3 Columns x 3 Rows">
-                                <div class="grid grid-cols-3 gap-0.5 w-4 h-4">
-                                    <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
-                                    <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
-                                    <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
-                                    <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
-                                    <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
-                                    <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
-                                    <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
-                                    <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
-                                    <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
-                                </div>
-                                <span
-                                    class="preset-label text-[9px] font-medium text-slate-500 group-hover:text-blue-600">3x3</span>
-                            </button>
-                            <!-- 4x3 -->
-                            <button onclick="setGridSize(4, 3)" data-cols="4" data-rows="3"
-                                class="preset-btn p-1.5 border border-slate-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all flex flex-col items-center gap-1 group"
-                                title="4 Columns x 3 Rows">
-                                <div class="grid grid-cols-4 gap-0.5 w-4 h-4">
-                                    <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
-                                    <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
-                                    <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
-                                    <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
-                                    <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
-                                    <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
-                                    <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
-                                    <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
-                                    <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
-                                    <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
-                                    <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
-                                    <div class="bg-slate-300 rounded-[1px] group-hover:bg-blue-400"></div>
-                                </div>
-                                <span
-                                    class="preset-label text-[9px] font-medium text-slate-500 group-hover:text-blue-600">4x3</span>
-                            </button>
+
+                        <!-- Standard Grid Presets -->
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3">Grid
+                                Layouts</label>
+                            <div class="grid grid-cols-4 gap-2">
+                                <!-- 1x1 -->
+                                <button onclick="setStandardGrid(1, 1)"
+                                    class="preset-btn p-1.5 border border-slate-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all flex flex-col items-center gap-1 group"
+                                    title="1x1 Grid">
+                                    <div class="grid grid-cols-1 w-4 h-4">
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                    </div>
+                                    <span
+                                        class="text-[10px] font-bold text-slate-500 group-hover:text-blue-600">1x1</span>
+                                </button>
+                                <!-- 2x1 -->
+                                <button onclick="setStandardGrid(2, 1)"
+                                    class="preset-btn p-1.5 border border-slate-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all flex flex-col items-center gap-1 group"
+                                    title="2x1 Grid">
+                                    <div class="grid grid-cols-2 gap-0.5 w-4 h-4">
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                    </div>
+                                    <span
+                                        class="text-[10px] font-bold text-slate-500 group-hover:text-blue-600">2x1</span>
+                                </button>
+                                <!-- 2x2 -->
+                                <button onclick="setStandardGrid(2, 2)"
+                                    class="preset-btn p-1.5 border border-slate-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all flex flex-col items-center gap-1 group"
+                                    title="2x2 Grid">
+                                    <div class="grid grid-cols-2 gap-0.5 w-4 h-4">
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                    </div>
+                                    <span
+                                        class="text-[10px] font-bold text-slate-500 group-hover:text-blue-600">2x2</span>
+                                </button>
+                                <!-- 3x2 -->
+                                <button onclick="setStandardGrid(3, 2)"
+                                    class="preset-btn p-1.5 border border-slate-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all flex flex-col items-center gap-1 group"
+                                    title="3x2 Grid">
+                                    <div class="grid grid-cols-3 gap-0.5 w-4 h-4">
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                    </div>
+                                    <span
+                                        class="text-[10px] font-bold text-slate-500 group-hover:text-blue-600">3x2</span>
+                                </button>
+                                <!-- 3x3 -->
+                                <button onclick="setStandardGrid(3, 3)"
+                                    class="preset-btn p-1.5 border border-slate-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all flex flex-col items-center gap-1 group"
+                                    title="3x3 Grid">
+                                    <div class="grid grid-cols-3 gap-0.5 w-4 h-4">
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                    </div>
+                                    <span
+                                        class="text-[10px] font-bold text-slate-500 group-hover:text-blue-600">3x3</span>
+                                </button>
+                                <!-- 4x3 -->
+                                <button onclick="setStandardGrid(4, 3)"
+                                    class="preset-btn p-1.5 border border-slate-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all flex flex-col items-center gap-1 group"
+                                    title="4x3 Grid">
+                                    <div class="grid grid-cols-4 gap-0.5 w-4 h-4">
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                    </div>
+                                    <span
+                                        class="text-[10px] font-bold text-slate-500 group-hover:text-blue-600">4x3</span>
+                                </button>
+                                <!-- 4x4 -->
+                                <button onclick="setStandardGrid(4, 4)"
+                                    class="preset-btn p-1.5 border border-slate-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all flex flex-col items-center gap-1 group"
+                                    title="4x4 Grid">
+                                    <div class="grid grid-cols-4 gap-0.5 w-4 h-4">
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                    </div>
+                                    <span
+                                        class="text-[10px] font-bold text-slate-500 group-hover:text-blue-600">4x4</span>
+                                </button>
+                                <!-- 5x4 -->
+                                <button onclick="setStandardGrid(5, 4)"
+                                    class="preset-btn p-1.5 border border-slate-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all flex flex-col items-center gap-1 group"
+                                    title="5x4 Grid">
+                                    <div class="grid grid-cols-5 gap-0.5 w-4 h-4">
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                    </div>
+                                    <span
+                                        class="text-[10px] font-bold text-slate-500 group-hover:text-blue-600">5x4</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -2154,277 +2623,394 @@
                     </div>
                 </div>
 
-                <!-- 2. Symbol Appearance -->
+                <!-- 3. Symbol Appearance -->
                 <div class="space-y-4 pt-2 border-t border-slate-100">
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Symbol
+                    <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">3. Symbol
                         Appearance</label>
-
-                    <div class="grid grid-cols-1 gap-4">
-                        <!-- Background Color -->
-                        <div class="space-y-2">
-                            <span class="text-sm text-slate-700 block">Background Color</span>
-                            <div class="flex gap-3">
-                                <button onclick="setBackground('#f8fafc', this)"
-                                    class="color-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none selected"
-                                    style="background-color: #f8fafc;" title="White"></button>
-                                <button onclick="setBackground('#9ca3af', this)"
-                                    class="color-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none"
-                                    style="background-color: #9ca3af;" title="Grey"></button>
-                                <button onclick="setBackground('#d4c5a0', this)"
-                                    class="color-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none"
-                                    style="background-color: #d4c5a0;" title="Beige"></button>
-                                <button onclick="setBackground('#334155', this)"
-                                    class="color-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none"
-                                    style="background-color: #334155;" title="Dark Grey"></button>
-                                <button onclick="setBackground('#000000', this)"
-                                    class="color-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none"
-                                    style="background-color: #000000;" title="Black"></button>
-                            </div>
-                        </div>
-
-                        <!-- Borders -->
-                        <!-- Border Color -->
-                        <div class="space-y-2">
-                            <span class="text-sm text-slate-700 block">Border Color</span>
-                            <div class="flex justify-start gap-3">
-                                <button onclick="setBorderColor('#000000', this)"
-                                    class="border-color-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none selected"
-                                    style="background-color: #000000;" title="Black"></button>
-                                <button onclick="setBorderColor('#ffffff', this)"
-                                    class="border-color-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none"
-                                    style="background-color: #ffffff;" title="White"></button>
-                                <button onclick="setBorderColor('#1e3a8a', this)"
-                                    class="border-color-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none"
-                                    style="background-color: #1e3a8a;" title="Blue"></button>
-                                <button onclick="setBorderColor('#991b1b', this)"
-                                    class="border-color-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none"
-                                    style="background-color: #991b1b;" title="Red"></button>
-                                <button onclick="setBorderColor('transparent', this)"
-                                    class="border-color-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none flex items-center justify-center bg-slate-50"
-                                    title="Transparent">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-                                        fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <circle cx="12" cy="12" r="10"></circle>
-                                        <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+                    <!-- Background Color -->
+                    <div class="space-y-2">
+                        <span class="text-sm text-slate-700 block">Page Background</span>
+                        <div class="flex flex-wrap gap-2 items-center">
+                            <button onclick="setBackground('#f8fafc', this)"
+                                class="color-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none selected"
+                                style="background-color: #f8fafc;" title="White"></button>
+                            <button onclick="setBackground('#f1f5f9', this)"
+                                class="color-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #f1f5f9;" title="Off-White"></button>
+                            <button onclick="setBackground('#e2e8f0', this)"
+                                class="color-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #e2e8f0;" title="Light Grey"></button>
+                            <button onclick="setBackground('#64748b', this)"
+                                class="color-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #64748b;" title="Slate"></button>
+                            <button onclick="setBackground('#334155', this)"
+                                class="color-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #334155;" title="Dark Slate"></button>
+                            <button onclick="setBackground('#1e293b', this)"
+                                class="color-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #1e293b;" title="Near Black"></button>
+                            <button onclick="setBackground('#000000', this)"
+                                class="color-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #000000;" title="Black"></button>
+                            <button onclick="setBackground('#d4c5a0', this)"
+                                class="color-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #d4c5a0;" title="Beige"></button>
+                            <button onclick="setBackground('#e7e0d5', this)"
+                                class="color-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #e7e0d5;" title="Warm White"></button>
+                            <button type="button" title="Custom colour"
+                                class="relative w-7 h-7 rounded-full p-[1.5px] cursor-pointer flex-shrink-0 hover:scale-110 shadow-sm transition-transform focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+                                style="background: conic-gradient(from 90deg, #ef4444, #eab308, #22c55e, #3b82f6, #a855f7, #ef4444);"
+                                onclick="this.querySelector('input').click()">
+                                <div
+                                    class="w-full h-full bg-white rounded-full flex flex-col items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                                        stroke-linejoin="round" class="text-slate-600">
+                                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                                        <line x1="5" y1="12" x2="19" y2="12"></line>
                                     </svg>
-                                </button>
-                            </div>
-                        </div>
-                        <!-- Border Width -->
-                        <div class="space-y-2">
-                            <div class="flex justify-between mb-1">
-                                <label class="text-sm text-slate-600">Border Width</label>
-                                <span id="border-width-val" class="text-xs font-bold text-blue-600">4px</span>
-                            </div>
-                            <input type="range" id="border-width-range" min="0" max="12" step="1" value="4"
-                                class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                                </div>
+                                <input type="color" value="#f8fafc"
+                                    class="absolute inset-0 opacity-0 w-full h-full cursor-pointer" tabindex="-1"
+                                    onchange="setBackground(this.value, null)">
+                            </button>
                         </div>
                     </div>
 
-                    <!-- Text Labels Block -->
-                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-3">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <span class="text-sm font-semibold text-slate-700 block">Text Labels</span>
-                                <span class="text-xs text-slate-500">Display names under symbols</span>
-                            </div>
-                            <div class="relative inline-block w-10 align-middle select-none">
-                                <input type="checkbox" name="toggle" id="labels-toggle"
-                                    class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-300" />
-                                <label for="labels-toggle"
-                                    class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-300 cursor-pointer"></label>
-                            </div>
+                    <!-- Cell Background Color -->
+                    <div class="space-y-2">
+                        <span class="text-sm text-slate-700 block">Cell Background</span>
+                        <div class="flex flex-wrap gap-2 items-center">
+                            <button onclick="setCellBgColor('#ffffff', this)"
+                                class="cell-bg-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none selected"
+                                style="background-color: #ffffff;" title="White"></button>
+                            <button onclick="setCellBgColor('#fef08a', this)"
+                                class="cell-bg-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #fef08a;" title="Bright Yellow"></button>
+                            <button onclick="setCellBgColor('#fef3c7', this)"
+                                class="cell-bg-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #fef3c7;" title="Soft Yellow"></button>
+                            <button onclick="setCellBgColor('#dbeafe', this)"
+                                class="cell-bg-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #dbeafe;" title="Blue"></button>
+                            <button onclick="setCellBgColor('#dcfce7', this)"
+                                class="cell-bg-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #dcfce7;" title="Green"></button>
+                            <button onclick="setCellBgColor('#000000', this)"
+                                class="cell-bg-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #000000;" title="Black"></button>
+                            <button onclick="setCellBgColor('#fed7aa', this)"
+                                class="cell-bg-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #fed7aa;" title="Orange"></button>
+                            <button onclick="setCellBgColor('#fecaca', this)"
+                                class="cell-bg-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #fecaca;" title="Pink/Red"></button>
+                            <button onclick="setCellBgColor('#a5f3fc', this)"
+                                class="cell-bg-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #a5f3fc;" title="Cyan"></button>
+                            <button onclick="setCellBgColor('#e9d5ff', this)"
+                                class="cell-bg-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #e9d5ff;" title="Lavender"></button>
+                            <button onclick="setCellBgColor('#9ca3af', this)"
+                                class="cell-bg-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #9ca3af;" title="Grey"></button>
+                            <button type="button" title="Custom colour"
+                                class="relative w-7 h-7 rounded-full p-[1.5px] cursor-pointer flex-shrink-0 hover:scale-110 shadow-sm transition-transform focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+                                style="background: conic-gradient(from 90deg, #ef4444, #eab308, #22c55e, #3b82f6, #a855f7, #ef4444);"
+                                onclick="this.querySelector('input').click()">
+                                <div
+                                    class="w-full h-full bg-white rounded-full flex flex-col items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                                        stroke-linejoin="round" class="text-slate-600">
+                                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                                    </svg>
+                                </div>
+                                <input type="color" value="#ffffff"
+                                    class="absolute inset-0 opacity-0 w-full h-full cursor-pointer" tabindex="-1"
+                                    onchange="setCellBgColor(this.value, null)">
+                            </button>
                         </div>
+                    </div>
 
-                        <!-- Hidden Label Controls -->
-                        <div id="label-size-control" class="hidden pt-2 border-t border-slate-200">
-                            <div class="flex justify-between mb-1">
-                                <label class="text-xs text-slate-600">Size</label>
-                                <span id="label-size-val" class="text-xs font-bold text-blue-600">20px</span>
-                            </div>
-                            <input type="range" id="label-size-range" min="12" max="48" step="1" value="20"
-                                class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                    <!-- Border Color -->
+                    <div class="space-y-2">
+                        <span class="text-sm text-slate-700 block">Border Color</span>
+                        <div class="flex flex-wrap gap-2 items-center">
+                            <button onclick="setBorderColor('#000000', this)"
+                                class="border-color-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none selected"
+                                style="background-color: #000000;" title="Black"></button>
+                            <button onclick="setBorderColor('#ffffff', this)"
+                                class="border-color-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #ffffff;" title="White"></button>
+                            <button onclick="setBorderColor('#facc15', this)"
+                                class="border-color-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #facc15;" title="Bright Yellow"></button>
+                            <button onclick="setBorderColor('#f97316', this)"
+                                class="border-color-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #f97316;" title="Orange"></button>
+                            <button onclick="setBorderColor('#ef4444', this)"
+                                class="border-color-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #ef4444;" title="Red"></button>
+                            <button onclick="setBorderColor('#06b6d4', this)"
+                                class="border-color-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #06b6d4;" title="Cyan"></button>
+                            <button onclick="setBorderColor('#1e3a8a', this)"
+                                class="border-color-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #1e3a8a;" title="Navy Blue"></button>
+                            <button onclick="setBorderColor('#16a34a', this)"
+                                class="border-color-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #16a34a;" title="Green"></button>
+                            <button onclick="setBorderColor('#7c3aed', this)"
+                                class="border-color-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #7c3aed;" title="Purple"></button>
+                            <button onclick="setBorderColor('#9ca3af', this)"
+                                class="border-color-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #9ca3af;" title="Grey"></button>
+                            <button onclick="setBorderColor('transparent', this)"
+                                class="border-color-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none flex items-center justify-center bg-slate-50"
+                                title="Transparent">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                    fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+                                </svg>
+                            </button>
+                            <button type="button" title="Custom colour"
+                                class="relative w-7 h-7 rounded-full p-[1.5px] cursor-pointer flex-shrink-0 hover:scale-110 shadow-sm transition-transform focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+                                style="background: conic-gradient(from 90deg, #ef4444, #eab308, #22c55e, #3b82f6, #a855f7, #ef4444);"
+                                onclick="this.querySelector('input').click()">
+                                <div
+                                    class="w-full h-full bg-white rounded-full flex flex-col items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                                        stroke-linejoin="round" class="text-slate-600">
+                                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                                    </svg>
+                                </div>
+                                <input type="color" value="#000000"
+                                    class="absolute inset-0 opacity-0 w-full h-full cursor-pointer" tabindex="-1"
+                                    onchange="setBorderColor(this.value, null)">
+                            </button>
                         </div>
-
-                        <div id="label-color-control"
-                            class="hidden pt-2 border-t border-slate-200 flex items-center justify-between">
-                            <label class="text-xs text-slate-600">Color</label>
-                            <div class="flex items-center gap-2">
-                                <input id="label-color-picker" type="color" value="#000000"
-                                    class="w-8 h-8 p-0 border border-slate-300 rounded-lg cursor-pointer" />
-                                <select id="label-color-select"
-                                    class="px-2 py-1 text-xs border border-slate-300 rounded-lg bg-white h-8">
-                                    <option value="#000000" selected>Black</option>
-                                    <option value="#ffffff">White</option>
-                                    <option value="#1e3a8a">Navy</option>
-                                    <option value="#b91c1c">Red</option>
-                                    <option value="#16a34a">Green</option>
-                                </select>
-                            </div>
+                    </div>
+                    <!-- Border Width -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between mb-1">
+                            <label class="text-sm text-slate-600">Border Width</label>
+                            <span id="border-width-val" class="text-xs font-bold text-blue-600">4px</span>
                         </div>
-
-                        <div id="label-position-control"
-                            class="hidden pt-2 border-t border-slate-200 flex items-center justify-between">
-                            <label class="text-xs text-slate-600">Position</label>
-                            <select id="label-position-select"
-                                class="px-2 py-1 text-xs border border-slate-300 rounded-lg bg-white h-8">
-                                <option value="below" selected>Below</option>
-                                <option value="above">Above</option>
-                            </select>
-                        </div>
+                        <input type="range" id="border-width-range" min="0" max="12" step="1" value="4"
+                            class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
                     </div>
                 </div>
 
-                <!-- 3. Interaction & Audio -->
-                <div class="space-y-4 pt-2 border-t border-slate-100">
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Interaction &
-                        Audio</label>
-
-                    <!-- Audio Toggle -->
-                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 flex items-center justify-between">
+                <!-- Text Labels Block -->
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-3">
+                    <div class="flex items-center justify-between">
                         <div>
-                            <span class="text-sm font-semibold text-slate-700 block">Voice Output</span>
-                            <span class="text-xs text-slate-500">Read names aloud</span>
+                            <span class="text-sm font-semibold text-slate-700 block">Text Labels</span>
+                            <span class="text-xs text-slate-500">Display names under symbols</span>
                         </div>
                         <div class="relative inline-block w-10 align-middle select-none">
-                            <input type="checkbox" name="toggle" id="audio-toggle"
+                            <input type="checkbox" name="toggle" id="labels-toggle"
                                 class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-300" />
-                            <label for="audio-toggle"
+                            <label for="labels-toggle"
                                 class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-300 cursor-pointer"></label>
                         </div>
                     </div>
 
-                    <!-- Magnifier -->
-                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-3">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <span class="text-sm font-semibold text-slate-700 block">Touch Magnification</span>
-                                <span class="text-xs text-amber-600 font-medium">(Play Mode Only)</span>
-                            </div>
-                            <div class="relative inline-block w-10 align-middle select-none">
-                                <input type="checkbox" name="toggle" id="magnify-toggle"
-                                    class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-300" />
-                                <label for="magnify-toggle"
-                                    class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-300 cursor-pointer"></label>
-                            </div>
+                    <!-- Hidden Label Controls -->
+                    <div id="label-size-control" class="hidden pt-2 border-t border-slate-200">
+                        <div class="flex justify-between mb-1">
+                            <label class="text-xs text-slate-600">Size</label>
+                            <span id="label-size-val" class="text-xs font-bold text-blue-600">20px</span>
                         </div>
-                        <div id="magnify-controls" class="pt-2 border-t border-slate-200 hidden">
-                            <div class="flex justify-between mb-1">
-                                <label class="text-xs text-slate-600">Zoom Level</label>
-                                <span id="zoom-val" class="text-xs font-bold text-blue-600">1.35x</span>
-                            </div>
-                            <input type="range" id="zoom-range" min="1.2" max="2.5" step="0.05" value="1.35"
-                                class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                        <input type="range" id="label-size-range" min="12" max="48" step="1" value="20"
+                            class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                    </div>
+
+                    <div id="label-color-control"
+                        class="hidden pt-2 border-t border-slate-200 flex items-center justify-between">
+                        <label class="text-xs text-slate-600">Color</label>
+                        <div class="flex items-center gap-2">
+                            <input id="label-color-picker" type="color" value="#000000"
+                                class="w-8 h-8 p-0 border border-slate-300 rounded-lg cursor-pointer" />
+                            <select id="label-color-select"
+                                class="px-2 py-1 text-xs border border-slate-300 rounded-lg bg-white h-8">
+                                <option value="#000000" selected>Black</option>
+                                <option value="#ffffff">White</option>
+                                <option value="#1e3a8a">Navy</option>
+                                <option value="#b91c1c">Red</option>
+                                <option value="#16a34a">Green</option>
+                            </select>
                         </div>
                     </div>
 
-                    <!-- Timing Sliders -->
-                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-4">
-                        <div>
-                            <div class="flex justify-between mb-1">
-                                <div>
-                                    <span class="text-sm font-semibold text-slate-700 block">Dwell Time</span>
-                                    <span class="text-xs text-slate-500">Hold to activate</span>
-                                </div>
-                                <span id="dwell-val" class="text-xs font-bold text-blue-600">Off</span>
-                            </div>
-                            <input type="range" id="dwell-range" min="0" max="0.5" step="0.1" value="0"
-                                class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
-                        </div>
-                        <div class="pt-2 border-t border-slate-200">
-                            <div class="flex justify-between mb-1">
-                                <div>
-                                    <span class="text-sm font-semibold text-slate-700 block">Cooldown</span>
-                                    <span class="text-xs text-slate-500">Delay between taps</span>
-                                </div>
-                                <span id="cooldown-val" class="text-xs font-bold text-blue-600">Off</span>
-                            </div>
-                            <input type="range" id="cooldown-range" min="0" max="2.0" step="0.1" value="0"
-                                class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 4. Games & Practice -->
-                <div class="space-y-4 pt-2 border-t border-slate-100">
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Games &
-                        Practice</label>
-
-                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-3">
-                        <!-- Find-It Game -->
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <span class="text-sm font-semibold text-slate-700 block">Find-It</span>
-                                <span class="text-xs text-slate-500">Identify symbols</span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <button id="game-btn" onclick="toggleGame()"
-                                    class="px-4 py-1.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-xs font-bold rounded-lg shadow-sm hover:from-blue-700 hover:to-blue-800 transition-all active:scale-95">
-                                    Start
-                                </button>
-                                <button onclick="openPromptsModal()" title="Game Settings"
-                                    class="p-1.5 bg-white border border-slate-200 text-slate-600 rounded hover:bg-slate-50 hover:text-blue-600 transition-colors">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <path
-                                            d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z">
-                                        </path>
-                                        <circle cx="12" cy="12" r="3"></circle>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Pop-Up Finder -->
-                        <div class="flex items-center justify-between pt-2 border-t border-slate-200">
-                            <div>
-                                <span class="text-sm font-semibold text-slate-700 block">Pop-Up Finder</span>
-                                <span class="text-xs text-slate-500">Tap to find</span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <button id="hunt-btn" onclick="toggleHuntGame()"
-                                    class="px-4 py-1.5 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white text-xs font-bold rounded-lg shadow-sm hover:from-emerald-700 hover:to-emerald-800 transition-all active:scale-95">
-                                    Start
-                                </button>
-                                <button onclick="openHuntPicker()" title="Choose picture"
-                                    class="p-1.5 bg-white border border-slate-200 text-slate-500 rounded hover:bg-slate-50 hover:text-blue-600 transition-colors">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                                        <path d="M21 15l-5-5L5 21"></path>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Game Delay -->
-                        <div class="pt-2 border-t border-slate-200">
-                            <div class="flex justify-between mb-1">
-                                <label class="text-xs text-slate-600">Game Speed (Delay)</label>
-                                <span id="game-delay-val" class="text-xs font-bold text-blue-600">2s</span>
-                            </div>
-                            <input type="range" id="game-delay-range" min="1" max="4" step="0.5" value="2"
-                                class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
-                        </div>
+                    <div id="label-position-control"
+                        class="hidden pt-2 border-t border-slate-200 flex items-center justify-between">
+                        <label class="text-xs text-slate-600">Position</label>
+                        <select id="label-position-select"
+                            class="px-2 py-1 text-xs border border-slate-300 rounded-lg bg-white h-8">
+                            <option value="below" selected>Below</option>
+                            <option value="above">Above</option>
+                        </select>
                     </div>
                 </div>
             </div>
 
-            <div
-                class="pt-6 pb-4 text-center border-t border-slate-200/60 mt-4 bg-gradient-to-b from-transparent to-slate-50/50">
-                <h3 class="text-sm font-semibold text-slate-700">By Niall Brown</h3>
-                <p class="text-xs text-slate-500 font-medium mt-0.5">Early Childhood Vision Consultant</p>
-                <p class="text-[10px] text-slate-400 mt-2">Version 1.0</p>
+            <!-- 4. Interaction & Audio -->
+            <div class="space-y-4 pt-2 border-t border-slate-100">
+                <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">4. Interaction &
+                    Audio</label>
+
+                <!-- Audio Toggle -->
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 flex items-center justify-between">
+                    <div>
+                        <span class="text-sm font-semibold text-slate-700 block">Voice Output</span>
+                        <span class="text-xs text-slate-500">Read names aloud</span>
+                    </div>
+                    <div class="relative inline-block w-10 align-middle select-none">
+                        <input type="checkbox" name="toggle" id="audio-toggle"
+                            class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-300" />
+                        <label for="audio-toggle"
+                            class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-300 cursor-pointer"></label>
+                    </div>
+                </div>
+
+                <!-- Magnifier -->
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <span class="text-sm font-semibold text-slate-700 block">Touch Magnification</span>
+                            <span class="text-xs text-amber-600 font-medium">(Play Mode Only)</span>
+                        </div>
+                        <div class="relative inline-block w-10 align-middle select-none">
+                            <input type="checkbox" name="toggle" id="magnify-toggle"
+                                class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-300" />
+                            <label for="magnify-toggle"
+                                class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-300 cursor-pointer"></label>
+                        </div>
+                    </div>
+                    <div id="magnify-controls" class="pt-2 border-t border-slate-200 hidden">
+                        <div class="flex justify-between mb-1">
+                            <label class="text-xs text-slate-600">Zoom Level</label>
+                            <span id="zoom-val" class="text-xs font-bold text-blue-600">1.35x</span>
+                        </div>
+                        <input type="range" id="zoom-range" min="1.2" max="2.5" step="0.05" value="1.35"
+                            class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                    </div>
+                </div>
+
+                <!-- Timing Sliders -->
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-4">
+                    <div>
+                        <div class="flex justify-between mb-1">
+                            <div>
+                                <span class="text-sm font-semibold text-slate-700 block">Dwell Time</span>
+                                <span class="text-xs text-slate-500">Hold to activate</span>
+                            </div>
+                            <span id="dwell-val" class="text-xs font-bold text-blue-600">Off</span>
+                        </div>
+                        <input type="range" id="dwell-range" min="0" max="0.5" step="0.1" value="0"
+                            class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                    </div>
+                    <div class="pt-2 border-t border-slate-200">
+                        <div class="flex justify-between mb-1">
+                            <div>
+                                <span class="text-sm font-semibold text-slate-700 block">Cooldown</span>
+                                <span class="text-xs text-slate-500">Delay between taps</span>
+                            </div>
+                            <span id="cooldown-val" class="text-xs font-bold text-blue-600">Off</span>
+                        </div>
+                        <input type="range" id="cooldown-range" min="0" max="2.0" step="0.1" value="0"
+                            class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. Games & Practice -->
+            <div class="space-y-4 pt-2 border-t border-slate-100">
+                <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">5. Games &
+                    Practice</label>
+
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-3">
+                    <!-- Find-It Game -->
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <span class="text-sm font-semibold text-slate-700 block">Find-It</span>
+                            <span class="text-xs text-slate-500">Identify symbols</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button id="game-btn" onclick="toggleGame()"
+                                class="px-4 py-1.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-xs font-bold rounded-lg shadow-sm hover:from-blue-700 hover:to-blue-800 transition-all active:scale-95">
+                                Start
+                            </button>
+                            <button onclick="openPromptsModal()" title="Game Settings"
+                                class="p-1.5 bg-white border border-slate-200 text-slate-600 rounded hover:bg-slate-50 hover:text-blue-600 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path
+                                        d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z">
+                                    </path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Pop-Up Finder -->
+                    <div class="flex items-center justify-between pt-2 border-t border-slate-200">
+                        <div>
+                            <span class="text-sm font-semibold text-slate-700 block">Pop-Up Finder</span>
+                            <span class="text-xs text-slate-500">Tap to find</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button id="hunt-btn" onclick="toggleHuntGame()"
+                                class="px-4 py-1.5 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white text-xs font-bold rounded-lg shadow-sm hover:from-emerald-700 hover:to-emerald-800 transition-all active:scale-95">
+                                Start
+                            </button>
+                            <button onclick="openHuntPicker()" title="Choose picture"
+                                class="p-1.5 bg-white border border-slate-200 text-slate-500 rounded hover:bg-slate-50 hover:text-blue-600 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                    <path d="M21 15l-5-5L5 21"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Game Delay -->
+                    <div class="pt-2 border-t border-slate-200">
+                        <div class="flex justify-between mb-1">
+                            <label class="text-xs text-slate-600">Game Speed (Delay)</label>
+                            <span id="game-delay-val" class="text-xs font-bold text-blue-600">2s</span>
+                        </div>
+                        <input type="range" id="game-delay-range" min="1" max="4" step="0.5" value="2"
+                            class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                    </div>
+                </div>
+
+                <!-- Attribution -->
+                <div class="pt-6 pb-2 text-center border-t border-slate-200/60 mt-4">
+                    <h3 class="text-sm font-semibold text-slate-700">By Niall Brown</h3>
+                    <p class="text-xs text-slate-500 font-medium mt-0.5">Early Childhood Vision Consultant</p>
+                    <p class="text-[10px] text-slate-400 mt-2">Version 1.1</p>
+                </div>
             </div>
         </div>
     </aside>
 
     <!-- Main Content Area -->
-    <main id="main-content" class="h-screen w-full relative transition-colors duration-300"
+    <main id="main-content" class="h-full w-full relative transition-colors duration-300"
         style="background-color: #f8fafc;">
         <div id="grid-container" class="hidden">
             <!-- Grid items injected here -->
@@ -2960,16 +3546,26 @@
                     <div class="mb-4">
                         <p class="text-xs text-slate-500 mb-2">Popular searches:</p>
                         <div class="arasaac-popular-symbols">
-                            <button class="arasaac-popular-btn" onclick="searchArasaac('happy')">happy</button>
-                            <button class="arasaac-popular-btn" onclick="searchArasaac('sad')">sad</button>
-                            <button class="arasaac-popular-btn" onclick="searchArasaac('eat')">eat</button>
-                            <button class="arasaac-popular-btn" onclick="searchArasaac('drink')">drink</button>
-                            <button class="arasaac-popular-btn" onclick="searchArasaac('help')">help</button>
-                            <button class="arasaac-popular-btn" onclick="searchArasaac('play')">play</button>
-                            <button class="arasaac-popular-btn" onclick="searchArasaac('more')">more</button>
+                            <button class="arasaac-popular-btn" onclick="searchArasaac('go')">go</button>
                             <button class="arasaac-popular-btn" onclick="searchArasaac('stop')">stop</button>
-                            <button class="arasaac-popular-btn" onclick="searchArasaac('yes')">yes</button>
-                            <button class="arasaac-popular-btn" onclick="searchArasaac('no')">no</button>
+                            <button class="arasaac-popular-btn" onclick="searchArasaac('more')">more</button>
+                            <button class="arasaac-popular-btn" onclick="searchArasaac('finished')">finished</button>
+                            <button class="arasaac-popular-btn" onclick="searchArasaac('help')">help</button>
+                            <button class="arasaac-popular-btn" onclick="searchArasaac('want')">want</button>
+                            <button class="arasaac-popular-btn" onclick="searchArasaac('like')">like</button>
+                            <button class="arasaac-popular-btn" onclick="searchArasaac('not')">not</button>
+                            <button class="arasaac-popular-btn" onclick="searchArasaac('in')">in</button>
+                            <button class="arasaac-popular-btn" onclick="searchArasaac('on')">on</button>
+                            <button class="arasaac-popular-btn" onclick="searchArasaac('out')">out</button>
+                            <button class="arasaac-popular-btn" onclick="searchArasaac('off')">off</button>
+                            <button class="arasaac-popular-btn" onclick="searchArasaac('up')">up</button>
+                            <button class="arasaac-popular-btn" onclick="searchArasaac('down')">down</button>
+                            <button class="arasaac-popular-btn" onclick="searchArasaac('get')">get</button>
+                            <button class="arasaac-popular-btn" onclick="searchArasaac('that')">that</button>
+                            <button class="arasaac-popular-btn" onclick="searchArasaac('this')">this</button>
+                            <button class="arasaac-popular-btn" onclick="searchArasaac('I')">I</button>
+                            <button class="arasaac-popular-btn" onclick="searchArasaac('you')">you</button>
+                            <button class="arasaac-popular-btn" onclick="searchArasaac('what')">what</button>
                         </div>
                     </div>
 
@@ -3005,16 +3601,26 @@
                     <div class="mb-4">
                         <p class="text-xs text-slate-500 mb-2">Popular searches:</p>
                         <div class="mulberry-popular-symbols">
-                            <button class="mulberry-popular-btn" onclick="searchMulberry('happy')">happy</button>
-                            <button class="mulberry-popular-btn" onclick="searchMulberry('sad')">sad</button>
-                            <button class="mulberry-popular-btn" onclick="searchMulberry('food')">food</button>
-                            <button class="mulberry-popular-btn" onclick="searchMulberry('drink')">drink</button>
+                            <button class="mulberry-popular-btn" onclick="searchMulberry('go')">go</button>
+                            <button class="mulberry-popular-btn" onclick="searchMulberry('stop')">stop</button>
+                            <button class="mulberry-popular-btn" onclick="searchMulberry('more')">more</button>
+                            <button class="mulberry-popular-btn" onclick="searchMulberry('finished')">finished</button>
                             <button class="mulberry-popular-btn" onclick="searchMulberry('help')">help</button>
-                            <button class="mulberry-popular-btn" onclick="searchMulberry('work')">work</button>
-                            <button class="mulberry-popular-btn" onclick="searchMulberry('home')">home</button>
-                            <button class="mulberry-popular-btn" onclick="searchMulberry('person')">person</button>
-                            <button class="mulberry-popular-btn" onclick="searchMulberry('yes')">yes</button>
-                            <button class="mulberry-popular-btn" onclick="searchMulberry('no')">no</button>
+                            <button class="mulberry-popular-btn" onclick="searchMulberry('want')">want</button>
+                            <button class="mulberry-popular-btn" onclick="searchMulberry('like')">like</button>
+                            <button class="mulberry-popular-btn" onclick="searchMulberry('not')">not</button>
+                            <button class="mulberry-popular-btn" onclick="searchMulberry('in')">in</button>
+                            <button class="mulberry-popular-btn" onclick="searchMulberry('on')">on</button>
+                            <button class="mulberry-popular-btn" onclick="searchMulberry('out')">out</button>
+                            <button class="mulberry-popular-btn" onclick="searchMulberry('off')">off</button>
+                            <button class="mulberry-popular-btn" onclick="searchMulberry('up')">up</button>
+                            <button class="mulberry-popular-btn" onclick="searchMulberry('down')">down</button>
+                            <button class="mulberry-popular-btn" onclick="searchMulberry('get')">get</button>
+                            <button class="mulberry-popular-btn" onclick="searchMulberry('that')">that</button>
+                            <button class="mulberry-popular-btn" onclick="searchMulberry('this')">this</button>
+                            <button class="mulberry-popular-btn" onclick="searchMulberry('I')">I</button>
+                            <button class="mulberry-popular-btn" onclick="searchMulberry('you')">you</button>
+                            <button class="mulberry-popular-btn" onclick="searchMulberry('what')">what</button>
                         </div>
                     </div>
 
@@ -3057,13 +3663,15 @@
 
         <script>
             // --- State Management ---
-            let gridData = Array(4).fill(null);
+            let gridData = Array(6).fill(null);
             let config = {
                 rows: 2,
-                cols: 2,
+                cols: 3,
                 gap: 10,
                 fit: 'contain',
                 mode: 'edit',
+                squareAspect: false,
+                cellBgColor: '#ffffff',
                 magnify: false,
                 zoomLevel: 1.35,
                 audioEnabled: false,
@@ -3097,6 +3705,15 @@
             let huntRestore = null;  // {fromIndex, item} for restoring original symbol on stop
             let huntPendingChoice = null;
             // gamePhrases and reinforcementPhrases are now derived from config
+
+            // --- Touch Drag State (Edit Mode) ---
+            let touchDragItem = null;
+            let touchDragIndex = null;
+            let touchGhost = null;
+
+            // --- Magnify State (Play Mode) ---
+            let currentMagnifiedEl = null;
+            let magnifyPointerId = null;
 
             // --- Persistence (IndexedDB + localStorage) ---
             const DB_NAME = 'ACC_Sandbox_DB';
@@ -3148,26 +3765,31 @@
 
             async function loadFromLocalStorage() {
                 try {
-                    // Load config
+                    // Load config from localStorage
                     const savedConfig = localStorage.getItem(STORAGE_KEY_CONFIG);
                     if (savedConfig) {
                         const parsed = JSON.parse(savedConfig);
                         if (typeof parsed === 'object' && parsed !== null) {
                             Object.assign(config, parsed);
-
-                            // FORCE Edit Mode on startup
-                            config.mode = 'edit';
-
-                            // Sync UI controls with loaded config
-                            syncUIFromConfig();
-
-                            // Apply mode visuals & ensure drawer is open
-                            setMode('edit');
-                            toggleDrawer(true);
                         }
                     }
 
-                    // Load gridData
+                    // FORCE Edit Mode on startup (safety)
+                    config.mode = 'edit';
+
+                    // If squareAspect is enabled, ensure rows is set to 1 for UI consistency
+                    if (config.squareAspect) {
+                        config.rows = 1;
+                    }
+
+                    // Sync UI controls with loaded config
+                    syncUIFromConfig();
+
+                    // Apply mode visuals & ensure drawer is open
+                    setMode('edit');
+                    toggleDrawer(true);
+
+                    // Load gridData from IndexedDB
                     const db = await openDB();
                     const transaction = db.transaction([STORE_NAME], 'readonly');
                     const store = transaction.objectStore(STORE_NAME);
@@ -3179,8 +3801,15 @@
                             renderGrid(); // Re-render after loading data
                         }
                     };
+
+                    request.onerror = () => {
+                        console.warn('Failed to load grid data from IndexedDB');
+                    };
                 } catch (e) {
                     console.warn('Load Error:', e);
+                    // Still initialize the app even if loading fails
+                    setMode('edit');
+                    toggleDrawer(true);
                 }
             }
 
@@ -3196,37 +3825,8 @@
                 }
             }
 
-            // Helper to sync UI elements with config state
-            function syncUIFromConfig() {
-                if (colRange) colRange.value = config.cols;
-                if (rowRange) rowRange.value = config.rows;
-                if (gapRange) gapRange.value = config.gap;
-                if (fitSelect) fitSelect.value = config.fit;
-                if (magnifyToggle) magnifyToggle.checked = config.magnify;
-                if (zoomRange) zoomRange.value = config.zoomLevel;
-                if (audioToggle) audioToggle.checked = config.audioEnabled;
-                if (borderWidthRange) borderWidthRange.value = config.borderWidth;
-                if (labelSizeRange) labelSizeRange.value = config.labelSize;
-                if (gameDelayRange) gameDelayRange.value = config.gameDelay;
-                if (dwellRange) dwellRange.value = config.dwellTime;
-                if (cooldownRange) cooldownRange.value = config.cooldownTime;
 
-                // Sync label settings
-                if (labelPositionSelect) labelPositionSelect.value = config.labelPosition || 'below';
-                if (labelColorSelect) labelColorSelect.value = config.labelColor || '#000000';
-                if (labelColorPicker) labelColorPicker.value = config.labelColor || '#000000';
 
-                // Update display labels
-                if (colVal) colVal.innerText = config.cols;
-                if (rowVal) rowVal.innerText = config.rows;
-                if (gapVal) gapVal.innerText = `${config.gap}px`;
-                if (zoomVal) zoomVal.innerText = config.zoomLevel + 'x';
-                if (borderWidthVal) borderWidthVal.innerText = config.borderWidth === 0 ? 'None' : `${config.borderWidth}px`;
-                if (labelSizeVal) labelSizeVal.innerText = `${config.labelSize}px`;
-                if (dwellVal) dwellVal.innerText = config.dwellTime === 0 ? 'Off' : `${config.dwellTime}s`;
-                if (cooldownVal) cooldownVal.innerText = config.cooldownTime === 0 ? 'Off' : `${config.cooldownTime}s`;
-                if (gameDelayVal) gameDelayVal.innerText = `${config.gameDelay}s`;
-            }
 
             // --- DOM Elements ---
             const drawer = document.getElementById('drawer');
@@ -3265,6 +3865,8 @@
             const labelColorControl = document.getElementById('label-color-control');
             const labelColorSelect = document.getElementById('label-color-select');
             const labelColorPicker = document.getElementById('label-color-picker');
+            const labelPositionControl = document.getElementById('label-position-control');
+            const labelPositionSelect = document.getElementById('label-position-select');
             const dwellRange = document.getElementById('dwell-range');
             const dwellVal = document.getElementById('dwell-val');
             const cooldownRange = document.getElementById('cooldown-range');
@@ -3276,6 +3878,10 @@
             // Mode Buttons
             const btnEdit = document.getElementById('btn-mode-edit');
             const btnPlay = document.getElementById('btn-mode-play');
+
+            // Attach Mode Listeners
+            if (btnEdit) btnEdit.addEventListener('click', () => setMode('edit'));
+            if (btnPlay) btnPlay.addEventListener('click', () => setMode('play'));
             const sectionUpload = document.getElementById('section-upload');
             const sectionDimensions = document.getElementById('section-dimensions');
 
@@ -3398,28 +4004,138 @@
 
 
             function syncConfig() {
-                config.cols = parseInt(colRange.value);
-                config.rows = parseInt(rowRange.value);
-                config.gap = parseInt(gapRange.value);
-                config.fit = fitSelect.value;
-                config.magnify = magnifyToggle.checked;
-                config.zoomLevel = parseFloat(zoomRange.value);
-                config.audioEnabled = audioToggle.checked;
-                config.borderWidth = parseInt(borderWidthRange.value);
-                config.labelSize = parseInt(labelSizeRange.value);
-                config.gameDelay = parseFloat(gameDelayRange.value);
-                // Label settings are usually event-driven but sync here for completeness
+                // Determine dimensions based on aspect mode
+                if (colRange && rowRange) {
+                    if (!config.squareAspect) {
+                        config.cols = parseInt(colRange.value);
+                        config.rows = parseInt(rowRange.value);
+                    } else {
+                        config.cols = parseInt(colRange.value);
+                        // config.rows remains 1 (or whatever logic handles square mode)
+                    }
+                }
+
+                if (gapRange) config.gap = parseInt(gapRange.value);
+                if (fitSelect) config.fit = fitSelect.value;
+                if (magnifyToggle) config.magnify = magnifyToggle.checked;
+                if (zoomRange) config.zoomLevel = parseFloat(zoomRange.value);
+                if (audioToggle) config.audioEnabled = audioToggle.checked;
+                if (borderWidthRange) config.borderWidth = parseInt(borderWidthRange.value);
+                if (labelSizeRange) config.labelSize = parseInt(labelSizeRange.value);
+                if (gameDelayRange) config.gameDelay = parseFloat(gameDelayRange.value);
+
                 if (labelPositionSelect) config.labelPosition = labelPositionSelect.value;
+                if (labelColorPicker) config.labelColor = labelColorPicker.value;
+                if (labelsToggle) config.showLabels = labelsToggle.checked;
 
-                colVal.innerText = config.cols;
-                rowVal.innerText = config.rows;
-                gapVal.innerText = `${config.gap}px`;
-                zoomVal.innerText = config.zoomLevel + 'x';
-                borderWidthVal.innerText = config.borderWidth === 0 ? 'None' : `${config.borderWidth}px`;
-                labelSizeVal.innerText = `${config.labelSize}px`;
+                if (colVal) colVal.innerText = config.cols;
+                if (rowVal) rowVal.innerText = config.rows;
+                if (gapVal) gapVal.innerText = `${config.gap}px`;
+                if (zoomVal) zoomVal.innerText = config.zoomLevel + 'x';
+                if (borderWidthVal) borderWidthVal.innerText = config.borderWidth === 0 ? 'None' : `${config.borderWidth}px`;
+                if (labelSizeVal) labelSizeVal.innerText = `${config.labelSize}px`;
 
-                updatePresetHighlight();
-                saveToLocalStorage(); // Persist changes
+                renderGrid();
+                // updatePresetHighlight(); // Removed to prevent crash
+                saveToLocalStorage();
+            }
+
+            // Stub for missing function
+            function updatePresetHighlight() {
+                // Placeholder to prevent crashes
+            }
+
+            function syncUIFromConfig() {
+                try {
+                    // Safety check: ensure core elements exist
+                    if (!colRange || !rowRange) return;
+
+                    // Sync slider/input values from config
+                    colRange.value = config.cols;
+                    rowRange.value = config.rows;
+                    if (gapRange) gapRange.value = config.gap;
+                    if (fitSelect) fitSelect.value = config.fit;
+                    if (magnifyToggle) magnifyToggle.checked = config.magnify;
+                    if (zoomRange) zoomRange.value = config.zoomLevel;
+                    if (audioToggle) audioToggle.checked = config.audioEnabled;
+                    if (borderWidthRange) borderWidthRange.value = config.borderWidth;
+                    if (labelSizeRange) labelSizeRange.value = config.labelSize;
+                    if (gameDelayRange) gameDelayRange.value = config.gameDelay;
+                    if (labelPositionSelect) labelPositionSelect.value = config.labelPosition;
+                    if (labelsToggle) labelsToggle.checked = config.showLabels;
+
+                    // Sync dwell/cooldown sliders
+                    if (dwellRange) dwellRange.value = config.dwellTime;
+                    if (cooldownRange) cooldownRange.value = config.cooldownTime;
+                    if (labelColorSelect) labelColorSelect.value = config.labelColor;
+                    if (labelColorPicker) labelColorPicker.value = config.labelColor;
+
+                    // Sync display values
+                    if (colVal) colVal.innerText = config.cols;
+                    if (rowVal) rowVal.innerText = config.rows;
+                    if (gapVal) gapVal.innerText = `${config.gap}px`;
+                    if (zoomVal) zoomVal.innerText = config.zoomLevel + 'x';
+                    if (borderWidthVal) borderWidthVal.innerText = config.borderWidth === 0 ? 'None' : `${config.borderWidth}px`;
+                    if (labelSizeVal) labelSizeVal.innerText = `${config.labelSize}px`;
+                    if (dwellVal) dwellVal.innerText = config.dwellTime === 0 ? 'Off' : `${config.dwellTime}s`;
+                    if (cooldownVal) cooldownVal.innerText = config.cooldownTime === 0 ? 'Off' : `${config.cooldownTime}s`;
+                    if (gameDelayVal) gameDelayVal.innerText = `${config.gameDelay}s`;
+
+                    // Toggle visibility of label controls based on showLabels state
+                    if (config.showLabels) {
+                        if (labelSizeControl) labelSizeControl.classList.remove('hidden');
+                        if (labelColorControl) labelColorControl.classList.remove('hidden');
+                        if (labelPositionControl) labelPositionControl.classList.remove('hidden');
+                    } else {
+                        if (labelSizeControl) labelSizeControl.classList.add('hidden');
+                        if (labelColorControl) labelColorControl.classList.add('hidden');
+                        if (labelPositionControl) labelPositionControl.classList.add('hidden');
+                    }
+
+                    // Toggle magnify controls visibility
+                    if (config.magnify && magnifyControls) {
+                        magnifyControls.classList.remove('hidden');
+                    } else if (magnifyControls) {
+                        magnifyControls.classList.add('hidden');
+                    }
+                } catch (e) {
+                    console.error('syncUIFromConfig failed:', e);
+                }
+            }
+
+            function updatePresetHighlight() {
+                document.querySelectorAll('.preset-btn').forEach(btn => {
+                    // Reset style
+                    btn.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50', 'border-blue-500');
+                    btn.classList.add('border-slate-200');
+
+                    const onClick = btn.getAttribute('onclick');
+                    if (!onClick) return;
+
+                    let match = false;
+                    if (config.squareAspect) {
+                        // Check for setSquareGrid(X)
+                        // Note: config.rows is 1 in square aspect, but the button arg is just cols
+                        if (onClick.includes(`setSquareGrid(${config.cols})`)) {
+                            match = true;
+                        }
+                    } else {
+                        // Check for standard grid matches
+                        if (onClick.includes(`setStandardGrid(${config.cols}, ${config.rows})`)) {
+                            match = true;
+                        }
+                    }
+
+                    // Simple fallback/redundancy check for square mode single digits
+                    if (config.squareAspect && !match) {
+                        // Sometimes onclick might be "setSquareGrid(1)" and config.cols is 1.
+                    }
+
+                    if (match) {
+                        btn.classList.remove('border-slate-200');
+                        btn.classList.add('ring-2', 'ring-blue-500', 'bg-blue-50', 'border-blue-500');
+                    }
+                });
             }
 
             // --- Safe Unlock Logic ---
@@ -3427,7 +4143,13 @@
             const unlockDuration = 1500;
 
             function startUnlock(e) {
-                if (config.mode !== 'play') return;
+                // In edit mode: open drawer immediately on press (touch or mouse)
+                if (config.mode === 'edit') {
+                    if (e.type === 'touchstart') e.preventDefault();
+                    toggleDrawer(true);
+                    return;
+                }
+                // In play mode: hold-to-unlock behaviour
                 if (e.type === 'touchstart') e.preventDefault();
                 openBtn.classList.add('unlocking');
                 unlockTimer = setTimeout(() => {
@@ -3446,15 +4168,14 @@
             }
 
             openBtn.addEventListener('mousedown', startUnlock);
-            openBtn.addEventListener('touchstart', startUnlock);
+            openBtn.addEventListener('touchstart', startUnlock, { passive: false });
             openBtn.addEventListener('mouseup', endUnlock);
             openBtn.addEventListener('mouseleave', endUnlock);
             openBtn.addEventListener('touchend', endUnlock);
 
+            // Click is a fallback for mouse users (touchstart already handles touch)
             openBtn.addEventListener('click', (e) => {
-                if (config.mode === 'edit') {
-                    toggleDrawer(true);
-                } else {
+                if (config.mode !== 'edit') {
                     e.preventDefault();
                 }
             });
@@ -3480,39 +4201,53 @@
 
             // --- Mode Logic ---
             window.setMode = function (mode) {
-                clearAllGhosts();
-                syncConfig();
+                if (typeof clearAllGhosts === 'function') {
+                    clearAllGhosts();
+                }
+
+                // NOTE: Do NOT call syncConfig() here. It would overwrite the loaded config
+                // with stale UI values. syncConfig is for when UI inputs are explicitly changed.
 
                 config.mode = mode;
                 const isEdit = mode === 'edit';
 
-                if (isEdit) {
-                    btnEdit.classList.add('bg-white', 'text-blue-600', 'shadow-sm');
-                    btnEdit.classList.remove('text-slate-500', 'hover:text-slate-700');
-                    btnPlay.classList.remove('bg-white', 'text-blue-600', 'shadow-sm');
-                    btnPlay.classList.add('text-slate-500', 'hover:text-slate-700');
-
-                    sectionUpload.style.opacity = '1';
-                    sectionUpload.style.pointerEvents = 'auto';
-                    sectionDimensions.style.opacity = '1';
-                    sectionDimensions.style.pointerEvents = 'auto';
-
-                    mainContent.classList.remove('play-mode');
-                } else {
-                    btnPlay.classList.add('bg-white', 'text-blue-600', 'shadow-sm');
-                    btnPlay.classList.remove('text-slate-500', 'hover:text-slate-700');
-                    btnEdit.classList.remove('bg-white', 'text-blue-600', 'shadow-sm');
-                    btnEdit.classList.add('text-slate-500', 'hover:text-slate-700');
-
-                    sectionUpload.style.opacity = '0.4';
-                    sectionUpload.style.pointerEvents = 'none';
-                    sectionDimensions.style.opacity = '0.4';
-                    sectionDimensions.style.pointerEvents = 'none';
-
-                    mainContent.classList.add('play-mode');
-                    toggleDrawer(false);
+                // Update button styles (with null checks)
+                if (btnEdit && btnPlay) {
+                    if (isEdit) {
+                        btnEdit.classList.add('bg-white', 'text-blue-600', 'shadow-sm');
+                        btnEdit.classList.remove('text-slate-500', 'hover:text-slate-700');
+                        btnPlay.classList.remove('bg-white', 'text-blue-600', 'shadow-sm');
+                        btnPlay.classList.add('text-slate-500', 'hover:text-slate-700');
+                    } else {
+                        btnPlay.classList.add('bg-white', 'text-blue-600', 'shadow-sm');
+                        btnPlay.classList.remove('text-slate-500', 'hover:text-slate-700');
+                        btnEdit.classList.remove('bg-white', 'text-blue-600', 'shadow-sm');
+                        btnEdit.classList.add('text-slate-500', 'hover:text-slate-700');
+                    }
                 }
+
+                // Update section visibility (with null checks)
+                if (sectionUpload) {
+                    sectionUpload.style.opacity = isEdit ? '1' : '0.4';
+                    sectionUpload.style.pointerEvents = isEdit ? 'auto' : 'none';
+                }
+                if (sectionDimensions) {
+                    sectionDimensions.style.opacity = isEdit ? '1' : '0.4';
+                    sectionDimensions.style.pointerEvents = isEdit ? 'auto' : 'none';
+                }
+
+                // Update main content class
+                if (mainContent) {
+                    if (isEdit) {
+                        mainContent.classList.remove('play-mode');
+                    } else {
+                        mainContent.classList.add('play-mode');
+                        toggleDrawer(false);
+                    }
+                }
+
                 renderGrid();
+                saveToLocalStorage();
             };
 
             window.setBackground = function (color, btnElement) {
@@ -3550,15 +4285,33 @@
                 renderGrid();
             };
 
+            window.setCellBgColor = function (color, btnElement) {
+                config.cellBgColor = color;
+
+                document.querySelectorAll('.cell-bg-btn').forEach(btn => {
+                    btn.classList.remove('selected', 'ring-2', 'ring-blue-500', 'scale-110');
+                    btn.style.transform = 'scale(1)';
+                });
+                if (btnElement) {
+                    btnElement.classList.add('selected', 'ring-2', 'ring-blue-500');
+                    btnElement.style.transform = 'scale(1.1)';
+                }
+
+                renderGrid();
+                saveToLocalStorage();
+            };
+
             function toggleDrawer(isOpen) {
+                if (!drawer) return;
+
                 if (isOpen) {
                     drawer.classList.remove('drawer-closed');
                     drawer.classList.add('drawer-open');
-                    openBtn.classList.add('hidden');
+                    if (openBtn) openBtn.classList.add('hidden');
                 } else {
                     drawer.classList.remove('drawer-open');
                     drawer.classList.add('drawer-closed');
-                    openBtn.classList.remove('hidden');
+                    if (openBtn) openBtn.classList.remove('hidden');
                 }
             }
 
@@ -3591,20 +4344,10 @@
                 renderGrid();
             });
 
-            // Image Fit Select Listener
-            const fitSelectEl = document.getElementById('fit-select');
-            if (fitSelectEl) {
-                fitSelectEl.addEventListener('change', () => {
-                    config.fit = fitSelectEl.value;
-                    renderGrid();
-                });
-                // Initialize value
-                fitSelectEl.value = config.fit || 'contain';
-            }
+
 
             // Labels toggle listener
-            const labelPositionControl = document.getElementById('label-position-control');
-            const labelPositionSelect = document.getElementById('label-position-select');
+
 
             labelsToggle.addEventListener('change', () => {
                 config.showLabels = labelsToggle.checked;
@@ -3693,8 +4436,7 @@
 
             // --- Magnify Interaction (Pointer Events - immediate on first press) ---
             // Pointer events unify mouse/touch/stylus and ensure the VERY FIRST press magnifies (no movement required).
-            let currentMagnifiedEl = null;
-            let magnifyPointerId = null;
+            // Note: currentMagnifiedEl and magnifyPointerId are declared in State Management section
 
             function updateMagnifyAtPoint(clientX, clientY) {
                 const target = document.elementFromPoint(clientX, clientY);
@@ -3857,9 +4599,7 @@
             }
 
             // --- Mobile Touch Drag Logic (Edit Mode) ---
-            let touchDragItem = null;
-            let touchDragIndex = null;
-            let touchGhost = null;
+            // Note: touchDragItem, touchDragIndex, and touchGhost are declared in State Management section
 
             function handleEditTouchStart(e) {
                 if (config.mode !== 'edit') return;
@@ -3966,22 +4706,40 @@
             }
 
             // --- Audio Chime Generator ---
+            // Reuse a single AudioContext to prevent memory leaks and browser limits
+            let sharedAudioContext = null;
+
+            function getAudioContext() {
+                if (!sharedAudioContext || sharedAudioContext.state === 'closed') {
+                    sharedAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                // Resume if suspended (required after user interaction on some browsers)
+                if (sharedAudioContext.state === 'suspended') {
+                    sharedAudioContext.resume();
+                }
+                return sharedAudioContext;
+            }
+
             function playChime() {
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const oscillator = audioContext.createOscillator();
-                const gainNode = audioContext.createGain();
+                try {
+                    const audioContext = getAudioContext();
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
 
-                oscillator.connect(gainNode);
-                gainNode.connect(audioContext.destination);
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
 
-                oscillator.frequency.value = 800; // Pleasant chime frequency
-                oscillator.type = 'sine';
+                    oscillator.frequency.value = 800; // Pleasant chime frequency
+                    oscillator.type = 'sine';
 
-                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
 
-                oscillator.start(audioContext.currentTime);
-                oscillator.stop(audioContext.currentTime + 0.5);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.5);
+                } catch (e) {
+                    // Silently fail if audio isn't available
+                }
             }
             // Simple confirmation beep (used by Pop-Up Finder when voice is OFF)
             // Uses the same WebAudio path as playChime, but shorter.
@@ -5427,21 +6185,24 @@
             };
 
             function renderGrid() {
+                // Safety check: ensure grid container exists
+                if (!gridContainer) return;
+
                 const hasImages = gridData.some(item => item !== null);
 
                 gridContainer.classList.remove('hidden');
 
-                // Update counts
+                // Update counts (with null checks)
                 const count = gridData.filter(i => i !== null).length;
-                fileCountSpan.innerText = `${count} symbols`;
+                if (fileCountSpan) fileCountSpan.innerText = `${count} symbols`;
 
-                // Toggle visibility of status and clear button
+                // Toggle visibility of status and clear button (with null checks)
                 if (hasImages && config.mode === 'edit') {
-                    fileStatus.classList.remove('hidden');
-                    clearAllBtn.classList.remove('hidden');
+                    if (fileStatus) fileStatus.classList.remove('hidden');
+                    if (clearAllBtn) clearAllBtn.classList.remove('hidden');
                 } else {
-                    fileStatus.classList.add('hidden');
-                    clearAllBtn.classList.add('hidden');
+                    if (fileStatus) fileStatus.classList.add('hidden');
+                    if (clearAllBtn) clearAllBtn.classList.add('hidden');
                 }
 
                 // Check for hidden icons
@@ -5449,17 +6210,34 @@
                 const hiddenIcons = gridData.slice(visibleCount).some(item => item !== null);
                 const warningEl = document.getElementById('hidden-icons-warning');
 
-                if (hiddenIcons && !warningDismissed) {
-                    warningEl.classList.remove('hidden');
-                } else {
-                    warningEl.classList.add('hidden');
+                if (warningEl) {
+                    if (hiddenIcons && !warningDismissed) {
+                        warningEl.classList.remove('hidden');
+                    } else {
+                        warningEl.classList.add('hidden');
+                    }
                 }
 
 
 
                 gridContainer.innerHTML = '';
-                gridContainer.style.gridTemplateColumns = `repeat(${config.cols}, minmax(0, 1fr))`;
-                gridContainer.style.gridTemplateRows = `repeat(${config.rows}, minmax(0, 1fr))`;
+
+                if (config.squareAspect) {
+                    gridContainer.classList.add('square-mode');
+                    gridContainer.style.gridTemplateColumns = `repeat(${config.cols}, minmax(0, 1fr))`;
+                    gridContainer.style.gridTemplateRows = '1fr';
+                    // Constrain width so height (which equals width/cols) doesn't exceed a comfortable portion of the screen
+                    // Using 75vh instead of 100vh makes them smaller and more "centered" looking
+                    const paddingTotal = config.gap * 2;
+                    gridContainer.style.maxWidth = `min(90%, calc(${config.cols} * (75vh - ${paddingTotal}px)))`;
+                    gridContainer.style.margin = '0 auto';
+                } else {
+                    gridContainer.classList.remove('square-mode');
+                    gridContainer.style.gridTemplateColumns = `repeat(${config.cols}, minmax(0, 1fr))`;
+                    gridContainer.style.gridTemplateRows = `repeat(${config.rows}, minmax(0, 1fr))`;
+                    gridContainer.style.maxWidth = '';
+                    gridContainer.style.margin = '';
+                }
                 gridContainer.style.gap = `${config.gap}px`;
                 gridContainer.style.padding = `${config.gap}px`;
 
@@ -5501,9 +6279,11 @@
                         }
                     }
 
-                    // Custom background color per symbol
+                    // Background color priority: Custom Item Color > Global Cell Color > Default (White)
                     if (item && item.customBgColor) {
                         cell.style.backgroundColor = item.customBgColor;
+                    } else if (item) {
+                        cell.style.backgroundColor = config.cellBgColor || '#ffffff';
                     }
                     if (item) {
                         cell.classList.add('occupied');
@@ -5736,21 +6516,21 @@
                             // Empty cell with three buttons: Add Image, Add Text, Add Shape
                             cell.innerHTML = `
                                 <div class="flex items-center justify-center gap-3 h-full w-full p-2">
-                                    <button class="add-image-btn group flex flex-col items-center justify-center p-3 rounded-xl bg-white/80 hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-all shadow-sm hover:shadow-md border border-slate-200/60 hover:border-blue-300 active:scale-95" title="Add Image">
+                                    <button class="add-image-btn group flex flex-col items-center justify-center p-3 rounded-xl bg-white/60 backdrop-blur-md hover:bg-white/90 text-slate-400 hover:text-blue-600 transition-all duration-300 shadow-sm hover:shadow-md border border-white/50 hover:border-blue-400/50 hover:-translate-y-1 hover:scale-105 active:scale-95" title="Add Image">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 transition-transform group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                                             <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
                                             <circle cx="9" cy="9" r="2" />
                                             <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
                                         </svg>
                                     </button>
-                                    <button class="add-text-btn group flex flex-col items-center justify-center p-3 rounded-xl bg-white/80 hover:bg-violet-50 text-slate-400 hover:text-violet-600 transition-all shadow-sm hover:shadow-md border border-slate-200/60 hover:border-violet-300 active:scale-95" title="Add Text Label">
+                                    <button class="add-text-btn group flex flex-col items-center justify-center p-3 rounded-xl bg-white/60 backdrop-blur-md hover:bg-white/90 text-slate-400 hover:text-violet-600 transition-all duration-300 shadow-sm hover:shadow-md border border-white/50 hover:border-violet-400/50 hover:-translate-y-1 hover:scale-105 active:scale-95" title="Add Text Label">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 transition-transform group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                                             <path d="M4 7V4h16v3"/>
                                             <path d="M9 20h6"/>
                                             <path d="M12 4v16"/>
                                         </svg>
                                     </button>
-                                    <button class="add-shape-btn group flex flex-col items-center justify-center p-3 rounded-xl bg-white/80 hover:bg-amber-50 text-slate-400 hover:text-amber-600 transition-all shadow-sm hover:shadow-md border border-slate-200/60 hover:border-amber-300 active:scale-95" title="Add Shape/Emoji">
+                                    <button class="add-shape-btn group flex flex-col items-center justify-center p-3 rounded-xl bg-white/60 backdrop-blur-md hover:bg-white/90 text-slate-400 hover:text-amber-600 transition-all duration-300 shadow-sm hover:shadow-md border border-white/50 hover:border-amber-400/50 hover:-translate-y-1 hover:scale-105 active:scale-95" title="Add Shape/Emoji">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 transition-transform group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                                             <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
                                         </svg>
@@ -5820,19 +6600,42 @@
                 }
             }
 
-            function updateSettings() {
+            function updateSettings(e) {
+                // Defensive check for fitSelect
+                if (fitSelect && e && e.target === fitSelect) {
+                    config.fit = fitSelect.value;
+                    saveToLocalStorage();
+                    renderGrid();
+                    return;
+                }
+
+
                 const newCols = parseInt(colRange.value);
                 const newRows = parseInt(rowRange.value);
-                if (newCols !== config.cols || newRows !== config.rows) {
-                    resizeGrid(newRows, newCols);
+
+                // Detection: Did the user manually change rows?
+                // If they interact with the rows slider while in square mode, exit square mode.
+                // This ensures users can always regain control of the row count.
+                if (config.squareAspect && e && e.target === rowRange) {
+                    config.squareAspect = false;
                 }
-                config.gap = parseInt(gapRange.value);
-                config.fit = fitSelect.value;
-                colVal.innerText = config.cols;
-                rowVal.innerText = config.rows;
-                gapVal.innerText = `${config.gap}px`;
+
+                if (newCols !== config.cols || newRows !== config.rows) {
+                    // Update internal state
+                    if (config.squareAspect) {
+                        // In square mode, we enforce rows=1 regardless of slider,
+                        // unless we just turned it off above.
+                        resizeGrid(1, newCols);
+                    } else {
+                        resizeGrid(newRows, newCols);
+                    }
+                }
+
+                if (gapRange) config.gap = parseInt(gapRange.value);
+                if (fitSelect) config.fit = fitSelect.value;
+
+                syncUIFromConfig(); // Ensure labels and other UI match
                 renderGrid();
-                updatePresetHighlight();
             }
 
             colRange.addEventListener('input', updateSettings);
@@ -6265,8 +7068,8 @@
             const bulkPopularContainer = document.getElementById('bulk-popular-tags');
 
             const bulkPopularTags = {
-                'arasaac': ['happy', 'sad', 'eat', 'drink', 'help', 'play', 'more', 'stop', 'yes', 'no'],
-                'mulberry': ['happy', 'sad', 'food', 'drink', 'help', 'work', 'home', 'person', 'yes', 'no']
+                'arasaac': ['go', 'stop', 'more', 'finished', 'help', 'want', 'like', 'not', 'in', 'on', 'out', 'off', 'up', 'down', 'get', 'that', 'this', 'I', 'you', 'what'],
+                'mulberry': ['go', 'stop', 'more', 'finished', 'help', 'want', 'like', 'not', 'in', 'on', 'out', 'off', 'up', 'down', 'get', 'that', 'this', 'I', 'you', 'what']
             };
 
             window.openBulkSymbolModal = function () {
@@ -6325,6 +7128,7 @@
                 tags.forEach(tag => {
                     const btn = document.createElement('button');
                     btn.className = "px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs rounded-full transition-colors";
+                    btn.style.cssText = "white-space: nowrap; flex-shrink: 0;";
                     btn.innerText = tag;
                     btn.onclick = () => {
                         bulkSearchInput.value = tag;
@@ -6569,6 +7373,40 @@
 
                 closeBulkSymbolModal();
             };
+
+            window.setSquareGrid = function (cols) {
+                try {
+                    config.cols = cols;
+                    config.rows = 1;
+                    config.squareAspect = true;
+                    syncUIFromConfig();
+                    renderGrid();
+                    saveToLocalStorage();
+                } catch (e) {
+                    console.error('setSquareGrid failed:', e);
+                    // Ensure grid renders even if sync fails
+                    renderGrid();
+                }
+            };
+
+            window.setStandardGrid = function (cols, rows) {
+                try {
+                    config.cols = cols;
+                    config.rows = rows;
+                    config.squareAspect = false;
+                    syncUIFromConfig();
+                    renderGrid();
+                    saveToLocalStorage();
+                } catch (e) {
+                    console.error('setStandardGrid failed:', e);
+                    renderGrid();
+                }
+            };
+
+            // Initialize App
+            window.addEventListener('DOMContentLoaded', () => {
+                loadFromLocalStorage().catch(e => console.error("Init failed:", e));
+            });
         </script>
 </body>
 
