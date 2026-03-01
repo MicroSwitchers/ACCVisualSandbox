@@ -4510,58 +4510,77 @@
 
             function handleMagnifyPointerDown(e) {
                 if (config.mode !== 'play' || !config.magnify) return;
-
-                // Only left mouse button; touch/stylus are OK
+                // Touch is handled by the dedicated touch event path below (more reliable on iOS)
+                if (e.pointerType === 'touch') return;
+                // Only left mouse button
                 if (e.pointerType === 'mouse' && e.button !== 0) return;
 
-                // Prevent scroll/selection while magnifying
                 if (e.cancelable) e.preventDefault();
-
                 magnifyPointerId = e.pointerId;
-
-                // Capture on the grid container so moves/up still fire while holding
                 try { gridContainer.setPointerCapture(magnifyPointerId); } catch (_) { }
-
-                // IMPORTANT: magnify immediately on first press
                 updateMagnifyAtPoint(e.clientX, e.clientY);
             }
 
             function handleMagnifyPointerMove(e) {
                 if (config.mode !== 'play' || !config.magnify) return;
+                if (e.pointerType === 'touch') return;
                 if (magnifyPointerId === null || e.pointerId !== magnifyPointerId) return;
-
-                // For mouse, only magnify while button is held
                 if (e.pointerType === 'mouse' && (e.buttons & 1) === 0) return;
-
                 if (e.cancelable) e.preventDefault();
                 updateMagnifyAtPoint(e.clientX, e.clientY);
             }
 
             function handleMagnifyPointerUp(e) {
+                if (e.pointerType === 'touch') return;
                 if (magnifyPointerId === null || e.pointerId !== magnifyPointerId) return;
-
                 try { gridContainer.releasePointerCapture(magnifyPointerId); } catch (_) { }
                 magnifyPointerId = null;
-
-                // Trigger the same release behavior (speech / game check)
                 handleMagnifyEnd({ type: 'pointerup' });
             }
 
             function handleMagnifyPointerCancel(e) {
+                if (e.pointerType === 'touch') return;
                 if (magnifyPointerId === null || e.pointerId !== magnifyPointerId) return;
-
                 try { gridContainer.releasePointerCapture(magnifyPointerId); } catch (_) { }
                 magnifyPointerId = null;
-
-                // Cleanup only; no speech/check on cancel
                 handleMagnifyEnd({ type: 'pointercancel' });
             }
 
-            // Attach to the grid only so drawer hold-to-unlock still works.
+            // --- Touch-specific magnify handlers (iOS Safari reliable path) ---
+            function handleMagnifyTouchStart(e) {
+                if (config.mode !== 'play' || !config.magnify) return;
+                // Suppress iOS long-press menu and scroll while magnifying
+                e.preventDefault();
+                const touch = e.touches[0];
+                updateMagnifyAtPoint(touch.clientX, touch.clientY);
+            }
+
+            function handleMagnifyTouchMove(e) {
+                if (config.mode !== 'play' || !config.magnify) return;
+                e.preventDefault();
+                const touch = e.touches[0];
+                updateMagnifyAtPoint(touch.clientX, touch.clientY);
+            }
+
+            function handleMagnifyTouchEnd(e) {
+                if (config.mode !== 'play' || !config.magnify) return;
+                handleMagnifyEnd({ type: 'touchend' });
+            }
+
+            function handleMagnifyTouchCancel(e) {
+                if (config.mode !== 'play' || !config.magnify) return;
+                handleMagnifyEnd({ type: 'touchcancel' });
+            }
+
+            // Pointer events handle mouse + stylus; touch events handle iOS/Android fingers.
             gridContainer.addEventListener('pointerdown', handleMagnifyPointerDown, { passive: false });
             gridContainer.addEventListener('pointermove', handleMagnifyPointerMove, { passive: false });
             gridContainer.addEventListener('pointerup', handleMagnifyPointerUp);
             gridContainer.addEventListener('pointercancel', handleMagnifyPointerCancel);
+            gridContainer.addEventListener('touchstart', handleMagnifyTouchStart, { passive: false });
+            gridContainer.addEventListener('touchmove', handleMagnifyTouchMove, { passive: false });
+            gridContainer.addEventListener('touchend', handleMagnifyTouchEnd);
+            gridContainer.addEventListener('touchcancel', handleMagnifyTouchCancel);
 
             // --- Drag and Drop Logic (Edit Mode) ---
             let dragSrcIndex = null;
@@ -5286,11 +5305,10 @@
                 if (e.target.closest('.label-btn')) return;
                 if (e.target.closest('.color-pick-btn')) return;
 
-                // If using Magnify in Play Mode, speech is handled on release (handleMagnifyEnd)
-                if (config.mode === 'play' && config.magnify) {
-                    if (e.type === 'touchstart') e.preventDefault();
-                    return;
-                }
+                // If using Magnify in Play Mode, speech is handled on release (handleMagnifyEnd).
+                // Do NOT call e.preventDefault() here - on iOS Safari, preventing touchstart
+                // cancels the corresponding pointerdown, breaking the magnify pointer handlers.
+                if (config.mode === 'play' && config.magnify) return;
 
                 // Games (Pop-Up Finder & Find-It): always activate immediately on press (ignore dwell)
                 if ((huntActive || gameActive) && config.mode === 'play' && !config.magnify) {
@@ -7091,18 +7109,30 @@
 
             window.openBulkSymbolModal = function () {
                 bulkModal.classList.remove('hidden');
-                // Reset to default state if needed, or keep previous state?
-                // For now, let's keep the collection but maybe reset search
-                if (!bulkSearchInput.value && currentBulkTab === 'arasaac') {
-                    // Pre-load popular or clear
+                // Trigger slide-up animation on mobile (remove translate-y-full)
+                const panel = bulkModal.querySelector('[class*="translate-y-full"]');
+                if (panel) {
+                    // Allow hidden → visible paint before removing translate, so CSS transition fires
+                    requestAnimationFrame(() => { panel.classList.remove('translate-y-full'); });
                 }
                 updateBulkPopularTags();
                 renderBulkCollection();
-                bulkSearchInput.focus();
+                // Avoid focusing on iOS (triggers unwanted keyboard)
+                if (!/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+                    bulkSearchInput.focus();
+                }
             };
 
             window.closeBulkSymbolModal = function () {
-                bulkModal.classList.add('hidden');
+                const panel = bulkModal.querySelector('.translate-y-0, [class*="h-["]');
+                // Slide back down before hiding
+                const slidePanel = bulkModal.querySelector('[class*="h-[90vh"]');
+                if (slidePanel && !slidePanel.classList.contains('translate-y-full')) {
+                    slidePanel.classList.add('translate-y-full');
+                    setTimeout(() => { bulkModal.classList.add('hidden'); }, 320);
+                } else {
+                    bulkModal.classList.add('hidden');
+                }
             };
 
             window.switchBulkSymbolTab = function (tabName) {
