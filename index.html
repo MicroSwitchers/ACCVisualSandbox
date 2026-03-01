@@ -4248,6 +4248,8 @@
 
                 renderGrid();
                 saveToLocalStorage();
+                // Sync touch-action so magnify works immediately on tablet in play mode
+                if (typeof syncGridTouchAction === 'function') syncGridTouchAction();
             };
 
             window.setBackground = function (color, btnElement) {
@@ -4331,6 +4333,15 @@
                 } else {
                     magnifyControls.classList.add('hidden');
                 }
+                syncGridTouchAction();
+            }
+
+            // Set touch-action: none when magnify is active in play mode so tablets
+            // don't delay pointerdown (browser scroll handling causes the lag).
+            function syncGridTouchAction() {
+                if (!gridContainer) return;
+                const needsNone = config.magnify && config.mode === 'play';
+                gridContainer.style.touchAction = needsNone ? 'none' : '';
             }
 
             magnifyToggle.addEventListener('change', updateFeatures);
