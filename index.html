@@ -158,6 +158,9 @@
             transform: translateZ(0);
             backface-visibility: hidden;
             -webkit-backface-visibility: hidden;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         /* Occupied Cell Styles */
@@ -5284,7 +5287,10 @@
                 if (e.target.closest('.color-pick-btn')) return;
 
                 // If using Magnify in Play Mode, speech is handled on release (handleMagnifyEnd)
-                if (config.mode === 'play' && config.magnify) return;
+                if (config.mode === 'play' && config.magnify) {
+                    if (e.type === 'touchstart') e.preventDefault();
+                    return;
+                }
 
                 // Games (Pop-Up Finder & Find-It): always activate immediately on press (ignore dwell)
                 if ((huntActive || gameActive) && config.mode === 'play' && !config.magnify) {
