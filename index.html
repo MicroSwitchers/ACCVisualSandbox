@@ -4251,8 +4251,6 @@
 
                 renderGrid();
                 saveToLocalStorage();
-                // Sync touch-action so magnify works immediately on tablet in play mode
-                if (typeof syncGridTouchAction === 'function') syncGridTouchAction();
             };
 
             window.setBackground = function (color, btnElement) {
@@ -4336,15 +4334,6 @@
                 } else {
                     magnifyControls.classList.add('hidden');
                 }
-                syncGridTouchAction();
-            }
-
-            // Set touch-action: none when magnify is active in play mode so tablets
-            // don't delay pointerdown (browser scroll handling causes the lag).
-            function syncGridTouchAction() {
-                if (!gridContainer) return;
-                const needsNone = config.magnify && config.mode === 'play';
-                gridContainer.style.touchAction = needsNone ? 'none' : '';
             }
 
             magnifyToggle.addEventListener('change', updateFeatures);
@@ -4508,11 +4497,44 @@
                 }
             }
 
+            // Flag to prevent pointer events double-firing for a touch already handled natively
+            let isTouchMagnifying = false;
+
+            // --- Touch handlers: iOS-reliable path ---
+            // touchstart fires IMMEDIATELY on any touch, including a completely stationary hold.
+            // This is the only way to guarantee instant magnification on iOS Safari.
+            function handleMagnifyTouchStart(e) {
+                if (config.mode !== 'play' || !config.magnify) return;
+                e.preventDefault(); // suppress scroll, iOS long-press menu, and ghost pointer events
+                isTouchMagnifying = true;
+                const t = e.touches[0];
+                updateMagnifyAtPoint(t.clientX, t.clientY);
+            }
+
+            function handleMagnifyTouchMove(e) {
+                if (!isTouchMagnifying) return;
+                e.preventDefault();
+                const t = e.touches[0];
+                updateMagnifyAtPoint(t.clientX, t.clientY);
+            }
+
+            function handleMagnifyTouchEnd(e) {
+                if (!isTouchMagnifying) return;
+                isTouchMagnifying = false;
+                handleMagnifyEnd({ type: 'touchend' });
+            }
+
+            function handleMagnifyTouchCancel(e) {
+                if (!isTouchMagnifying) return;
+                isTouchMagnifying = false;
+                handleMagnifyEnd({ type: 'touchcancel' });
+            }
+
+            // --- Pointer handlers: mouse + stylus path ---
+            // Touch pointer events are skipped — the touch handlers above own that path.
             function handleMagnifyPointerDown(e) {
                 if (config.mode !== 'play' || !config.magnify) return;
-                // Touch is handled by the dedicated touch event path below (more reliable on iOS)
-                if (e.pointerType === 'touch') return;
-                // Only left mouse button
+                if (e.pointerType === 'touch') return; // handled by touchstart above
                 if (e.pointerType === 'mouse' && e.button !== 0) return;
 
                 if (e.cancelable) e.preventDefault();
@@ -4546,41 +4568,17 @@
                 handleMagnifyEnd({ type: 'pointercancel' });
             }
 
-            // --- Touch-specific magnify handlers (iOS Safari reliable path) ---
-            function handleMagnifyTouchStart(e) {
-                if (config.mode !== 'play' || !config.magnify) return;
-                // Suppress iOS long-press menu and scroll while magnifying
-                e.preventDefault();
-                const touch = e.touches[0];
-                updateMagnifyAtPoint(touch.clientX, touch.clientY);
-            }
-
-            function handleMagnifyTouchMove(e) {
-                if (config.mode !== 'play' || !config.magnify) return;
-                e.preventDefault();
-                const touch = e.touches[0];
-                updateMagnifyAtPoint(touch.clientX, touch.clientY);
-            }
-
-            function handleMagnifyTouchEnd(e) {
-                if (config.mode !== 'play' || !config.magnify) return;
-                handleMagnifyEnd({ type: 'touchend' });
-            }
-
-            function handleMagnifyTouchCancel(e) {
-                if (config.mode !== 'play' || !config.magnify) return;
-                handleMagnifyEnd({ type: 'touchcancel' });
-            }
-
-            // Pointer events handle mouse + stylus; touch events handle iOS/Android fingers.
-            gridContainer.addEventListener('pointerdown', handleMagnifyPointerDown, { passive: false });
-            gridContainer.addEventListener('pointermove', handleMagnifyPointerMove, { passive: false });
-            gridContainer.addEventListener('pointerup', handleMagnifyPointerUp);
-            gridContainer.addEventListener('pointercancel', handleMagnifyPointerCancel);
+            // Touch listeners on grid — { passive: false } so we can call preventDefault()
             gridContainer.addEventListener('touchstart', handleMagnifyTouchStart, { passive: false });
             gridContainer.addEventListener('touchmove', handleMagnifyTouchMove, { passive: false });
             gridContainer.addEventListener('touchend', handleMagnifyTouchEnd);
             gridContainer.addEventListener('touchcancel', handleMagnifyTouchCancel);
+
+            // Pointer listeners handle mouse + stylus only
+            gridContainer.addEventListener('pointerdown', handleMagnifyPointerDown, { passive: false });
+            gridContainer.addEventListener('pointermove', handleMagnifyPointerMove, { passive: false });
+            gridContainer.addEventListener('pointerup', handleMagnifyPointerUp);
+            gridContainer.addEventListener('pointercancel', handleMagnifyPointerCancel);
 
             // --- Drag and Drop Logic (Edit Mode) ---
             let dragSrcIndex = null;
