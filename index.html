@@ -333,8 +333,18 @@
             max-width: 100%;
             max-height: 100%;
             object-fit: contain;
-            pointer-events: none;
             border-radius: 4px;
+            pointer-events: auto;
+            /* Allow image to receive pointer/touch events if needed */
+            /* Crucial: Prevent image drag and touch callouts natively */
+            -webkit-user-drag: none;
+            -khtml-user-drag: none;
+            -moz-user-drag: none;
+            -ms-user-drag: none;
+            user-drag: none;
+            -webkit-touch-callout: none;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         .grid-cell .label-text {
@@ -448,6 +458,9 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            pointer-events: none;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         /* Shape picker buttons */
