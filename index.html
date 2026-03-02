@@ -298,6 +298,8 @@
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
             border-color: #3b82f6;
             will-change: transform;
+            /* Instant magnification on contact - no transition delay */
+            transition: none;
             /* Force hardware acceleration */
             transform: translateZ(0) scale(var(--zoom-level, 1.5));
         }
@@ -341,7 +343,6 @@
             -khtml-user-drag: none;
             -moz-user-drag: none;
             -ms-user-drag: none;
-            user-drag: none;
             -webkit-touch-callout: none;
             user-select: none;
             -webkit-user-select: none;
@@ -4450,9 +4451,11 @@
                 gameDelayVal.innerText = `${config.gameDelay}s`;
             });
 
-            // --- Magnify Interaction (Pointer Events - immediate on first press) ---
-            // Pointer events unify mouse/touch/stylus and ensure the VERY FIRST press magnifies (no movement required).
+            // --- Magnify Interaction ---
+            // Touch events handle the FULL touch lifecycle directly (zero delay guaranteed).
+            // Pointer events are used ONLY for mouse/stylus as a fallback.
             // Note: currentMagnifiedEl and magnifyPointerId are declared in State Management section
+            let magnifyTouchId = null;
 
             function updateMagnifyAtPoint(clientX, clientY) {
                 const target = document.elementFromPoint(clientX, clientY);
@@ -4510,8 +4513,55 @@
                 }
             }
 
+            // --- Touch handlers: full lifecycle for instant response ---
+            gridContainer.addEventListener('touchstart', function (e) {
+                if (config.mode !== 'play' || !config.magnify) return;
+                e.preventDefault();
+                const touch = e.changedTouches[0];
+                if (!touch) return;
+                magnifyTouchId = touch.identifier;
+                updateMagnifyAtPoint(touch.clientX, touch.clientY);
+            }, { passive: false });
+
+            gridContainer.addEventListener('touchmove', function (e) {
+                if (config.mode !== 'play' || !config.magnify) return;
+                if (magnifyTouchId === null) return;
+                e.preventDefault();
+                // Find our tracked touch among changed touches
+                let touch = null;
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    if (e.changedTouches[i].identifier === magnifyTouchId) {
+                        touch = e.changedTouches[i];
+                        break;
+                    }
+                }
+                if (touch) updateMagnifyAtPoint(touch.clientX, touch.clientY);
+            }, { passive: false });
+
+            gridContainer.addEventListener('touchend', function (e) {
+                if (magnifyTouchId === null) return;
+                let found = false;
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    if (e.changedTouches[i].identifier === magnifyTouchId) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) return;
+                magnifyTouchId = null;
+                handleMagnifyEnd({ type: 'touchend' });
+            }, { passive: false });
+
+            gridContainer.addEventListener('touchcancel', function (e) {
+                if (magnifyTouchId === null) return;
+                magnifyTouchId = null;
+                handleMagnifyEnd({ type: 'touchcancel' });
+            }, { passive: false });
+
+            // --- Pointer handlers: mouse/stylus only (touch is handled above) ---
             function handleMagnifyPointerDown(e) {
                 if (config.mode !== 'play' || !config.magnify) return;
+                if (e.pointerType === 'touch') return; // Handled by touch events above
                 if (e.pointerType === 'mouse' && e.button !== 0) return;
 
                 if (e.cancelable) e.preventDefault();
@@ -4522,6 +4572,7 @@
 
             function handleMagnifyPointerMove(e) {
                 if (config.mode !== 'play' || !config.magnify) return;
+                if (e.pointerType === 'touch') return;
                 if (magnifyPointerId === null || e.pointerId !== magnifyPointerId) return;
                 if (e.pointerType === 'mouse' && (e.buttons & 1) === 0) return;
                 if (e.cancelable) e.preventDefault();
@@ -4529,6 +4580,7 @@
             }
 
             function handleMagnifyPointerUp(e) {
+                if (e.pointerType === 'touch') return;
                 if (magnifyPointerId === null || e.pointerId !== magnifyPointerId) return;
                 try { gridContainer.releasePointerCapture(magnifyPointerId); } catch (_) { }
                 magnifyPointerId = null;
@@ -4536,13 +4588,13 @@
             }
 
             function handleMagnifyPointerCancel(e) {
+                if (e.pointerType === 'touch') return;
                 if (magnifyPointerId === null || e.pointerId !== magnifyPointerId) return;
                 try { gridContainer.releasePointerCapture(magnifyPointerId); } catch (_) { }
                 magnifyPointerId = null;
                 handleMagnifyEnd({ type: 'pointercancel' });
             }
 
-            // Pointer listeners handle all input types natively if touch-action is none
             gridContainer.addEventListener('pointerdown', handleMagnifyPointerDown, { passive: false });
             gridContainer.addEventListener('pointermove', handleMagnifyPointerMove, { passive: false });
             gridContainer.addEventListener('pointerup', handleMagnifyPointerUp);
