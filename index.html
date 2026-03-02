@@ -4497,44 +4497,8 @@
                 }
             }
 
-            // Flag to prevent pointer events double-firing for a touch already handled natively
-            let isTouchMagnifying = false;
-
-            // --- Touch handlers: iOS-reliable path ---
-            // touchstart fires IMMEDIATELY on any touch, including a completely stationary hold.
-            // This is the only way to guarantee instant magnification on iOS Safari.
-            function handleMagnifyTouchStart(e) {
-                if (config.mode !== 'play' || !config.magnify) return;
-                e.preventDefault(); // suppress scroll, iOS long-press menu, and ghost pointer events
-                isTouchMagnifying = true;
-                const t = e.touches[0];
-                updateMagnifyAtPoint(t.clientX, t.clientY);
-            }
-
-            function handleMagnifyTouchMove(e) {
-                if (!isTouchMagnifying) return;
-                e.preventDefault();
-                const t = e.touches[0];
-                updateMagnifyAtPoint(t.clientX, t.clientY);
-            }
-
-            function handleMagnifyTouchEnd(e) {
-                if (!isTouchMagnifying) return;
-                isTouchMagnifying = false;
-                handleMagnifyEnd({ type: 'touchend' });
-            }
-
-            function handleMagnifyTouchCancel(e) {
-                if (!isTouchMagnifying) return;
-                isTouchMagnifying = false;
-                handleMagnifyEnd({ type: 'touchcancel' });
-            }
-
-            // --- Pointer handlers: mouse + stylus path ---
-            // Touch pointer events are skipped — the touch handlers above own that path.
             function handleMagnifyPointerDown(e) {
                 if (config.mode !== 'play' || !config.magnify) return;
-                if (e.pointerType === 'touch') return; // handled by touchstart above
                 if (e.pointerType === 'mouse' && e.button !== 0) return;
 
                 if (e.cancelable) e.preventDefault();
@@ -4545,7 +4509,6 @@
 
             function handleMagnifyPointerMove(e) {
                 if (config.mode !== 'play' || !config.magnify) return;
-                if (e.pointerType === 'touch') return;
                 if (magnifyPointerId === null || e.pointerId !== magnifyPointerId) return;
                 if (e.pointerType === 'mouse' && (e.buttons & 1) === 0) return;
                 if (e.cancelable) e.preventDefault();
@@ -4553,7 +4516,6 @@
             }
 
             function handleMagnifyPointerUp(e) {
-                if (e.pointerType === 'touch') return;
                 if (magnifyPointerId === null || e.pointerId !== magnifyPointerId) return;
                 try { gridContainer.releasePointerCapture(magnifyPointerId); } catch (_) { }
                 magnifyPointerId = null;
@@ -4561,20 +4523,13 @@
             }
 
             function handleMagnifyPointerCancel(e) {
-                if (e.pointerType === 'touch') return;
                 if (magnifyPointerId === null || e.pointerId !== magnifyPointerId) return;
                 try { gridContainer.releasePointerCapture(magnifyPointerId); } catch (_) { }
                 magnifyPointerId = null;
                 handleMagnifyEnd({ type: 'pointercancel' });
             }
 
-            // Touch listeners on grid — { passive: false } so we can call preventDefault()
-            gridContainer.addEventListener('touchstart', handleMagnifyTouchStart, { passive: false });
-            gridContainer.addEventListener('touchmove', handleMagnifyTouchMove, { passive: false });
-            gridContainer.addEventListener('touchend', handleMagnifyTouchEnd);
-            gridContainer.addEventListener('touchcancel', handleMagnifyTouchCancel);
-
-            // Pointer listeners handle mouse + stylus only
+            // Pointer listeners handle all input types natively if touch-action is none
             gridContainer.addEventListener('pointerdown', handleMagnifyPointerDown, { passive: false });
             gridContainer.addEventListener('pointermove', handleMagnifyPointerMove, { passive: false });
             gridContainer.addEventListener('pointerup', handleMagnifyPointerUp);
@@ -5304,8 +5259,7 @@
                 if (e.target.closest('.color-pick-btn')) return;
 
                 // If using Magnify in Play Mode, speech is handled on release (handleMagnifyEnd).
-                // Do NOT call e.preventDefault() here - on iOS Safari, preventing touchstart
-                // cancels the corresponding pointerdown, breaking the magnify pointer handlers.
+                // DO NOT call e.preventDefault() here. Let pointer events handle it natively.
                 if (config.mode === 'play' && config.magnify) return;
 
                 // Games (Pop-Up Finder & Find-It): always activate immediately on press (ignore dwell)
