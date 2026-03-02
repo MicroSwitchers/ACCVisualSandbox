@@ -15,57 +15,9 @@
     <meta name="mobile-web-app-capable" content="yes">
 
     <title>AAC Visual Sandbox</title>
-    <!-- Premium Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600;700&display=swap"
-        rel="stylesheet">
-
     <!-- Tailwind CSS for styling -->
 
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Outfit', 'system-ui', 'sans-serif'],
-                        display: ['Poppins', 'system-ui', 'sans-serif'],
-                    },
-                    colors: {
-                        brand: {
-                            50: '#f0f9ff',
-                            100: '#e0f2fe',
-                            500: '#0ea5e9',
-                            600: '#0284c7',
-                            900: '#0c4a6e',
-                        }
-                    },
-                    animation: {
-                        'gradient-x': 'gradient-x 15s ease infinite',
-                        'float': 'float 6s ease-in-out infinite',
-                    },
-                    keyframes: {
-                        'gradient-x': {
-                            '0%, 100%': {
-                                'background-size': '200% 200%',
-                                'background-position': 'left center'
-                            },
-                            '50%': {
-                                'background-size': '200% 200%',
-                                'background-position': 'right center'
-                            },
-                        },
-                        'float': {
-                            '0%, 100%': { transform: 'translateY(0)' },
-                            '50%': { transform: 'translateY(-10px)' },
-                        }
-                    }
-                }
-            }
-        }
-    </script>
     <style>
         /* Core Styles */
         html,
@@ -77,11 +29,8 @@
             margin: 0;
             padding: 0;
             overflow: hidden;
-            /* Modern Dynamic Mesh Gradient Background */
-            background: linear-gradient(-45deg, #f8fafc, #e0e7ff, #f3e8ff, #f8fafc);
-            background-size: 400% 400%;
-            animation: gradient-x 15s ease infinite;
-            font-family: 'Outfit', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f8fafc;
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             user-select: none;
             -webkit-user-select: none;
             touch-action: pan-x pan-y;
@@ -89,7 +38,6 @@
             padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
-            text-rendering: optimizeLegibility;
         }
 
         /* Drawer Transitions */
@@ -145,9 +93,9 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            border-radius: 16px;
+            border-radius: 8px;
             overflow: visible;
-            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s;
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s, opacity 0.2s;
             touch-action: none;
             background-color: transparent;
             z-index: 1;
@@ -176,28 +124,18 @@
 
         .grid-cell.occupied {
             background: white;
-            /* Border set via JS for customization - only use fallback if not set */
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.08);
             cursor: pointer;
         }
 
         .grid-cell.occupied:hover {
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-            transform: translateY(-2px);
-            z-index: 10;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
         }
 
         /* Empty Cell Styles (Target) */
         .grid-cell.empty {
-            border: 2px dashed rgba(148, 163, 184, 0.4);
-            background-color: rgba(248, 250, 252, 0.5);
-            backdrop-filter: blur(4px);
-        }
-
-        /* Hide empty cell borders in play mode for cleaner appearance */
-        .play-mode .grid-cell.empty {
-            border: none;
-            background: transparent;
+            border: 2px dashed #cbd5e1;
         }
 
 
@@ -299,6 +237,11 @@
             transform: translateZ(0) scale(var(--zoom-level, 1.5));
         }
 
+        /* Hiding dashed lines in play mode */
+        .play-mode .grid-cell.empty {
+            border: none;
+        }
+
         /* Image Styling */
         /* Inner content wrapper - visible overflow for labels */
         .grid-cell .cell-content {
@@ -318,10 +261,10 @@
             align-items: center;
             justify-content: center;
             width: 100%;
-            height: 100%;
+            height: auto;
+            max-height: 100%;
             padding: 4px;
-            overflow: hidden;
-            box-sizing: border-box;
+            overflow: visible;
         }
 
         .grid-cell img {
@@ -423,7 +366,15 @@
             line-height: 1.1;
         }
 
-        /* Generic Image Container for Image/Arasaac/Mulberry cells - handled by .grid-cell .image-container above */
+        /* Generic Image Container for Image/Arasaac/Mulberry cells */
+        .image-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
 
         /* Shape cell (emoji/symbol) */
         .grid-cell.shape-cell {
@@ -477,23 +428,21 @@
             height: 28px;
             min-width: 28px;
             min-height: 28px;
-            background: linear-gradient(135deg, #f87171, #ef4444);
+            background-color: #ef4444;
             color: white;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
             z-index: 20;
-            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: transform 0.1s;
         }
 
         .delete-btn:hover {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
-            transform: scale(1.15) translateY(-1px);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            background-color: #dc2626;
+            transform: scale(1.1);
         }
 
         .delete-btn svg {
@@ -511,23 +460,21 @@
             height: 28px;
             min-width: 28px;
             min-height: 28px;
-            background: linear-gradient(135deg, #60a5fa, #3b82f6);
+            background-color: #3b82f6;
             color: white;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
             z-index: 20;
-            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: transform 0.1s;
         }
 
         .preview-btn:hover {
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-            transform: scale(1.15) translateY(-1px);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            background-color: #2563eb;
+            transform: scale(1.1);
         }
 
         .preview-btn svg {
@@ -545,23 +492,21 @@
             height: 28px;
             min-width: 28px;
             min-height: 28px;
-            background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+            background-color: #8b5cf6;
             color: white;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
             z-index: 20;
-            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: transform 0.1s;
         }
 
         .label-btn:hover {
-            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-            transform: scale(1.15) translateY(-1px);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            background-color: #7c3aed;
+            transform: scale(1.1);
         }
 
         .label-btn svg {
@@ -571,13 +516,11 @@
         }
 
         .label-btn.has-label {
-            background: linear-gradient(135deg, #34d399, #10b981);
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            background-color: #10b981;
         }
 
         .label-btn.has-label:hover {
-            background: linear-gradient(135deg, #10b981, #059669);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            background-color: #059669;
         }
 
         /* Symbol Color Button */
@@ -589,23 +532,21 @@
             height: 28px;
             min-width: 28px;
             min-height: 28px;
-            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            background-color: #f59e0b;
             color: white;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
             z-index: 20;
-            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: transform 0.1s;
         }
 
         .color-pick-btn:hover {
-            background: linear-gradient(135deg, #f59e0b, #d97706);
-            transform: scale(1.15) translateY(-1px);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            background-color: #d97706;
+            transform: scale(1.1);
         }
 
         .color-pick-btn svg {
@@ -615,13 +556,11 @@
         }
 
         .color-pick-btn.has-custom {
-            background: linear-gradient(135deg, #34d399, #10b981);
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            background-color: #10b981;
         }
 
         .color-pick-btn.has-custom:hover {
-            background: linear-gradient(135deg, #10b981, #059669);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            background-color: #059669;
         }
 
         /* Compact Button Mode (for 4+ rows) */
@@ -1085,7 +1024,6 @@
             text-overflow: ellipsis;
             display: -webkit-box;
             -webkit-line-clamp: 2;
-            line-clamp: 2;
             -webkit-box-orient: vertical;
         }
 
@@ -1310,7 +1248,6 @@
             text-overflow: ellipsis;
             display: -webkit-box;
             -webkit-line-clamp: 2;
-            line-clamp: 2;
             -webkit-box-orient: vertical;
         }
 
@@ -1441,39 +1378,6 @@
             opacity: 0;
             pointer-events: none;
         }
-
-        /* Themed Custom Scrollbars */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: rgba(241, 245, 249, 0.5);
-            /* slate-100 with opacity */
-            border-radius: 10px;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: rgba(148, 163, 184, 0.5);
-            /* slate-400 with opacity */
-            border-radius: 10px;
-            border: 2px solid transparent;
-            background-clip: padding-box;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(100, 116, 139, 0.8);
-            /* slate-500 */
-            border: 2px solid transparent;
-            background-clip: padding-box;
-        }
-
-        /* Firefox Support */
-        * {
-            scrollbar-width: thin;
-            scrollbar-color: rgba(148, 163, 184, 0.5) rgba(241, 245, 249, 0.5);
-        }
     </style>
 
     <script>
@@ -1485,10 +1389,9 @@
 
     <!-- Hunt Picker Modal -->
     <div id="hunt-modal" class="fixed inset-0 z-50 hidden">
-        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-md" onclick="closeHuntModal()"></div>
+        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="closeHuntModal()"></div>
         <div class="absolute inset-0 flex items-center justify-center p-4">
-            <div
-                class="w-full max-w-lg bg-white/90 backdrop-blur-xl rounded-3xl shadow-xl border border-white/50 overflow-y-auto max-h-[90vh] flex flex-col transform transition-all">
+            <div class="w-full max-w-lg bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
                 <div class="p-4 border-b border-slate-200 flex items-center justify-between">
                     <div>
                         <div class="text-sm font-bold text-slate-800">Choose a picture for Pop-Up Finder</div>
@@ -1506,14 +1409,14 @@
                 <div class="p-4 space-y-3">
                     <div id="hunt-picker-grid" class="grid grid-cols-3 sm:grid-cols-4 gap-3"></div>
 
-                    <div class="flex items-center justify-between pt-4 border-t border-slate-200">
+                    <div class="flex items-center justify-between pt-2 border-t border-slate-200">
                         <button
-                            class="px-5 py-2.5 text-sm font-bold bg-white border border-slate-300 shadow-sm hover:bg-slate-50 hover:border-slate-400 hover:shadow-md text-slate-700 rounded-xl transition-all active:scale-95"
+                            class="px-4 py-2 text-sm font-semibold bg-white border border-slate-300 shadow-sm hover:bg-slate-50 hover:border-slate-400 text-slate-700 rounded-lg transition-all active:scale-95"
                             onclick="triggerHuntLoad()">
                             Load Image
                         </button>
                         <button
-                            class="px-5 py-2.5 text-sm font-bold bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white rounded-xl shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95"
+                            class="px-3 py-2 text-sm font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg"
                             onclick="confirmHuntChoice()" id="hunt-confirm-btn" disabled>
                             Use Selected
                         </button>
@@ -1528,15 +1431,15 @@
     <!-- Bulk Symbol Modal -->
     <div id="bulk-symbol-modal" class="fixed inset-0 z-[100] hidden">
         <!-- Backdrop -->
-        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-md transition-opacity"
+        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity"
             onclick="closeBulkSymbolModal()">
         </div>
 
         <!-- Modal Content -->
         <div
-            class="absolute inset-x-0 bottom-0 md:inset-0 md:flex md:items-center md:justify-center pointer-events-none p-4">
+            class="absolute inset-x-0 bottom-0 md:inset-0 md:flex md:items-center md:justify-center pointer-events-none">
             <div
-                class="bg-white/95 backdrop-blur-xl w-full md:w-[800px] md:h-[80vh] md:rounded-3xl shadow-xl border border-white/50 flex flex-col h-[90vh] pointer-events-auto transform transition-transform duration-300 translate-y-full md:translate-y-0 overflow-hidden">
+                class="bg-white w-full md:w-[800px] md:h-[80vh] md:rounded-2xl shadow-2xl flex flex-col h-[90vh] pointer-events-auto transform transition-transform duration-300 translate-y-full md:translate-y-0">
 
                 <!-- Header -->
                 <div
@@ -1556,9 +1459,8 @@
                 </div>
 
                 <!-- Tabs -->
-                <div
-                    class="symbol-picker-tabs mx-4 mt-4 bg-slate-100/50 backdrop-blur-sm border border-white p-1 rounded-2xl">
-                    <button id="bulk-tab-arasaac" class="symbol-picker-tab active rounded-xl"
+                <div class="symbol-picker-tabs mx-4 mt-2">
+                    <button id="bulk-tab-arasaac" class="symbol-picker-tab active"
                         onclick="switchBulkSymbolTab('arasaac')">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1633,7 +1535,7 @@
 
                     <!-- RIGHT: Collection Tray (Visible as sidebar on Desktop, Bottom sheet on Mobile) -->
                     <div
-                        class="h-48 md:h-auto md:w-64 bg-white shadow-sm md:shadow-none flex flex-col z-10 transition-all">
+                        class="h-48 md:h-auto md:w-64 bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] md:shadow-none flex flex-col z-10 transition-all">
                         <div class="p-3 bg-blue-50/50 border-b border-blue-100 flex justify-between items-center">
                             <h4 class="font-bold text-blue-900 text-sm">Collection Library</h4>
                             <span id="bulk-count-badge"
@@ -1657,9 +1559,9 @@
                         </div>
 
                         <!-- Footer Actions -->
-                        <div class="p-4 border-t border-slate-100/50 bg-slate-50/50 backdrop-blur-md">
+                        <div class="p-3 border-t border-slate-100 bg-slate-50">
                             <button onclick="confirmBulkImport()" id="bulk-import-btn" disabled
-                                class="w-full py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:from-slate-300 disabled:to-slate-300 disabled:cursor-not-allowed text-white font-bold rounded-2xl shadow-md hover:shadow-lg transition-all active:scale-[0.98]">
+                                class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold rounded-xl shadow-lg shadow-blue-600/20 transition-all active:scale-[0.98]">
                                 Import All
                             </button>
                         </div>
@@ -1675,16 +1577,9 @@
     <!-- Splash Screen -->
     <!-- Splash Screen -->
     <div id="splash-screen"
-        class="fixed inset-0 z-[9999] bg-slate-900/40 backdrop-blur-md flex flex-col items-center p-4 transition-opacity duration-700 overflow-y-auto overflow-x-hidden">
+        class="fixed inset-0 z-[9999] bg-slate-50 flex flex-col items-center justify-center p-4 transition-opacity duration-700 overflow-y-auto">
         <div
-            class="bg-white/95 backdrop-blur-xl p-6 md:p-10 rounded-[2rem] shadow-2xl max-w-lg w-full border border-white/60 animate-fade-in-up my-auto relative max-h-full overflow-y-auto overflow-x-hidden">
-            <!-- Decorative background elements inside splash -->
-            <div
-                class="absolute -top-24 -right-24 w-48 h-48 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob">
-            </div>
-            <div
-                class="absolute -bottom-24 -left-24 w-48 h-48 bg-indigo-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000">
-            </div>
+            class="bg-white/95 backdrop-blur-md p-8 rounded-3xl shadow-2xl shadow-slate-900/10 max-w-lg w-full border border-white/60 animate-fade-in-up my-auto">
             <div class="text-center space-y-4">
                 <!-- Logo -->
                 <div class="relative w-28 h-28 mx-auto mb-3">
@@ -1696,10 +1591,10 @@
                 </div>
 
                 <!-- Title -->
-                <div class="relative z-10">
-                    <h1 class="text-4xl md:text-5xl font-extrabold text-slate-800 tracking-tight">
-                        AAC Visual <br /><span
-                            class="bg-gradient-to-r from-blue-600 via-indigo-500 to-violet-600 bg-clip-text text-transparent">Sandbox</span>
+                <div>
+                    <h1 class="text-3xl md:text-4xl font-extrabold text-slate-800 tracking-tight">
+                        AAC Visual <span
+                            class="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Sandbox</span>
                     </h1>
                     <p class="text-base text-slate-500 max-w-md mx-auto font-medium leading-relaxed mt-1">
                         Arrange images and symbols for AAC interaction.
@@ -1708,7 +1603,7 @@
 
                 <!-- Audio Settings Section -->
                 <div
-                    class="bg-white/50 backdrop-blur-sm rounded-2xl p-6 border border-white shadow-sm text-left space-y-4 relative z-10">
+                    class="bg-gradient-to-br from-slate-50 to-slate-100/80 rounded-2xl p-5 border border-slate-200/80 text-left space-y-4 shadow-inner">
                     <div class="flex items-center justify-between">
                         <div>
                             <h3 class="font-bold text-slate-800 text-base">Feedback Style</h3>
@@ -1762,13 +1657,8 @@
 
                 <!-- Action Button -->
                 <button id="splash-start-btn"
-                    class="w-full py-4 mt-2 relative z-10 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 hover:from-blue-700 hover:via-indigo-700 hover:to-violet-700 text-white font-bold text-lg rounded-2xl shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-1 active:scale-[0.98] active:translate-y-0 flex justify-center items-center gap-2">
+                    class="w-full py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-lg rounded-xl shadow-lg shadow-blue-500/25 transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-blue-500/30 active:scale-[0.98]">
                     Start Creating
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M5 12h14" />
-                        <path d="m12 5 7 7-7 7" />
-                    </svg>
                 </button>
             </div>
         </div>
@@ -1977,8 +1867,8 @@
 
     <!-- Toggle Button (Drawer Handle) -->
     <button id="open-btn"
-        class="fixed z-50 p-3 bg-white/80 backdrop-blur-md rounded-2xl shadow-md hover:bg-white text-slate-700 hidden border border-white/50 hover:shadow-lg transition-all duration-300 active:scale-95 group"
-        style="top: max(1rem, env(safe-area-inset-top, 1rem)); left: max(1rem, env(safe-area-inset-left, 1rem)); border-radius: 16px;">
+        class="fixed z-50 p-2.5 bg-white rounded-xl shadow-lg hover:bg-slate-50 text-slate-600 hidden border border-slate-200/50 hover:shadow-xl transition-all active:scale-95"
+        style="top: max(1rem, env(safe-area-inset-top, 1rem)); left: max(1rem, env(safe-area-inset-left, 1rem));">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="4" x2="20" y1="12" y2="12" />
@@ -1989,14 +1879,12 @@
 
     <!-- Settings Drawer -->
     <aside id="drawer"
-        class="fixed inset-y-0 left-0 z-50 w-80 bg-white/70 backdrop-blur-xl shadow-2xl flex flex-col drawer-open overflow-hidden border-r border-white/50"
+        class="fixed inset-y-0 left-0 z-50 w-80 bg-white shadow-2xl flex flex-col drawer-open overflow-hidden border-r border-slate-200/80"
         style="padding-top: env(safe-area-inset-top, 0); padding-bottom: env(safe-area-inset-bottom, 0);">
         <!-- Header -->
         <div
-            class="p-5 border-b border-white/40 flex justify-between items-center bg-gradient-to-r from-white/60 to-blue-50/40">
-            <h2
-                class="font-extrabold text-slate-800 text-xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600">
-                AAC Settings</h2>
+            class="p-4 border-b border-slate-200 flex justify-between items-center bg-gradient-to-r from-slate-50 to-blue-50/50">
+            <h2 class="font-bold text-slate-800 text-lg tracking-tight">AAC Visual Sandbox</h2>
             <button id="close-btn"
                 class="p-2 hover:bg-slate-200/80 rounded-lg text-slate-500 hover:text-slate-700 transition-all flex items-center justify-center active:scale-95">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
@@ -2013,7 +1901,7 @@
 
             <!-- Fullscreen Toggle (Top Priority) -->
             <button onclick="toggleFullScreen()"
-                class="w-full py-3 bg-gradient-to-r from-slate-800 to-slate-900 text-white rounded-2xl hover:from-slate-700 hover:to-slate-800 transition-all duration-300 text-sm font-bold flex justify-center items-center gap-2 shadow-md hover:shadow-lg hover:-translate-y-0.5 active:scale-[0.98] active:translate-y-0">
+                class="w-full py-2.5 bg-gradient-to-r from-slate-800 to-slate-900 text-white rounded-xl hover:from-slate-900 hover:to-slate-950 transition-all text-sm font-semibold flex justify-center items-center gap-2 shadow-md hover:shadow-lg active:scale-[0.98]">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M15 3h6v6" />
@@ -2025,12 +1913,9 @@
             </button>
 
             <!-- Mode Toggle -->
-            <div
-                class="bg-slate-200/50 backdrop-blur-sm p-1.5 rounded-2xl flex shadow-inner border border-white/50 relative overflow-hidden">
-                <div class="absolute inset-0 bg-gradient-to-b from-black/[0.03] to-transparent pointer-events-none">
-                </div>
+            <div class="bg-slate-100 p-1.5 rounded-xl flex shadow-inner border border-slate-200/50">
                 <button id="btn-mode-edit" onclick="setMode('edit')"
-                    class="mode-btn flex-1 py-3 rounded-xl text-sm font-bold shadow-sm bg-white text-blue-600 flex items-center justify-center gap-2 transition-all relative z-10">
+                    class="mode-btn flex-1 py-2.5 rounded-lg text-sm font-bold shadow-sm bg-white text-blue-600 flex items-center justify-center gap-2 transition-all">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
@@ -2039,7 +1924,7 @@
                     Edit
                 </button>
                 <button id="btn-mode-play" onclick="setMode('play')"
-                    class="mode-btn flex-1 py-3 rounded-xl text-sm font-bold text-slate-600 hover:text-slate-800 hover:bg-white/50 flex items-center justify-center gap-2 transition-all relative z-10">
+                    class="mode-btn flex-1 py-2.5 rounded-lg text-sm font-bold text-slate-500 hover:text-slate-700 flex items-center justify-center gap-2 transition-all">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polygon points="5 3 19 12 5 21 5 3" />
@@ -2056,7 +1941,7 @@
                 <div class="grid grid-cols-2 gap-3">
                     <!-- Upload Button -->
                     <div onclick="document.getElementById('file-input').click()"
-                        class="aspect-square bg-white/50 backdrop-blur-sm border-2 border-dashed border-slate-300 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-50/80 transition-all duration-300 group hover:shadow-md hover:-translate-y-1">
+                        class="aspect-square border-2 border-dashed border-slate-300 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-50/50 transition-all duration-200 group hover:shadow-sm">
                         <svg class="text-slate-400 group-hover:text-blue-500 mb-2" xmlns="http://www.w3.org/2000/svg"
                             width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -2070,7 +1955,7 @@
 
                     <!-- Bulk Button -->
                     <div onclick="openBulkSymbolModal()"
-                        class="aspect-square bg-white/50 backdrop-blur-sm border-2 border-dashed border-slate-300 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-50/80 transition-all duration-300 group hover:shadow-md hover:-translate-y-1">
+                        class="aspect-square border-2 border-dashed border-slate-300 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-50/50 transition-all duration-200 group hover:shadow-sm">
                         <svg class="text-slate-400 group-hover:text-blue-500 mb-2" xmlns="http://www.w3.org/2000/svg"
                             width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -2093,7 +1978,7 @@
 
                 <!-- Clear All Button (always visible in edit mode when there's data) -->
                 <button id="clear-all-btn" onclick="clearGrid()"
-                    class="hidden w-full mt-4 py-3.5 px-4 bg-red-50/80 hover:bg-red-100 border border-red-200 text-red-600 hover:text-red-700 rounded-2xl transition-all duration-300 text-sm font-bold flex items-center justify-center gap-2 shadow-sm hover:shadow-md active:scale-[0.98]">
+                    class="hidden w-full mt-3 py-3 px-4 bg-red-50 hover:bg-red-100 border border-red-200 hover:border-red-300 text-red-600 hover:text-red-700 rounded-xl transition-all text-sm font-semibold flex items-center justify-center gap-2 active:scale-[0.98]">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M3 6h18" />
@@ -2361,132 +2246,6 @@
                                     <span
                                         class="text-[10px] font-bold text-slate-500 group-hover:text-blue-600">4x3</span>
                                 </button>
-                                <!-- 4x4 -->
-                                <button onclick="setStandardGrid(4, 4)"
-                                    class="preset-btn p-1.5 border border-slate-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all flex flex-col items-center gap-1 group"
-                                    title="4x4 Grid">
-                                    <div class="grid grid-cols-4 gap-0.5 w-4 h-4">
-                                        <div
-                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
-                                        </div>
-                                        <div
-                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
-                                        </div>
-                                        <div
-                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
-                                        </div>
-                                        <div
-                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
-                                        </div>
-                                        <div
-                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
-                                        </div>
-                                        <div
-                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
-                                        </div>
-                                        <div
-                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
-                                        </div>
-                                        <div
-                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
-                                        </div>
-                                        <div
-                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
-                                        </div>
-                                        <div
-                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
-                                        </div>
-                                        <div
-                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
-                                        </div>
-                                        <div
-                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
-                                        </div>
-                                        <div
-                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
-                                        </div>
-                                        <div
-                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
-                                        </div>
-                                        <div
-                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
-                                        </div>
-                                        <div
-                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
-                                        </div>
-                                    </div>
-                                    <span
-                                        class="text-[10px] font-bold text-slate-500 group-hover:text-blue-600">4x4</span>
-                                </button>
-                                <!-- 5x4 -->
-                                <button onclick="setStandardGrid(5, 4)"
-                                    class="preset-btn p-1.5 border border-slate-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all flex flex-col items-center gap-1 group"
-                                    title="5x4 Grid">
-                                    <div class="grid grid-cols-5 gap-0.5 w-4 h-4">
-                                        <div
-                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
-                                        </div>
-                                        <div
-                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
-                                        </div>
-                                        <div
-                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
-                                        </div>
-                                        <div
-                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
-                                        </div>
-                                        <div
-                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
-                                        </div>
-                                        <div
-                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
-                                        </div>
-                                        <div
-                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
-                                        </div>
-                                        <div
-                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
-                                        </div>
-                                        <div
-                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
-                                        </div>
-                                        <div
-                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
-                                        </div>
-                                        <div
-                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
-                                        </div>
-                                        <div
-                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
-                                        </div>
-                                        <div
-                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
-                                        </div>
-                                        <div
-                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
-                                        </div>
-                                        <div
-                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
-                                        </div>
-                                        <div
-                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
-                                        </div>
-                                        <div
-                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
-                                        </div>
-                                        <div
-                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
-                                        </div>
-                                        <div
-                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
-                                        </div>
-                                        <div
-                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
-                                        </div>
-                                    </div>
-                                    <span
-                                        class="text-[10px] font-bold text-slate-500 group-hover:text-blue-600">5x4</span>
-                                </button>
                             </div>
                         </div>
                     </div>
@@ -2544,7 +2303,7 @@
                         Appearance</label>
                     <!-- Background Color -->
                     <div class="space-y-2">
-                        <span class="text-sm text-slate-700 block">Page Background</span>
+                        <span class="text-sm text-slate-700 block">Background Color</span>
                         <div class="flex gap-3">
                             <button onclick="setBackground('#f8fafc', this)"
                                 class="color-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none selected"
@@ -2560,28 +2319,6 @@
                                 style="background-color: #334155;" title="Dark Grey"></button>
                             <button onclick="setBackground('#000000', this)"
                                 class="color-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none"
-                                style="background-color: #000000;" title="Black"></button>
-                        </div>
-                    </div>
-
-                    <!-- Cell Background Color -->
-                    <div class="space-y-2">
-                        <span class="text-sm text-slate-700 block">Cell Background</span>
-                        <div class="flex gap-3">
-                            <button onclick="setCellBgColor('#ffffff', this)"
-                                class="cell-bg-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none selected"
-                                style="background-color: #ffffff;" title="White"></button>
-                            <button onclick="setCellBgColor('#fef3c7', this)"
-                                class="cell-bg-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none"
-                                style="background-color: #fef3c7;" title="Yellow"></button>
-                            <button onclick="setCellBgColor('#dbeafe', this)"
-                                class="cell-bg-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none"
-                                style="background-color: #dbeafe;" title="Blue"></button>
-                            <button onclick="setCellBgColor('#dcfce7', this)"
-                                class="cell-bg-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none"
-                                style="background-color: #dcfce7;" title="Green"></button>
-                            <button onclick="setCellBgColor('#000000', this)"
-                                class="cell-bg-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none"
                                 style="background-color: #000000;" title="Black"></button>
                         </div>
                     </div>
@@ -3468,8 +3205,6 @@
                 gap: 10,
                 fit: 'contain',
                 mode: 'edit',
-                squareAspect: false,
-                cellBgColor: '#ffffff',
                 magnify: false,
                 zoomLevel: 1.35,
                 audioEnabled: false,
@@ -3574,11 +3309,6 @@
 
                     // FORCE Edit Mode on startup (safety)
                     config.mode = 'edit';
-
-                    // If squareAspect is enabled, ensure rows is set to 1 for UI consistency
-                    if (config.squareAspect) {
-                        config.rows = 1;
-                    }
 
                     // Sync UI controls with loaded config
                     syncUIFromConfig();
@@ -3834,71 +3564,64 @@
                 if (labelSizeVal) labelSizeVal.innerText = `${config.labelSize}px`;
 
                 renderGrid();
-                // updatePresetHighlight(); // Removed to prevent crash
+                updatePresetHighlight();
                 saveToLocalStorage();
             }
 
-            // Stub for missing function
-            function updatePresetHighlight() {
-                // Placeholder to prevent crashes
-            }
-
             function syncUIFromConfig() {
-                try {
-                    // Safety check: ensure core elements exist
-                    if (!colRange || !rowRange) return;
+                // Safety check: ensure core elements exist
+                if (!colRange || !rowRange) return;
 
-                    // Sync slider/input values from config
-                    colRange.value = config.cols;
-                    rowRange.value = config.rows;
-                    if (gapRange) gapRange.value = config.gap;
-                    if (fitSelect) fitSelect.value = config.fit;
-                    if (magnifyToggle) magnifyToggle.checked = config.magnify;
-                    if (zoomRange) zoomRange.value = config.zoomLevel;
-                    if (audioToggle) audioToggle.checked = config.audioEnabled;
-                    if (borderWidthRange) borderWidthRange.value = config.borderWidth;
-                    if (labelSizeRange) labelSizeRange.value = config.labelSize;
-                    if (gameDelayRange) gameDelayRange.value = config.gameDelay;
-                    if (labelPositionSelect) labelPositionSelect.value = config.labelPosition;
-                    if (labelsToggle) labelsToggle.checked = config.showLabels;
+                // Sync slider/input values from config
+                colRange.value = config.cols;
+                rowRange.value = config.rows;
+                if (gapRange) gapRange.value = config.gap;
+                if (fitSelect) fitSelect.value = config.fit;
+                if (magnifyToggle) magnifyToggle.checked = config.magnify;
+                if (zoomRange) zoomRange.value = config.zoomLevel;
+                if (audioToggle) audioToggle.checked = config.audioEnabled;
+                if (borderWidthRange) borderWidthRange.value = config.borderWidth;
+                if (labelSizeRange) labelSizeRange.value = config.labelSize;
+                if (gameDelayRange) gameDelayRange.value = config.gameDelay;
+                if (labelPositionSelect) labelPositionSelect.value = config.labelPosition;
+                if (labelsToggle) labelsToggle.checked = config.showLabels;
 
-                    // Sync dwell/cooldown sliders
-                    if (dwellRange) dwellRange.value = config.dwellTime;
-                    if (cooldownRange) cooldownRange.value = config.cooldownTime;
-                    if (labelColorSelect) labelColorSelect.value = config.labelColor;
-                    if (labelColorPicker) labelColorPicker.value = config.labelColor;
+                // Sync dwell/cooldown sliders
+                if (dwellRange) dwellRange.value = config.dwellTime;
+                if (cooldownRange) cooldownRange.value = config.cooldownTime;
+                if (labelColorSelect) labelColorSelect.value = config.labelColor;
+                if (labelColorPicker) labelColorPicker.value = config.labelColor;
 
-                    // Sync display values
-                    if (colVal) colVal.innerText = config.cols;
-                    if (rowVal) rowVal.innerText = config.rows;
-                    if (gapVal) gapVal.innerText = `${config.gap}px`;
-                    if (zoomVal) zoomVal.innerText = config.zoomLevel + 'x';
-                    if (borderWidthVal) borderWidthVal.innerText = config.borderWidth === 0 ? 'None' : `${config.borderWidth}px`;
-                    if (labelSizeVal) labelSizeVal.innerText = `${config.labelSize}px`;
-                    if (dwellVal) dwellVal.innerText = config.dwellTime === 0 ? 'Off' : `${config.dwellTime}s`;
-                    if (cooldownVal) cooldownVal.innerText = config.cooldownTime === 0 ? 'Off' : `${config.cooldownTime}s`;
-                    if (gameDelayVal) gameDelayVal.innerText = `${config.gameDelay}s`;
+                // Sync display values
+                if (colVal) colVal.innerText = config.cols;
+                if (rowVal) rowVal.innerText = config.rows;
+                if (gapVal) gapVal.innerText = `${config.gap}px`;
+                if (zoomVal) zoomVal.innerText = config.zoomLevel + 'x';
+                if (borderWidthVal) borderWidthVal.innerText = config.borderWidth === 0 ? 'None' : `${config.borderWidth}px`;
+                if (labelSizeVal) labelSizeVal.innerText = `${config.labelSize}px`;
+                if (dwellVal) dwellVal.innerText = config.dwellTime === 0 ? 'Off' : `${config.dwellTime}s`;
+                if (cooldownVal) cooldownVal.innerText = config.cooldownTime === 0 ? 'Off' : `${config.cooldownTime}s`;
+                if (gameDelayVal) gameDelayVal.innerText = `${config.gameDelay}s`;
 
-                    // Toggle visibility of label controls based on showLabels state
-                    if (config.showLabels) {
-                        if (labelSizeControl) labelSizeControl.classList.remove('hidden');
-                        if (labelColorControl) labelColorControl.classList.remove('hidden');
-                        if (labelPositionControl) labelPositionControl.classList.remove('hidden');
-                    } else {
-                        if (labelSizeControl) labelSizeControl.classList.add('hidden');
-                        if (labelColorControl) labelColorControl.classList.add('hidden');
-                        if (labelPositionControl) labelPositionControl.classList.add('hidden');
-                    }
-
-                    // Toggle magnify controls visibility
-                    if (config.magnify && magnifyControls) {
-                        magnifyControls.classList.remove('hidden');
-                    } else if (magnifyControls) {
-                        magnifyControls.classList.add('hidden');
-                    }
-                } catch (e) {
-                    console.error('syncUIFromConfig failed:', e);
+                // Toggle visibility of label controls based on showLabels state
+                if (config.showLabels) {
+                    if (labelSizeControl) labelSizeControl.classList.remove('hidden');
+                    if (labelColorControl) labelColorControl.classList.remove('hidden');
+                    if (labelPositionControl) labelPositionControl.classList.remove('hidden');
+                } else {
+                    if (labelSizeControl) labelSizeControl.classList.add('hidden');
+                    if (labelColorControl) labelColorControl.classList.add('hidden');
+                    if (labelPositionControl) labelPositionControl.classList.add('hidden');
                 }
+
+                // Toggle magnify controls visibility
+                if (config.magnify && magnifyControls) {
+                    magnifyControls.classList.remove('hidden');
+                } else if (magnifyControls) {
+                    magnifyControls.classList.add('hidden');
+                }
+
+                updatePresetHighlight();
             }
 
             function updatePresetHighlight() {
@@ -3994,10 +3717,7 @@
 
             // --- Mode Logic ---
             window.setMode = function (mode) {
-                if (typeof clearAllGhosts === 'function') {
-                    clearAllGhosts();
-                }
-
+                clearAllGhosts();
                 // NOTE: Do NOT call syncConfig() here. It would overwrite the loaded config
                 // with stale UI values. syncConfig is for when UI inputs are explicitly changed.
 
@@ -4076,22 +3796,6 @@
                 }
 
                 renderGrid();
-            };
-
-            window.setCellBgColor = function (color, btnElement) {
-                config.cellBgColor = color;
-
-                document.querySelectorAll('.cell-bg-btn').forEach(btn => {
-                    btn.classList.remove('selected', 'ring-2', 'ring-blue-500', 'scale-110');
-                    btn.style.transform = 'scale(1)';
-                });
-                if (btnElement) {
-                    btnElement.classList.add('selected', 'ring-2', 'ring-blue-500');
-                    btnElement.style.transform = 'scale(1.1)';
-                }
-
-                renderGrid();
-                saveToLocalStorage();
             };
 
             function toggleDrawer(isOpen) {
@@ -6072,11 +5776,9 @@
                         }
                     }
 
-                    // Background color priority: Custom Item Color > Global Cell Color > Default (White)
+                    // Custom background color per symbol
                     if (item && item.customBgColor) {
                         cell.style.backgroundColor = item.customBgColor;
-                    } else if (item) {
-                        cell.style.backgroundColor = config.cellBgColor || '#ffffff';
                     }
                     if (item) {
                         cell.classList.add('occupied');
@@ -6309,21 +6011,21 @@
                             // Empty cell with three buttons: Add Image, Add Text, Add Shape
                             cell.innerHTML = `
                                 <div class="flex items-center justify-center gap-3 h-full w-full p-2">
-                                    <button class="add-image-btn group flex flex-col items-center justify-center p-3 rounded-xl bg-white/60 backdrop-blur-md hover:bg-white/90 text-slate-400 hover:text-blue-600 transition-all duration-300 shadow-sm hover:shadow-md border border-white/50 hover:border-blue-400/50 hover:-translate-y-1 hover:scale-105 active:scale-95" title="Add Image">
+                                    <button class="add-image-btn group flex flex-col items-center justify-center p-3 rounded-xl bg-white/80 hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-all shadow-sm hover:shadow-md border border-slate-200/60 hover:border-blue-300 active:scale-95" title="Add Image">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 transition-transform group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                                             <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
                                             <circle cx="9" cy="9" r="2" />
                                             <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
                                         </svg>
                                     </button>
-                                    <button class="add-text-btn group flex flex-col items-center justify-center p-3 rounded-xl bg-white/60 backdrop-blur-md hover:bg-white/90 text-slate-400 hover:text-violet-600 transition-all duration-300 shadow-sm hover:shadow-md border border-white/50 hover:border-violet-400/50 hover:-translate-y-1 hover:scale-105 active:scale-95" title="Add Text Label">
+                                    <button class="add-text-btn group flex flex-col items-center justify-center p-3 rounded-xl bg-white/80 hover:bg-violet-50 text-slate-400 hover:text-violet-600 transition-all shadow-sm hover:shadow-md border border-slate-200/60 hover:border-violet-300 active:scale-95" title="Add Text Label">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 transition-transform group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                                             <path d="M4 7V4h16v3"/>
                                             <path d="M9 20h6"/>
                                             <path d="M12 4v16"/>
                                         </svg>
                                     </button>
-                                    <button class="add-shape-btn group flex flex-col items-center justify-center p-3 rounded-xl bg-white/60 backdrop-blur-md hover:bg-white/90 text-slate-400 hover:text-amber-600 transition-all duration-300 shadow-sm hover:shadow-md border border-white/50 hover:border-amber-400/50 hover:-translate-y-1 hover:scale-105 active:scale-95" title="Add Shape/Emoji">
+                                    <button class="add-shape-btn group flex flex-col items-center justify-center p-3 rounded-xl bg-white/80 hover:bg-amber-50 text-slate-400 hover:text-amber-600 transition-all shadow-sm hover:shadow-md border border-slate-200/60 hover:border-amber-300 active:scale-95" title="Add Shape/Emoji">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 transition-transform group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                                             <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
                                         </svg>
@@ -6394,22 +6096,23 @@
             }
 
             function updateSettings(e) {
-                // Defensive check for fitSelect
-                if (fitSelect && e && e.target === fitSelect) {
+                // If the event came from the "Fit" selector, we only want to update the fit config
+                // and re-render. We should NOT re-read cols/rows from sliders, because
+                // the sliders might be stale (e.g. if we are in Square Mode but sliders show something else).
+                if (e && e.target === fitSelect) {
                     config.fit = fitSelect.value;
+                    // Persist immediately so a reload keeps the setting
                     saveToLocalStorage();
                     renderGrid();
                     return;
                 }
 
-
                 const newCols = parseInt(colRange.value);
                 const newRows = parseInt(rowRange.value);
 
                 // Detection: Did the user manually change rows?
-                // If they interact with the rows slider while in square mode, exit square mode.
-                // This ensures users can always regain control of the row count.
-                if (config.squareAspect && e && e.target === rowRange) {
+                // If they changed rows slider while in square mode, turn off square mode.
+                if (config.squareAspect && e && e.target === rowRange && newRows !== config.rows) {
                     config.squareAspect = false;
                 }
 
@@ -6424,8 +6127,8 @@
                     }
                 }
 
-                if (gapRange) config.gap = parseInt(gapRange.value);
-                if (fitSelect) config.fit = fitSelect.value;
+                config.gap = parseInt(gapRange.value);
+                config.fit = fitSelect.value;
 
                 syncUIFromConfig(); // Ensure labels and other UI match
                 renderGrid();
@@ -7167,32 +6870,21 @@
             };
 
             window.setSquareGrid = function (cols) {
-                try {
-                    config.cols = cols;
-                    config.rows = 1;
-                    config.squareAspect = true;
-                    syncUIFromConfig();
-                    renderGrid();
-                    saveToLocalStorage();
-                } catch (e) {
-                    console.error('setSquareGrid failed:', e);
-                    // Ensure grid renders even if sync fails
-                    renderGrid();
-                }
+                config.cols = cols;
+                config.rows = 1;
+                config.squareAspect = true;
+                syncUIFromConfig();
+                renderGrid();
+                saveToLocalStorage();
             };
 
             window.setStandardGrid = function (cols, rows) {
-                try {
-                    config.cols = cols;
-                    config.rows = rows;
-                    config.squareAspect = false;
-                    syncUIFromConfig();
-                    renderGrid();
-                    saveToLocalStorage();
-                } catch (e) {
-                    console.error('setStandardGrid failed:', e);
-                    renderGrid();
-                }
+                config.cols = cols;
+                config.rows = rows;
+                config.squareAspect = false;
+                syncUIFromConfig();
+                renderGrid();
+                saveToLocalStorage();
             };
 
             // Initialize App
