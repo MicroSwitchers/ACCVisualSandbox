@@ -15,9 +15,57 @@
     <meta name="mobile-web-app-capable" content="yes">
 
     <title>AAC Visual Sandbox</title>
+    <!-- Premium Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
     <!-- Tailwind CSS for styling -->
 
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'system-ui', 'sans-serif'],
+                        display: ['Poppins', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            900: '#0c4a6e',
+                        }
+                    },
+                    animation: {
+                        'gradient-x': 'gradient-x 15s ease infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        'gradient-x': {
+                            '0%, 100%': {
+                                'background-size': '200% 200%',
+                                'background-position': 'left center'
+                            },
+                            '50%': {
+                                'background-size': '200% 200%',
+                                'background-position': 'right center'
+                            },
+                        },
+                        'float': {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
         /* Core Styles */
         html,
@@ -29,8 +77,11 @@
             margin: 0;
             padding: 0;
             overflow: hidden;
-            background-color: #f8fafc;
-            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            /* Modern Dynamic Mesh Gradient Background */
+            background: linear-gradient(-45deg, #f8fafc, #e0e7ff, #f3e8ff, #f8fafc);
+            background-size: 400% 400%;
+            animation: gradient-x 15s ease infinite;
+            font-family: 'Outfit', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             user-select: none;
             -webkit-user-select: none;
             touch-action: pan-x pan-y;
@@ -38,6 +89,7 @@
             padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
         }
 
         /* Drawer Transitions */
@@ -93,9 +145,9 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            border-radius: 8px;
+            border-radius: 16px;
             overflow: visible;
-            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s, opacity 0.2s;
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s;
             touch-action: none;
             background-color: transparent;
             z-index: 1;
@@ -106,6 +158,9 @@
             transform: translateZ(0);
             backface-visibility: hidden;
             -webkit-backface-visibility: hidden;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         /* Occupied Cell Styles */
@@ -124,18 +179,28 @@
 
         .grid-cell.occupied {
             background: white;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.08);
+            /* Border set via JS for customization - only use fallback if not set */
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
             cursor: pointer;
         }
 
-        .grid-cell.occupied:hover {
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        .grid-cell.occupied:hover:not(.magnified) {
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+            z-index: 10;
         }
 
         /* Empty Cell Styles (Target) */
         .grid-cell.empty {
-            border: 2px dashed #cbd5e1;
+            border: 2px dashed rgba(148, 163, 184, 0.4);
+            background-color: rgba(248, 250, 252, 0.5);
+            backdrop-filter: blur(4px);
+        }
+
+        /* Hide empty cell borders in play mode for cleaner appearance */
+        .play-mode .grid-cell.empty {
+            border: none;
+            background: transparent;
         }
 
 
@@ -230,16 +295,11 @@
         /* Magnification Effect */
         .grid-cell.magnified {
             z-index: 100 !important;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
-            border-color: #3b82f6;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2) !important;
+            border-color: #3b82f6 !important;
             will-change: transform;
-            /* Force hardware acceleration */
-            transform: translateZ(0) scale(var(--zoom-level, 1.5));
-        }
-
-        /* Hiding dashed lines in play mode */
-        .play-mode .grid-cell.empty {
-            border: none;
+            /* Force hardware acceleration and override any hover transforms */
+            transform: translateZ(0) scale(var(--zoom-level, 1.5)) !important;
         }
 
         /* Image Styling */
@@ -261,10 +321,10 @@
             align-items: center;
             justify-content: center;
             width: 100%;
-            height: auto;
-            max-height: 100%;
+            height: 100%;
             padding: 4px;
-            overflow: visible;
+            overflow: hidden;
+            box-sizing: border-box;
         }
 
         .grid-cell img {
@@ -273,8 +333,17 @@
             max-width: 100%;
             max-height: 100%;
             object-fit: contain;
-            pointer-events: none;
             border-radius: 4px;
+            pointer-events: auto;
+            /* Allow image to receive pointer/touch events if needed */
+            /* Crucial: Prevent image drag and touch callouts natively */
+            -webkit-user-drag: none;
+            -khtml-user-drag: none;
+            -moz-user-drag: none;
+            -ms-user-drag: none;
+            -webkit-touch-callout: none;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         .grid-cell .label-text {
@@ -366,15 +435,7 @@
             line-height: 1.1;
         }
 
-        /* Generic Image Container for Image/Arasaac/Mulberry cells */
-        .image-container {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
+        /* Generic Image Container for Image/Arasaac/Mulberry cells - handled by .grid-cell .image-container above */
 
         /* Shape cell (emoji/symbol) */
         .grid-cell.shape-cell {
@@ -396,6 +457,9 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            pointer-events: none;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         /* Shape picker buttons */
@@ -428,21 +492,23 @@
             height: 28px;
             min-width: 28px;
             min-height: 28px;
-            background-color: #ef4444;
+            background: linear-gradient(135deg, #f87171, #ef4444);
             color: white;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             z-index: 20;
-            transition: transform 0.1s;
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         .delete-btn:hover {
-            background-color: #dc2626;
-            transform: scale(1.1);
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            transform: scale(1.15) translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         .delete-btn svg {
@@ -460,21 +526,23 @@
             height: 28px;
             min-width: 28px;
             min-height: 28px;
-            background-color: #3b82f6;
+            background: linear-gradient(135deg, #60a5fa, #3b82f6);
             color: white;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             z-index: 20;
-            transition: transform 0.1s;
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         .preview-btn:hover {
-            background-color: #2563eb;
-            transform: scale(1.1);
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            transform: scale(1.15) translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         .preview-btn svg {
@@ -492,21 +560,23 @@
             height: 28px;
             min-width: 28px;
             min-height: 28px;
-            background-color: #8b5cf6;
+            background: linear-gradient(135deg, #a78bfa, #8b5cf6);
             color: white;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             z-index: 20;
-            transition: transform 0.1s;
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         .label-btn:hover {
-            background-color: #7c3aed;
-            transform: scale(1.1);
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            transform: scale(1.15) translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         .label-btn svg {
@@ -516,11 +586,13 @@
         }
 
         .label-btn.has-label {
-            background-color: #10b981;
+            background: linear-gradient(135deg, #34d399, #10b981);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
         }
 
         .label-btn.has-label:hover {
-            background-color: #059669;
+            background: linear-gradient(135deg, #10b981, #059669);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         /* Symbol Color Button */
@@ -532,21 +604,23 @@
             height: 28px;
             min-width: 28px;
             min-height: 28px;
-            background-color: #f59e0b;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
             color: white;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             z-index: 20;
-            transition: transform 0.1s;
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         .color-pick-btn:hover {
-            background-color: #d97706;
-            transform: scale(1.1);
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            transform: scale(1.15) translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         .color-pick-btn svg {
@@ -556,11 +630,13 @@
         }
 
         .color-pick-btn.has-custom {
-            background-color: #10b981;
+            background: linear-gradient(135deg, #34d399, #10b981);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
         }
 
         .color-pick-btn.has-custom:hover {
-            background-color: #059669;
+            background: linear-gradient(135deg, #10b981, #059669);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         /* Compact Button Mode (for 4+ rows) */
@@ -1024,6 +1100,7 @@
             text-overflow: ellipsis;
             display: -webkit-box;
             -webkit-line-clamp: 2;
+            line-clamp: 2;
             -webkit-box-orient: vertical;
         }
 
@@ -1248,6 +1325,7 @@
             text-overflow: ellipsis;
             display: -webkit-box;
             -webkit-line-clamp: 2;
+            line-clamp: 2;
             -webkit-box-orient: vertical;
         }
 
@@ -1314,13 +1392,20 @@
 
         .mulberry-popular-symbols {
             display: flex;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
+            overflow-x: auto;
             gap: 6px;
             margin-top: 8px;
+            padding-bottom: 4px;
+            scrollbar-width: none;
+        }
+
+        .mulberry-popular-symbols::-webkit-scrollbar {
+            display: none;
         }
 
         .mulberry-popular-btn {
-            padding: 6px 12px;
+            padding: 4px 10px;
             background: #f1f5f9;
             border: 1px solid #e2e8f0;
             border-radius: 16px;
@@ -1328,12 +1413,47 @@
             color: #64748b;
             cursor: pointer;
             transition: all 0.15s;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
         .mulberry-popular-btn:hover {
             background: #d1fae5;
             border-color: #10b981;
             color: #059669;
+        }
+
+        .arasaac-popular-symbols {
+            display: flex;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            gap: 6px;
+            margin-top: 8px;
+            padding-bottom: 4px;
+            scrollbar-width: none;
+        }
+
+        .arasaac-popular-symbols::-webkit-scrollbar {
+            display: none;
+        }
+
+        .arasaac-popular-btn {
+            padding: 4px 10px;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            font-size: 0.75rem;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .arasaac-popular-btn:hover {
+            background: #dbeafe;
+            border-color: #3b82f6;
+            color: #1d4ed8;
         }
 
         /* Mulberry image in grid cells */
@@ -1378,6 +1498,49 @@
             opacity: 0;
             pointer-events: none;
         }
+
+        /* Themed Custom Scrollbars */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(241, 245, 249, 0.5);
+            /* slate-100 with opacity */
+            border-radius: 10px;
+        }
+
+        #splash-inner-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        #splash-inner-scroll::-webkit-scrollbar-button {
+            display: none;
+            width: 0;
+            height: 0;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.5);
+            /* slate-400 with opacity */
+            border-radius: 10px;
+            border: 2px solid transparent;
+            background-clip: padding-box;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(100, 116, 139, 0.8);
+            /* slate-500 */
+            border: 2px solid transparent;
+            background-clip: padding-box;
+        }
+
+        /* Firefox Support */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(148, 163, 184, 0.5) rgba(241, 245, 249, 0.5);
+        }
     </style>
 
     <script>
@@ -1389,9 +1552,10 @@
 
     <!-- Hunt Picker Modal -->
     <div id="hunt-modal" class="fixed inset-0 z-50 hidden">
-        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="closeHuntModal()"></div>
+        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-md" onclick="closeHuntModal()"></div>
         <div class="absolute inset-0 flex items-center justify-center p-4">
-            <div class="w-full max-w-lg bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+            <div
+                class="w-full max-w-lg bg-white/90 backdrop-blur-xl rounded-3xl shadow-xl border border-white/50 overflow-y-auto max-h-[90vh] flex flex-col transform transition-all">
                 <div class="p-4 border-b border-slate-200 flex items-center justify-between">
                     <div>
                         <div class="text-sm font-bold text-slate-800">Choose a picture for Pop-Up Finder</div>
@@ -1409,14 +1573,14 @@
                 <div class="p-4 space-y-3">
                     <div id="hunt-picker-grid" class="grid grid-cols-3 sm:grid-cols-4 gap-3"></div>
 
-                    <div class="flex items-center justify-between pt-2 border-t border-slate-200">
+                    <div class="flex items-center justify-between pt-4 border-t border-slate-200">
                         <button
-                            class="px-4 py-2 text-sm font-semibold bg-white border border-slate-300 shadow-sm hover:bg-slate-50 hover:border-slate-400 text-slate-700 rounded-lg transition-all active:scale-95"
+                            class="px-5 py-2.5 text-sm font-bold bg-white border border-slate-300 shadow-sm hover:bg-slate-50 hover:border-slate-400 hover:shadow-md text-slate-700 rounded-xl transition-all active:scale-95"
                             onclick="triggerHuntLoad()">
                             Load Image
                         </button>
                         <button
-                            class="px-3 py-2 text-sm font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg"
+                            class="px-5 py-2.5 text-sm font-bold bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white rounded-xl shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95"
                             onclick="confirmHuntChoice()" id="hunt-confirm-btn" disabled>
                             Use Selected
                         </button>
@@ -1431,15 +1595,15 @@
     <!-- Bulk Symbol Modal -->
     <div id="bulk-symbol-modal" class="fixed inset-0 z-[100] hidden">
         <!-- Backdrop -->
-        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity"
+        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-md transition-opacity"
             onclick="closeBulkSymbolModal()">
         </div>
 
         <!-- Modal Content -->
         <div
-            class="absolute inset-x-0 bottom-0 md:inset-0 md:flex md:items-center md:justify-center pointer-events-none">
+            class="absolute inset-x-0 bottom-0 md:inset-0 md:flex md:items-center md:justify-center pointer-events-none p-4">
             <div
-                class="bg-white w-full md:w-[800px] md:h-[80vh] md:rounded-2xl shadow-2xl flex flex-col h-[90vh] pointer-events-auto transform transition-transform duration-300 translate-y-full md:translate-y-0">
+                class="bg-white/95 backdrop-blur-xl w-full md:w-[800px] md:h-[80vh] md:rounded-3xl shadow-xl border border-white/50 flex flex-col h-[90vh] pointer-events-auto transform transition-transform duration-300 translate-y-full md:translate-y-0 overflow-hidden">
 
                 <!-- Header -->
                 <div
@@ -1459,8 +1623,9 @@
                 </div>
 
                 <!-- Tabs -->
-                <div class="symbol-picker-tabs mx-4 mt-2">
-                    <button id="bulk-tab-arasaac" class="symbol-picker-tab active"
+                <div
+                    class="symbol-picker-tabs mx-4 mt-4 bg-slate-100/50 backdrop-blur-sm border border-white p-1 rounded-2xl">
+                    <button id="bulk-tab-arasaac" class="symbol-picker-tab active rounded-xl"
                         onclick="switchBulkSymbolTab('arasaac')">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1509,7 +1674,8 @@
                             </div>
 
                             <!-- Popular Searches (Dynamic based on tab) -->
-                            <div id="bulk-popular-tags" class="mt-3 flex flex-wrap gap-2">
+                            <div id="bulk-popular-tags" class="mt-3 flex flex-nowrap overflow-x-auto gap-2 pb-1"
+                                style="scrollbar-width: none;">
                                 <!-- Populated by JS -->
                             </div>
                         </div>
@@ -1535,7 +1701,7 @@
 
                     <!-- RIGHT: Collection Tray (Visible as sidebar on Desktop, Bottom sheet on Mobile) -->
                     <div
-                        class="h-48 md:h-auto md:w-64 bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] md:shadow-none flex flex-col z-10 transition-all">
+                        class="h-48 md:h-auto md:w-64 bg-white shadow-sm md:shadow-none flex flex-col z-10 transition-all">
                         <div class="p-3 bg-blue-50/50 border-b border-blue-100 flex justify-between items-center">
                             <h4 class="font-bold text-blue-900 text-sm">Collection Library</h4>
                             <span id="bulk-count-badge"
@@ -1559,9 +1725,9 @@
                         </div>
 
                         <!-- Footer Actions -->
-                        <div class="p-3 border-t border-slate-100 bg-slate-50">
+                        <div class="p-4 border-t border-slate-100/50 bg-slate-50/50 backdrop-blur-md">
                             <button onclick="confirmBulkImport()" id="bulk-import-btn" disabled
-                                class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold rounded-xl shadow-lg shadow-blue-600/20 transition-all active:scale-[0.98]">
+                                class="w-full py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:from-slate-300 disabled:to-slate-300 disabled:cursor-not-allowed text-white font-bold rounded-2xl shadow-md hover:shadow-lg transition-all active:scale-[0.98]">
                                 Import All
                             </button>
                         </div>
@@ -1577,89 +1743,133 @@
     <!-- Splash Screen -->
     <!-- Splash Screen -->
     <div id="splash-screen"
-        class="fixed inset-0 z-[9999] bg-slate-50 flex flex-col items-center justify-center p-4 transition-opacity duration-700 overflow-y-auto">
-        <div
-            class="bg-white/95 backdrop-blur-md p-8 rounded-3xl shadow-2xl shadow-slate-900/10 max-w-lg w-full border border-white/60 animate-fade-in-up my-auto">
-            <div class="text-center space-y-4">
-                <!-- Logo -->
-                <div class="relative w-28 h-28 mx-auto mb-3">
-                    <img src="icon.svg" alt="AAC Visual Sandbox Logo"
-                        class="w-full h-full object-contain drop-shadow-2xl">
-                    <div
-                        class="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-indigo-500/20 rounded-full blur-2xl -z-10 scale-150">
-                    </div>
-                </div>
-
-                <!-- Title -->
-                <div>
-                    <h1 class="text-3xl md:text-4xl font-extrabold text-slate-800 tracking-tight">
-                        AAC Visual <span
-                            class="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Sandbox</span>
-                    </h1>
-                    <p class="text-base text-slate-500 max-w-md mx-auto font-medium leading-relaxed mt-1">
-                        Arrange images and symbols for AAC interaction.
-                    </p>
-                </div>
-
-                <!-- Audio Settings Section -->
+        class="fixed inset-0 z-[9999] bg-slate-900/40 backdrop-blur-md flex flex-col items-center p-4 transition-opacity duration-700 overflow-y-auto overflow-x-hidden">
+        <div id="splash-content"
+            class="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl max-w-lg w-full border border-white/60 animate-fade-in-up my-auto relative overflow-hidden">
+            <div id="splash-inner-scroll" class="p-6 md:p-10 overflow-y-auto overflow-x-hidden max-h-[90vh]">
+                <!-- Decorative background elements inside splash -->
                 <div
-                    class="bg-gradient-to-br from-slate-50 to-slate-100/80 rounded-2xl p-5 border border-slate-200/80 text-left space-y-4 shadow-inner">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h3 class="font-bold text-slate-800 text-base">Feedback Style</h3>
-                            <p class="text-xs text-slate-500">How should the app respond to touch?</p>
+                    class="absolute -top-24 -right-24 w-48 h-48 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob">
+                </div>
+                <div
+                    class="absolute -bottom-24 -left-24 w-48 h-48 bg-indigo-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000">
+                </div>
+                <div class="text-center space-y-4">
+                    <!-- Logo -->
+                    <div class="relative w-28 h-28 mx-auto mb-3">
+                        <img src="icon.svg" alt="AAC Visual Sandbox Logo"
+                            class="w-full h-full object-contain drop-shadow-2xl">
+                        <div
+                            class="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-indigo-500/20 rounded-full blur-2xl -z-10 scale-150">
                         </div>
+                    </div>
 
-                        <!-- Toggle Switch with Labels -->
-                        <div class="flex items-center gap-2">
-                            <span
-                                class="text-[10px] font-bold uppercase tracking-wider text-slate-400 transition-colors"
-                                id="label-tone">Tone</span>
+                    <!-- Title -->
+                    <div class="relative z-10">
+                        <h1 class="text-4xl md:text-5xl font-extrabold text-slate-800 tracking-tight">
+                            AAC Visual <br /><span
+                                class="bg-gradient-to-r from-blue-600 via-indigo-500 to-violet-600 bg-clip-text text-transparent">Sandbox</span>
+                        </h1>
+                        <p class="text-base text-slate-500 max-w-md mx-auto font-medium leading-relaxed mt-1">
+                            Quickly arrange images, symbols and simple AAC grids to support assessment and planning
+                            discussions.
+                        </p>
+                    </div>
 
-                            <div
-                                class="relative inline-block w-12 align-middle select-none transition duration-200 ease-in">
-                                <input type="checkbox" name="splash-audio-toggle" id="splash-audio-toggle"
-                                    class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-300" />
-                                <label for="splash-audio-toggle"
-                                    class="toggle-label block overflow-hidden h-6 rounded-full bg-slate-300 cursor-pointer"></label>
+                    <!-- Audio Settings Section -->
+                    <div
+                        class="bg-white/50 backdrop-blur-sm rounded-2xl p-6 border border-white shadow-sm text-left space-y-4 relative z-10">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="font-bold text-slate-800 text-base">Feedback Style</h3>
+                                <p class="text-xs text-slate-500">How should the app respond to touch?</p>
                             </div>
 
-                            <span class="text-[10px] font-bold uppercase tracking-wider text-blue-600 transition-colors"
-                                id="label-voice">Voice</span>
+                            <!-- Toggle Switch with Labels -->
+                            <div class="flex items-center gap-2">
+                                <span
+                                    class="text-[10px] font-bold uppercase tracking-wider text-slate-400 transition-colors"
+                                    id="label-tone">Tone</span>
+
+                                <div
+                                    class="relative inline-block w-12 align-middle select-none transition duration-200 ease-in">
+                                    <input type="checkbox" name="splash-audio-toggle" id="splash-audio-toggle"
+                                        class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-300" />
+                                    <label for="splash-audio-toggle"
+                                        class="toggle-label block overflow-hidden h-6 rounded-full bg-slate-300 cursor-pointer"></label>
+                                </div>
+
+                                <span
+                                    class="text-[10px] font-bold uppercase tracking-wider text-blue-600 transition-colors"
+                                    id="label-voice">Voice</span>
+                            </div>
+                        </div>
+
+                        <!-- Help Triggers -->
+                        <div class="flex flex-col items-start gap-y-3 pt-2">
+                            <button id="splash-help-btn"
+                                class="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                </svg>
+                                How does naming work?
+                            </button>
+                            <button id="splash-image-help-btn"
+                                class="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+                                    <circle cx="9" cy="9" r="2" />
+                                    <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+                                </svg>
+                                What image Formats can be used?
+                            </button>
+                        </div>
+
+                    </div>
+
+                    <!-- Action Button -->
+                    <button id="splash-start-btn"
+                        class="w-full py-4 mt-2 relative z-10 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 hover:from-blue-700 hover:via-indigo-700 hover:to-violet-700 text-white font-bold text-lg rounded-2xl shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-1 active:scale-[0.98] active:translate-y-0 flex justify-center items-center gap-2">
+                        Start Creating
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 12h14" />
+                            <path d="m12 5 7 7-7 7" />
+                        </svg>
+                    </button>
+
+                    <!-- Caution notices -->
+                    <div class="space-y-2 mt-3 relative z-10">
+                        <div class="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10" />
+                                <line x1="12" y1="8" x2="12" y2="12" />
+                                <line x1="12" y1="16" x2="12.01" y2="16" />
+                            </svg>
+                            <p class="text-xs text-amber-800 font-medium">This app is for assessment and discussion
+                                purposes.</p>
+                        </div>
+                        <div class="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10" />
+                                <line x1="12" y1="8" x2="12" y2="12" />
+                                <line x1="12" y1="16" x2="12.01" y2="16" />
+                            </svg>
+                            <p class="text-xs text-amber-800 font-medium">This app is not designed to create or save
+                                complex AAC grids.</p>
                         </div>
                     </div>
-
-                    <!-- Help Triggers -->
-                    <div class="flex flex-col items-start gap-y-3 pt-2">
-                        <button id="splash-help-btn"
-                            class="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1 transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                            </svg>
-                            How does naming work?
-                        </button>
-                        <button id="splash-image-help-btn"
-                            class="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1 transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
-                                <circle cx="9" cy="9" r="2" />
-                                <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
-                            </svg>
-                            What image Formats can be used?
-                        </button>
-                    </div>
-
                 </div>
-
-                <!-- Action Button -->
-                <button id="splash-start-btn"
-                    class="w-full py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-lg rounded-xl shadow-lg shadow-blue-500/25 transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-blue-500/30 active:scale-[0.98]">
-                    Start Creating
-                </button>
             </div>
         </div>
     </div>
@@ -1867,8 +2077,8 @@
 
     <!-- Toggle Button (Drawer Handle) -->
     <button id="open-btn"
-        class="fixed z-50 p-2.5 bg-white rounded-xl shadow-lg hover:bg-slate-50 text-slate-600 hidden border border-slate-200/50 hover:shadow-xl transition-all active:scale-95"
-        style="top: max(1rem, env(safe-area-inset-top, 1rem)); left: max(1rem, env(safe-area-inset-left, 1rem));">
+        class="fixed z-50 p-3 bg-white/80 backdrop-blur-md rounded-2xl shadow-md hover:bg-white text-slate-700 hidden border border-white/50 hover:shadow-lg transition-all duration-300 active:scale-95 group"
+        style="top: max(1rem, env(safe-area-inset-top, 1rem)); left: max(1rem, env(safe-area-inset-left, 1rem)); border-radius: 16px;">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="4" x2="20" y1="12" y2="12" />
@@ -1879,12 +2089,14 @@
 
     <!-- Settings Drawer -->
     <aside id="drawer"
-        class="fixed inset-y-0 left-0 z-50 w-80 bg-white shadow-2xl flex flex-col drawer-open overflow-hidden border-r border-slate-200/80"
+        class="fixed inset-y-0 left-0 z-50 w-80 bg-white shadow-2xl flex flex-col drawer-open overflow-hidden border-r border-slate-200"
         style="padding-top: env(safe-area-inset-top, 0); padding-bottom: env(safe-area-inset-bottom, 0);">
         <!-- Header -->
         <div
-            class="p-4 border-b border-slate-200 flex justify-between items-center bg-gradient-to-r from-slate-50 to-blue-50/50">
-            <h2 class="font-bold text-slate-800 text-lg tracking-tight">AAC Visual Sandbox</h2>
+            class="p-5 border-b border-white/40 flex justify-between items-center bg-gradient-to-r from-white/60 to-blue-50/40">
+            <h2
+                class="font-extrabold text-slate-800 text-xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600">
+                AAC Sandbox</h2>
             <button id="close-btn"
                 class="p-2 hover:bg-slate-200/80 rounded-lg text-slate-500 hover:text-slate-700 transition-all flex items-center justify-center active:scale-95">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
@@ -1901,7 +2113,7 @@
 
             <!-- Fullscreen Toggle (Top Priority) -->
             <button onclick="toggleFullScreen()"
-                class="w-full py-2.5 bg-gradient-to-r from-slate-800 to-slate-900 text-white rounded-xl hover:from-slate-900 hover:to-slate-950 transition-all text-sm font-semibold flex justify-center items-center gap-2 shadow-md hover:shadow-lg active:scale-[0.98]">
+                class="w-full py-3 bg-gradient-to-r from-slate-800 to-slate-900 text-white rounded-2xl hover:from-slate-700 hover:to-slate-800 transition-all duration-300 text-sm font-bold flex justify-center items-center gap-2 shadow-md hover:shadow-lg hover:-translate-y-0.5 active:scale-[0.98] active:translate-y-0">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M15 3h6v6" />
@@ -1913,9 +2125,12 @@
             </button>
 
             <!-- Mode Toggle -->
-            <div class="bg-slate-100 p-1.5 rounded-xl flex shadow-inner border border-slate-200/50">
+            <div
+                class="bg-slate-200/50 backdrop-blur-sm p-1.5 rounded-2xl flex shadow-inner border border-white/50 relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-b from-black/[0.03] to-transparent pointer-events-none">
+                </div>
                 <button id="btn-mode-edit" onclick="setMode('edit')"
-                    class="mode-btn flex-1 py-2.5 rounded-lg text-sm font-bold shadow-sm bg-white text-blue-600 flex items-center justify-center gap-2 transition-all">
+                    class="mode-btn flex-1 py-3 rounded-xl text-sm font-bold shadow-sm bg-white text-blue-600 flex items-center justify-center gap-2 transition-all relative z-10">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
@@ -1924,7 +2139,7 @@
                     Edit
                 </button>
                 <button id="btn-mode-play" onclick="setMode('play')"
-                    class="mode-btn flex-1 py-2.5 rounded-lg text-sm font-bold text-slate-500 hover:text-slate-700 flex items-center justify-center gap-2 transition-all">
+                    class="mode-btn flex-1 py-3 rounded-xl text-sm font-bold text-slate-600 hover:text-slate-800 hover:bg-white/50 flex items-center justify-center gap-2 transition-all relative z-10">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polygon points="5 3 19 12 5 21 5 3" />
@@ -1941,7 +2156,7 @@
                 <div class="grid grid-cols-2 gap-3">
                     <!-- Upload Button -->
                     <div onclick="document.getElementById('file-input').click()"
-                        class="aspect-square border-2 border-dashed border-slate-300 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-50/50 transition-all duration-200 group hover:shadow-sm">
+                        class="aspect-square bg-white/50 backdrop-blur-sm border-2 border-dashed border-slate-300 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-50/80 transition-all duration-300 group hover:shadow-md hover:-translate-y-1">
                         <svg class="text-slate-400 group-hover:text-blue-500 mb-2" xmlns="http://www.w3.org/2000/svg"
                             width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1955,7 +2170,7 @@
 
                     <!-- Bulk Button -->
                     <div onclick="openBulkSymbolModal()"
-                        class="aspect-square border-2 border-dashed border-slate-300 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-50/50 transition-all duration-200 group hover:shadow-sm">
+                        class="aspect-square bg-white/50 backdrop-blur-sm border-2 border-dashed border-slate-300 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-50/80 transition-all duration-300 group hover:shadow-md hover:-translate-y-1">
                         <svg class="text-slate-400 group-hover:text-blue-500 mb-2" xmlns="http://www.w3.org/2000/svg"
                             width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1978,7 +2193,7 @@
 
                 <!-- Clear All Button (always visible in edit mode when there's data) -->
                 <button id="clear-all-btn" onclick="clearGrid()"
-                    class="hidden w-full mt-3 py-3 px-4 bg-red-50 hover:bg-red-100 border border-red-200 hover:border-red-300 text-red-600 hover:text-red-700 rounded-xl transition-all text-sm font-semibold flex items-center justify-center gap-2 active:scale-[0.98]">
+                    class="hidden w-full mt-4 py-3.5 px-4 bg-red-50/80 hover:bg-red-100 border border-red-200 text-red-600 hover:text-red-700 rounded-2xl transition-all duration-300 text-sm font-bold flex items-center justify-center gap-2 shadow-sm hover:shadow-md active:scale-[0.98]">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M3 6h18" />
@@ -2246,6 +2461,132 @@
                                     <span
                                         class="text-[10px] font-bold text-slate-500 group-hover:text-blue-600">4x3</span>
                                 </button>
+                                <!-- 4x4 -->
+                                <button onclick="setStandardGrid(4, 4)"
+                                    class="preset-btn p-1.5 border border-slate-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all flex flex-col items-center gap-1 group"
+                                    title="4x4 Grid">
+                                    <div class="grid grid-cols-4 gap-0.5 w-4 h-4">
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                    </div>
+                                    <span
+                                        class="text-[10px] font-bold text-slate-500 group-hover:text-blue-600">4x4</span>
+                                </button>
+                                <!-- 5x4 -->
+                                <button onclick="setStandardGrid(5, 4)"
+                                    class="preset-btn p-1.5 border border-slate-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all flex flex-col items-center gap-1 group"
+                                    title="5x4 Grid">
+                                    <div class="grid grid-cols-5 gap-0.5 w-4 h-4">
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                        <div
+                                            class="bg-slate-300 rounded-[1px] group-hover:bg-blue-500 transition-colors">
+                                        </div>
+                                    </div>
+                                    <span
+                                        class="text-[10px] font-bold text-slate-500 group-hover:text-blue-600">5x4</span>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -2303,52 +2644,172 @@
                         Appearance</label>
                     <!-- Background Color -->
                     <div class="space-y-2">
-                        <span class="text-sm text-slate-700 block">Background Color</span>
-                        <div class="flex gap-3">
+                        <span class="text-sm text-slate-700 block">Page Background</span>
+                        <div class="flex flex-wrap gap-2 items-center">
                             <button onclick="setBackground('#f8fafc', this)"
-                                class="color-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none selected"
+                                class="color-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none selected"
                                 style="background-color: #f8fafc;" title="White"></button>
-                            <button onclick="setBackground('#9ca3af', this)"
-                                class="color-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none"
-                                style="background-color: #9ca3af;" title="Grey"></button>
-                            <button onclick="setBackground('#d4c5a0', this)"
-                                class="color-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none"
-                                style="background-color: #d4c5a0;" title="Beige"></button>
+                            <button onclick="setBackground('#f1f5f9', this)"
+                                class="color-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #f1f5f9;" title="Off-White"></button>
+                            <button onclick="setBackground('#e2e8f0', this)"
+                                class="color-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #e2e8f0;" title="Light Grey"></button>
+                            <button onclick="setBackground('#64748b', this)"
+                                class="color-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #64748b;" title="Slate"></button>
                             <button onclick="setBackground('#334155', this)"
-                                class="color-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none"
-                                style="background-color: #334155;" title="Dark Grey"></button>
+                                class="color-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #334155;" title="Dark Slate"></button>
+                            <button onclick="setBackground('#1e293b', this)"
+                                class="color-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #1e293b;" title="Near Black"></button>
                             <button onclick="setBackground('#000000', this)"
-                                class="color-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                class="color-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
                                 style="background-color: #000000;" title="Black"></button>
+                            <button onclick="setBackground('#d4c5a0', this)"
+                                class="color-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #d4c5a0;" title="Beige"></button>
+                            <button onclick="setBackground('#e7e0d5', this)"
+                                class="color-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #e7e0d5;" title="Warm White"></button>
+                            <button type="button" title="Custom colour"
+                                class="relative w-7 h-7 rounded-full p-[1.5px] cursor-pointer flex-shrink-0 hover:scale-110 shadow-sm transition-transform focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+                                style="background: conic-gradient(from 90deg, #ef4444, #eab308, #22c55e, #3b82f6, #a855f7, #ef4444);"
+                                onclick="this.querySelector('input').click()">
+                                <div
+                                    class="w-full h-full bg-white rounded-full flex flex-col items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                                        stroke-linejoin="round" class="text-slate-600">
+                                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                                    </svg>
+                                </div>
+                                <input type="color" value="#f8fafc"
+                                    class="absolute inset-0 opacity-0 w-full h-full cursor-pointer" tabindex="-1"
+                                    onchange="setBackground(this.value, null)">
+                            </button>
                         </div>
                     </div>
 
-                    <!-- Borders -->
+                    <!-- Cell Background Color -->
+                    <div class="space-y-2">
+                        <span class="text-sm text-slate-700 block">Cell Background</span>
+                        <div class="flex flex-wrap gap-2 items-center">
+                            <button onclick="setCellBgColor('#ffffff', this)"
+                                class="cell-bg-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none selected"
+                                style="background-color: #ffffff;" title="White"></button>
+                            <button onclick="setCellBgColor('#fef08a', this)"
+                                class="cell-bg-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #fef08a;" title="Bright Yellow"></button>
+                            <button onclick="setCellBgColor('#fef3c7', this)"
+                                class="cell-bg-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #fef3c7;" title="Soft Yellow"></button>
+                            <button onclick="setCellBgColor('#dbeafe', this)"
+                                class="cell-bg-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #dbeafe;" title="Blue"></button>
+                            <button onclick="setCellBgColor('#dcfce7', this)"
+                                class="cell-bg-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #dcfce7;" title="Green"></button>
+                            <button onclick="setCellBgColor('#000000', this)"
+                                class="cell-bg-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #000000;" title="Black"></button>
+                            <button onclick="setCellBgColor('#fed7aa', this)"
+                                class="cell-bg-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #fed7aa;" title="Orange"></button>
+                            <button onclick="setCellBgColor('#fecaca', this)"
+                                class="cell-bg-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #fecaca;" title="Pink/Red"></button>
+                            <button onclick="setCellBgColor('#a5f3fc', this)"
+                                class="cell-bg-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #a5f3fc;" title="Cyan"></button>
+                            <button onclick="setCellBgColor('#e9d5ff', this)"
+                                class="cell-bg-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #e9d5ff;" title="Lavender"></button>
+                            <button onclick="setCellBgColor('#9ca3af', this)"
+                                class="cell-bg-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #9ca3af;" title="Grey"></button>
+                            <button type="button" title="Custom colour"
+                                class="relative w-7 h-7 rounded-full p-[1.5px] cursor-pointer flex-shrink-0 hover:scale-110 shadow-sm transition-transform focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+                                style="background: conic-gradient(from 90deg, #ef4444, #eab308, #22c55e, #3b82f6, #a855f7, #ef4444);"
+                                onclick="this.querySelector('input').click()">
+                                <div
+                                    class="w-full h-full bg-white rounded-full flex flex-col items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                                        stroke-linejoin="round" class="text-slate-600">
+                                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                                    </svg>
+                                </div>
+                                <input type="color" value="#ffffff"
+                                    class="absolute inset-0 opacity-0 w-full h-full cursor-pointer" tabindex="-1"
+                                    onchange="setCellBgColor(this.value, null)">
+                            </button>
+                        </div>
+                    </div>
+
                     <!-- Border Color -->
                     <div class="space-y-2">
                         <span class="text-sm text-slate-700 block">Border Color</span>
-                        <div class="flex justify-start gap-3">
+                        <div class="flex flex-wrap gap-2 items-center">
                             <button onclick="setBorderColor('#000000', this)"
-                                class="border-color-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none selected"
+                                class="border-color-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none selected"
                                 style="background-color: #000000;" title="Black"></button>
                             <button onclick="setBorderColor('#ffffff', this)"
-                                class="border-color-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                class="border-color-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
                                 style="background-color: #ffffff;" title="White"></button>
+                            <button onclick="setBorderColor('#facc15', this)"
+                                class="border-color-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #facc15;" title="Bright Yellow"></button>
+                            <button onclick="setBorderColor('#f97316', this)"
+                                class="border-color-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #f97316;" title="Orange"></button>
+                            <button onclick="setBorderColor('#ef4444', this)"
+                                class="border-color-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #ef4444;" title="Red"></button>
+                            <button onclick="setBorderColor('#06b6d4', this)"
+                                class="border-color-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #06b6d4;" title="Cyan"></button>
                             <button onclick="setBorderColor('#1e3a8a', this)"
-                                class="border-color-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none"
-                                style="background-color: #1e3a8a;" title="Blue"></button>
-                            <button onclick="setBorderColor('#991b1b', this)"
-                                class="border-color-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none"
-                                style="background-color: #991b1b;" title="Red"></button>
+                                class="border-color-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #1e3a8a;" title="Navy Blue"></button>
+                            <button onclick="setBorderColor('#16a34a', this)"
+                                class="border-color-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #16a34a;" title="Green"></button>
+                            <button onclick="setBorderColor('#7c3aed', this)"
+                                class="border-color-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #7c3aed;" title="Purple"></button>
+                            <button onclick="setBorderColor('#9ca3af', this)"
+                                class="border-color-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none"
+                                style="background-color: #9ca3af;" title="Grey"></button>
                             <button onclick="setBorderColor('transparent', this)"
-                                class="border-color-btn w-8 h-8 rounded-full border border-slate-300 shadow-sm focus:outline-none flex items-center justify-center bg-slate-50"
+                                class="border-color-btn w-7 h-7 rounded-full border border-slate-300 shadow-sm focus:outline-none flex items-center justify-center bg-slate-50"
                                 title="Transparent">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
                                     fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round"
                                     stroke-linejoin="round">
                                     <circle cx="12" cy="12" r="10"></circle>
                                     <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
                                 </svg>
+                            </button>
+                            <button type="button" title="Custom colour"
+                                class="relative w-7 h-7 rounded-full p-[1.5px] cursor-pointer flex-shrink-0 hover:scale-110 shadow-sm transition-transform focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+                                style="background: conic-gradient(from 90deg, #ef4444, #eab308, #22c55e, #3b82f6, #a855f7, #ef4444);"
+                                onclick="this.querySelector('input').click()">
+                                <div
+                                    class="w-full h-full bg-white rounded-full flex flex-col items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                                        stroke-linejoin="round" class="text-slate-600">
+                                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                                    </svg>
+                                </div>
+                                <input type="color" value="#000000"
+                                    class="absolute inset-0 opacity-0 w-full h-full cursor-pointer" tabindex="-1"
+                                    onchange="setBorderColor(this.value, null)">
                             </button>
                         </div>
                     </div>
@@ -2552,15 +3013,14 @@
                             class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <div
-            class="pt-6 pb-4 text-center border-t border-slate-200/60 mt-4 bg-gradient-to-b from-transparent to-slate-50/50">
-            <h3 class="text-sm font-semibold text-slate-700">By Niall Brown</h3>
-            <p class="text-xs text-slate-500 font-medium mt-0.5">Early Childhood Vision Consultant</p>
-            <p class="text-[10px] text-slate-400 mt-2">Version 1.0</p>
-        </div>
+                <!-- Attribution -->
+                <div class="pt-6 pb-2 text-center border-t border-slate-200/60 mt-4">
+                    <h3 class="text-sm font-semibold text-slate-700">By Niall Brown</h3>
+                    <p class="text-xs text-slate-500 font-medium mt-0.5">Early Childhood Vision Consultant</p>
+                    <p class="text-[10px] text-slate-400 mt-2">Version 1.1</p>
+                </div>
+            </div>
         </div>
     </aside>
 
@@ -3101,16 +3561,26 @@
                     <div class="mb-4">
                         <p class="text-xs text-slate-500 mb-2">Popular searches:</p>
                         <div class="arasaac-popular-symbols">
-                            <button class="arasaac-popular-btn" onclick="searchArasaac('happy')">happy</button>
-                            <button class="arasaac-popular-btn" onclick="searchArasaac('sad')">sad</button>
-                            <button class="arasaac-popular-btn" onclick="searchArasaac('eat')">eat</button>
-                            <button class="arasaac-popular-btn" onclick="searchArasaac('drink')">drink</button>
-                            <button class="arasaac-popular-btn" onclick="searchArasaac('help')">help</button>
-                            <button class="arasaac-popular-btn" onclick="searchArasaac('play')">play</button>
-                            <button class="arasaac-popular-btn" onclick="searchArasaac('more')">more</button>
+                            <button class="arasaac-popular-btn" onclick="searchArasaac('go')">go</button>
                             <button class="arasaac-popular-btn" onclick="searchArasaac('stop')">stop</button>
-                            <button class="arasaac-popular-btn" onclick="searchArasaac('yes')">yes</button>
-                            <button class="arasaac-popular-btn" onclick="searchArasaac('no')">no</button>
+                            <button class="arasaac-popular-btn" onclick="searchArasaac('more')">more</button>
+                            <button class="arasaac-popular-btn" onclick="searchArasaac('finished')">finished</button>
+                            <button class="arasaac-popular-btn" onclick="searchArasaac('help')">help</button>
+                            <button class="arasaac-popular-btn" onclick="searchArasaac('want')">want</button>
+                            <button class="arasaac-popular-btn" onclick="searchArasaac('like')">like</button>
+                            <button class="arasaac-popular-btn" onclick="searchArasaac('not')">not</button>
+                            <button class="arasaac-popular-btn" onclick="searchArasaac('in')">in</button>
+                            <button class="arasaac-popular-btn" onclick="searchArasaac('on')">on</button>
+                            <button class="arasaac-popular-btn" onclick="searchArasaac('out')">out</button>
+                            <button class="arasaac-popular-btn" onclick="searchArasaac('off')">off</button>
+                            <button class="arasaac-popular-btn" onclick="searchArasaac('up')">up</button>
+                            <button class="arasaac-popular-btn" onclick="searchArasaac('down')">down</button>
+                            <button class="arasaac-popular-btn" onclick="searchArasaac('get')">get</button>
+                            <button class="arasaac-popular-btn" onclick="searchArasaac('that')">that</button>
+                            <button class="arasaac-popular-btn" onclick="searchArasaac('this')">this</button>
+                            <button class="arasaac-popular-btn" onclick="searchArasaac('I')">I</button>
+                            <button class="arasaac-popular-btn" onclick="searchArasaac('you')">you</button>
+                            <button class="arasaac-popular-btn" onclick="searchArasaac('what')">what</button>
                         </div>
                     </div>
 
@@ -3146,16 +3616,26 @@
                     <div class="mb-4">
                         <p class="text-xs text-slate-500 mb-2">Popular searches:</p>
                         <div class="mulberry-popular-symbols">
-                            <button class="mulberry-popular-btn" onclick="searchMulberry('happy')">happy</button>
-                            <button class="mulberry-popular-btn" onclick="searchMulberry('sad')">sad</button>
-                            <button class="mulberry-popular-btn" onclick="searchMulberry('food')">food</button>
-                            <button class="mulberry-popular-btn" onclick="searchMulberry('drink')">drink</button>
+                            <button class="mulberry-popular-btn" onclick="searchMulberry('go')">go</button>
+                            <button class="mulberry-popular-btn" onclick="searchMulberry('stop')">stop</button>
+                            <button class="mulberry-popular-btn" onclick="searchMulberry('more')">more</button>
+                            <button class="mulberry-popular-btn" onclick="searchMulberry('finished')">finished</button>
                             <button class="mulberry-popular-btn" onclick="searchMulberry('help')">help</button>
-                            <button class="mulberry-popular-btn" onclick="searchMulberry('work')">work</button>
-                            <button class="mulberry-popular-btn" onclick="searchMulberry('home')">home</button>
-                            <button class="mulberry-popular-btn" onclick="searchMulberry('person')">person</button>
-                            <button class="mulberry-popular-btn" onclick="searchMulberry('yes')">yes</button>
-                            <button class="mulberry-popular-btn" onclick="searchMulberry('no')">no</button>
+                            <button class="mulberry-popular-btn" onclick="searchMulberry('want')">want</button>
+                            <button class="mulberry-popular-btn" onclick="searchMulberry('like')">like</button>
+                            <button class="mulberry-popular-btn" onclick="searchMulberry('not')">not</button>
+                            <button class="mulberry-popular-btn" onclick="searchMulberry('in')">in</button>
+                            <button class="mulberry-popular-btn" onclick="searchMulberry('on')">on</button>
+                            <button class="mulberry-popular-btn" onclick="searchMulberry('out')">out</button>
+                            <button class="mulberry-popular-btn" onclick="searchMulberry('off')">off</button>
+                            <button class="mulberry-popular-btn" onclick="searchMulberry('up')">up</button>
+                            <button class="mulberry-popular-btn" onclick="searchMulberry('down')">down</button>
+                            <button class="mulberry-popular-btn" onclick="searchMulberry('get')">get</button>
+                            <button class="mulberry-popular-btn" onclick="searchMulberry('that')">that</button>
+                            <button class="mulberry-popular-btn" onclick="searchMulberry('this')">this</button>
+                            <button class="mulberry-popular-btn" onclick="searchMulberry('I')">I</button>
+                            <button class="mulberry-popular-btn" onclick="searchMulberry('you')">you</button>
+                            <button class="mulberry-popular-btn" onclick="searchMulberry('what')">what</button>
                         </div>
                     </div>
 
@@ -3205,6 +3685,8 @@
                 gap: 10,
                 fit: 'contain',
                 mode: 'edit',
+                squareAspect: false,
+                cellBgColor: '#ffffff',
                 magnify: false,
                 zoomLevel: 1.35,
                 audioEnabled: false,
@@ -3247,6 +3729,7 @@
             // --- Magnify State (Play Mode) ---
             let currentMagnifiedEl = null;
             let magnifyPointerId = null;
+            let pendingMagnifyRelease = null;
 
             // --- Persistence (IndexedDB + localStorage) ---
             const DB_NAME = 'ACC_Sandbox_DB';
@@ -3309,6 +3792,11 @@
 
                     // FORCE Edit Mode on startup (safety)
                     config.mode = 'edit';
+
+                    // If squareAspect is enabled, ensure rows is set to 1 for UI consistency
+                    if (config.squareAspect) {
+                        config.rows = 1;
+                    }
 
                     // Sync UI controls with loaded config
                     syncUIFromConfig();
@@ -3564,64 +4052,71 @@
                 if (labelSizeVal) labelSizeVal.innerText = `${config.labelSize}px`;
 
                 renderGrid();
-                updatePresetHighlight();
+                // updatePresetHighlight(); // Removed to prevent crash
                 saveToLocalStorage();
             }
 
+            // Stub for missing function
+            function updatePresetHighlight() {
+                // Placeholder to prevent crashes
+            }
+
             function syncUIFromConfig() {
-                // Safety check: ensure core elements exist
-                if (!colRange || !rowRange) return;
+                try {
+                    // Safety check: ensure core elements exist
+                    if (!colRange || !rowRange) return;
 
-                // Sync slider/input values from config
-                colRange.value = config.cols;
-                rowRange.value = config.rows;
-                if (gapRange) gapRange.value = config.gap;
-                if (fitSelect) fitSelect.value = config.fit;
-                if (magnifyToggle) magnifyToggle.checked = config.magnify;
-                if (zoomRange) zoomRange.value = config.zoomLevel;
-                if (audioToggle) audioToggle.checked = config.audioEnabled;
-                if (borderWidthRange) borderWidthRange.value = config.borderWidth;
-                if (labelSizeRange) labelSizeRange.value = config.labelSize;
-                if (gameDelayRange) gameDelayRange.value = config.gameDelay;
-                if (labelPositionSelect) labelPositionSelect.value = config.labelPosition;
-                if (labelsToggle) labelsToggle.checked = config.showLabels;
+                    // Sync slider/input values from config
+                    colRange.value = config.cols;
+                    rowRange.value = config.rows;
+                    if (gapRange) gapRange.value = config.gap;
+                    if (fitSelect) fitSelect.value = config.fit;
+                    if (magnifyToggle) magnifyToggle.checked = config.magnify;
+                    if (zoomRange) zoomRange.value = config.zoomLevel;
+                    if (audioToggle) audioToggle.checked = config.audioEnabled;
+                    if (borderWidthRange) borderWidthRange.value = config.borderWidth;
+                    if (labelSizeRange) labelSizeRange.value = config.labelSize;
+                    if (gameDelayRange) gameDelayRange.value = config.gameDelay;
+                    if (labelPositionSelect) labelPositionSelect.value = config.labelPosition;
+                    if (labelsToggle) labelsToggle.checked = config.showLabels;
 
-                // Sync dwell/cooldown sliders
-                if (dwellRange) dwellRange.value = config.dwellTime;
-                if (cooldownRange) cooldownRange.value = config.cooldownTime;
-                if (labelColorSelect) labelColorSelect.value = config.labelColor;
-                if (labelColorPicker) labelColorPicker.value = config.labelColor;
+                    // Sync dwell/cooldown sliders
+                    if (dwellRange) dwellRange.value = config.dwellTime;
+                    if (cooldownRange) cooldownRange.value = config.cooldownTime;
+                    if (labelColorSelect) labelColorSelect.value = config.labelColor;
+                    if (labelColorPicker) labelColorPicker.value = config.labelColor;
 
-                // Sync display values
-                if (colVal) colVal.innerText = config.cols;
-                if (rowVal) rowVal.innerText = config.rows;
-                if (gapVal) gapVal.innerText = `${config.gap}px`;
-                if (zoomVal) zoomVal.innerText = config.zoomLevel + 'x';
-                if (borderWidthVal) borderWidthVal.innerText = config.borderWidth === 0 ? 'None' : `${config.borderWidth}px`;
-                if (labelSizeVal) labelSizeVal.innerText = `${config.labelSize}px`;
-                if (dwellVal) dwellVal.innerText = config.dwellTime === 0 ? 'Off' : `${config.dwellTime}s`;
-                if (cooldownVal) cooldownVal.innerText = config.cooldownTime === 0 ? 'Off' : `${config.cooldownTime}s`;
-                if (gameDelayVal) gameDelayVal.innerText = `${config.gameDelay}s`;
+                    // Sync display values
+                    if (colVal) colVal.innerText = config.cols;
+                    if (rowVal) rowVal.innerText = config.rows;
+                    if (gapVal) gapVal.innerText = `${config.gap}px`;
+                    if (zoomVal) zoomVal.innerText = config.zoomLevel + 'x';
+                    if (borderWidthVal) borderWidthVal.innerText = config.borderWidth === 0 ? 'None' : `${config.borderWidth}px`;
+                    if (labelSizeVal) labelSizeVal.innerText = `${config.labelSize}px`;
+                    if (dwellVal) dwellVal.innerText = config.dwellTime === 0 ? 'Off' : `${config.dwellTime}s`;
+                    if (cooldownVal) cooldownVal.innerText = config.cooldownTime === 0 ? 'Off' : `${config.cooldownTime}s`;
+                    if (gameDelayVal) gameDelayVal.innerText = `${config.gameDelay}s`;
 
-                // Toggle visibility of label controls based on showLabels state
-                if (config.showLabels) {
-                    if (labelSizeControl) labelSizeControl.classList.remove('hidden');
-                    if (labelColorControl) labelColorControl.classList.remove('hidden');
-                    if (labelPositionControl) labelPositionControl.classList.remove('hidden');
-                } else {
-                    if (labelSizeControl) labelSizeControl.classList.add('hidden');
-                    if (labelColorControl) labelColorControl.classList.add('hidden');
-                    if (labelPositionControl) labelPositionControl.classList.add('hidden');
+                    // Toggle visibility of label controls based on showLabels state
+                    if (config.showLabels) {
+                        if (labelSizeControl) labelSizeControl.classList.remove('hidden');
+                        if (labelColorControl) labelColorControl.classList.remove('hidden');
+                        if (labelPositionControl) labelPositionControl.classList.remove('hidden');
+                    } else {
+                        if (labelSizeControl) labelSizeControl.classList.add('hidden');
+                        if (labelColorControl) labelColorControl.classList.add('hidden');
+                        if (labelPositionControl) labelPositionControl.classList.add('hidden');
+                    }
+
+                    // Toggle magnify controls visibility
+                    if (config.magnify && magnifyControls) {
+                        magnifyControls.classList.remove('hidden');
+                    } else if (magnifyControls) {
+                        magnifyControls.classList.add('hidden');
+                    }
+                } catch (e) {
+                    console.error('syncUIFromConfig failed:', e);
                 }
-
-                // Toggle magnify controls visibility
-                if (config.magnify && magnifyControls) {
-                    magnifyControls.classList.remove('hidden');
-                } else if (magnifyControls) {
-                    magnifyControls.classList.add('hidden');
-                }
-
-                updatePresetHighlight();
             }
 
             function updatePresetHighlight() {
@@ -3664,7 +4159,13 @@
             const unlockDuration = 1500;
 
             function startUnlock(e) {
-                if (config.mode !== 'play') return;
+                // In edit mode: open drawer immediately on press (touch or mouse)
+                if (config.mode === 'edit') {
+                    if (e.type === 'touchstart') e.preventDefault();
+                    toggleDrawer(true);
+                    return;
+                }
+                // In play mode: hold-to-unlock behaviour
                 if (e.type === 'touchstart') e.preventDefault();
                 openBtn.classList.add('unlocking');
                 unlockTimer = setTimeout(() => {
@@ -3683,15 +4184,14 @@
             }
 
             openBtn.addEventListener('mousedown', startUnlock);
-            openBtn.addEventListener('touchstart', startUnlock);
+            openBtn.addEventListener('touchstart', startUnlock, { passive: false });
             openBtn.addEventListener('mouseup', endUnlock);
             openBtn.addEventListener('mouseleave', endUnlock);
             openBtn.addEventListener('touchend', endUnlock);
 
+            // Click is a fallback for mouse users (touchstart already handles touch)
             openBtn.addEventListener('click', (e) => {
-                if (config.mode === 'edit') {
-                    toggleDrawer(true);
-                } else {
+                if (config.mode !== 'edit') {
                     e.preventDefault();
                 }
             });
@@ -3717,7 +4217,10 @@
 
             // --- Mode Logic ---
             window.setMode = function (mode) {
-                clearAllGhosts();
+                if (typeof clearAllGhosts === 'function') {
+                    clearAllGhosts();
+                }
+
                 // NOTE: Do NOT call syncConfig() here. It would overwrite the loaded config
                 // with stale UI values. syncConfig is for when UI inputs are explicitly changed.
 
@@ -3796,6 +4299,22 @@
                 }
 
                 renderGrid();
+            };
+
+            window.setCellBgColor = function (color, btnElement) {
+                config.cellBgColor = color;
+
+                document.querySelectorAll('.cell-bg-btn').forEach(btn => {
+                    btn.classList.remove('selected', 'ring-2', 'ring-blue-500', 'scale-110');
+                    btn.style.transform = 'scale(1)';
+                });
+                if (btnElement) {
+                    btnElement.classList.add('selected', 'ring-2', 'ring-blue-500');
+                    btnElement.style.transform = 'scale(1.1)';
+                }
+
+                renderGrid();
+                saveToLocalStorage();
             };
 
             function toggleDrawer(isOpen) {
@@ -3932,14 +4451,16 @@
             });
 
             // --- Magnify Interaction (Pointer Events - immediate on first press) ---
-            // Pointer events unify mouse/touch/stylus and ensure the VERY FIRST press magnifies (no movement required).
-            // Note: currentMagnifiedEl and magnifyPointerId are declared in State Management section
+            // Pointer events unify mouse/touch/stylus. setPointerCapture tracks the finger
+            // across cells so drag-to-select works reliably. The VERY FIRST press magnifies
+            // with no movement required (matches the working example behaviour on iOS).
+            // Note: currentMagnifiedEl, magnifyPointerId, magnifyPressTime, and pendingMagnifyRelease are declared in State Management section
 
             function updateMagnifyAtPoint(clientX, clientY) {
                 const target = document.elementFromPoint(clientX, clientY);
                 const gridCell = target ? target.closest('.grid-cell.occupied') : null;
 
-                // Optimize and prevent repeated speech
+                // Optimize: skip if nothing changed
                 if (currentMagnifiedEl === gridCell) return;
 
                 if (currentMagnifiedEl && currentMagnifiedEl !== gridCell) {
@@ -3955,36 +4476,35 @@
                 }
             }
 
-            function handleMagnifyEnd(e) {
-                const isRelease = e && (e.type === 'touchend' || e.type === 'mouseup' || e.type === 'pointerup');
+            function handleMagnifyRelease() {
+                if (!pendingMagnifyRelease) return; // Only run if a release is pending
 
-                if (currentMagnifiedEl) {
-                    // Store reference before clearing magnified state
-                    const cellElement = currentMagnifiedEl;
-                    const index = cellElement.dataset.index;
+                const { cellElement, index, isReleaseEvent } = pendingMagnifyRelease;
+                pendingMagnifyRelease = null; // Clear the pending flag
 
-                    // Clear magnified visual first
+                // Clear magnified visual first
+                if (cellElement) {
                     cellElement.classList.remove('magnified');
                     cellElement.style.removeProperty('--zoom-level');
-                    currentMagnifiedEl = null;
+                }
+                currentMagnifiedEl = null; // Ensure global state is cleared
 
-                    if (isRelease && config.magnify && config.mode === 'play') {
-                        if (gridData[index]) {
-                            if (huntActive) {
-                                handleHuntPress(parseInt(index), cellElement);
-                            } else if (gameActive) {
-                                // Apply pop animation to the cell directly for game mode
-                                cellElement.classList.add('game-pop', 'ring-4', 'ring-green-500');
-                                setTimeout(() => {
-                                    cellElement.classList.remove('game-pop', 'ring-4', 'ring-green-500');
-                                }, 550);
-                                checkAnswer(parseInt(index));
+                if (isReleaseEvent && config.magnify && config.mode === 'play') {
+                    if (gridData[index]) {
+                        if (huntActive) {
+                            handleHuntPress(parseInt(index), cellElement);
+                        } else if (gameActive) {
+                            // Apply pop animation to the cell directly for game mode
+                            cellElement.classList.add('game-pop', 'ring-4', 'ring-green-500');
+                            setTimeout(() => {
+                                cellElement.classList.remove('game-pop', 'ring-4', 'ring-green-500');
+                            }, 550);
+                            checkAnswer(parseInt(index));
+                        } else {
+                            if (config.audioEnabled) {
+                                speak(getSpeechLabel(gridData[index]));
                             } else {
-                                if (config.audioEnabled) {
-                                    speak(getSpeechLabel(gridData[index]));
-                                } else {
-                                    playChime();
-                                }
+                                playChime();
                             }
                         }
                     }
@@ -3994,7 +4514,7 @@
             function handleMagnifyPointerDown(e) {
                 if (config.mode !== 'play' || !config.magnify) return;
 
-                // Only left mouse button; touch/stylus are OK
+                // Only left mouse button; touch/stylus are always OK
                 if (e.pointerType === 'mouse' && e.button !== 0) return;
 
                 // Prevent scroll/selection while magnifying
@@ -4002,10 +4522,11 @@
 
                 magnifyPointerId = e.pointerId;
 
-                // Capture on the grid container so moves/up still fire while holding
+                // Capture on the grid container so moves/up still fire while the finger is held
                 try { gridContainer.setPointerCapture(magnifyPointerId); } catch (_) { }
 
-                // IMPORTANT: magnify immediately on first press
+                // IMPORTANT: magnify SYNCHRONOUSLY on first press — no drag required.
+                // The release path uses rAF so this frame is always painted before teardown.
                 updateMagnifyAtPoint(e.clientX, e.clientY);
             }
 
@@ -4013,7 +4534,7 @@
                 if (config.mode !== 'play' || !config.magnify) return;
                 if (magnifyPointerId === null || e.pointerId !== magnifyPointerId) return;
 
-                // For mouse, only magnify while button is held
+                // For mouse, only magnify while the button is held down
                 if (e.pointerType === 'mouse' && (e.buttons & 1) === 0) return;
 
                 if (e.cancelable) e.preventDefault();
@@ -4026,8 +4547,16 @@
                 try { gridContainer.releasePointerCapture(magnifyPointerId); } catch (_) { }
                 magnifyPointerId = null;
 
-                // Trigger the same release behavior (speech / game check)
-                handleMagnifyEnd({ type: 'pointerup' });
+                // Trigger release behaviour (speech / game check)
+                if (currentMagnifiedEl) {
+                    const cellElement = currentMagnifiedEl;
+                    const index = cellElement.dataset.index;
+                    pendingMagnifyRelease = { cellElement, index, isReleaseEvent: true };
+                    requestAnimationFrame(handleMagnifyRelease); // Ensure release happens after paint
+                } else {
+                    // If no element was magnified (e.g., quick tap outside a cell), just clear state
+                    requestAnimationFrame(handleMagnifyRelease);
+                }
             }
 
             function handleMagnifyPointerCancel(e) {
@@ -4037,18 +4566,23 @@
                 magnifyPointerId = null;
 
                 // Cleanup only; no speech/check on cancel
-                handleMagnifyEnd({ type: 'pointercancel' });
+                if (currentMagnifiedEl) {
+                    const cellElement = currentMagnifiedEl;
+                    const index = cellElement.dataset.index; // Still need index for potential future logic
+                    pendingMagnifyRelease = { cellElement, index, isReleaseEvent: false };
+                    requestAnimationFrame(handleMagnifyRelease);
+                } else {
+                    requestAnimationFrame(handleMagnifyRelease);
+                }
             }
 
-            // Attach to the grid only so drawer hold-to-unlock still works.
+            // Attach to the grid only so the drawer hold-to-unlock still works.
             gridContainer.addEventListener('pointerdown', handleMagnifyPointerDown, { passive: false });
             gridContainer.addEventListener('pointermove', handleMagnifyPointerMove, { passive: false });
             gridContainer.addEventListener('pointerup', handleMagnifyPointerUp);
             gridContainer.addEventListener('pointercancel', handleMagnifyPointerCancel);
 
             // --- Drag and Drop Logic (Edit Mode) ---
-            let dragSrcIndex = null;
-
             function handleDragStart(e) {
                 if (config.mode !== 'edit') { e.preventDefault(); return false; }
 
@@ -4769,7 +5303,8 @@
                 if (e.target.closest('.label-btn')) return;
                 if (e.target.closest('.color-pick-btn')) return;
 
-                // If using Magnify in Play Mode, speech is handled on release (handleMagnifyEnd)
+                // If using Magnify in Play Mode, speech is handled on release (handleMagnifyEnd).
+                // DO NOT call e.preventDefault() here. Let pointer events handle it natively.
                 if (config.mode === 'play' && config.magnify) return;
 
                 // Games (Pop-Up Finder & Find-It): always activate immediately on press (ignore dwell)
@@ -5776,9 +6311,11 @@
                         }
                     }
 
-                    // Custom background color per symbol
+                    // Background color priority: Custom Item Color > Global Cell Color > Default (White)
                     if (item && item.customBgColor) {
                         cell.style.backgroundColor = item.customBgColor;
+                    } else if (item) {
+                        cell.style.backgroundColor = config.cellBgColor || '#ffffff';
                     }
                     if (item) {
                         cell.classList.add('occupied');
@@ -6011,21 +6548,21 @@
                             // Empty cell with three buttons: Add Image, Add Text, Add Shape
                             cell.innerHTML = `
                                 <div class="flex items-center justify-center gap-3 h-full w-full p-2">
-                                    <button class="add-image-btn group flex flex-col items-center justify-center p-3 rounded-xl bg-white/80 hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-all shadow-sm hover:shadow-md border border-slate-200/60 hover:border-blue-300 active:scale-95" title="Add Image">
+                                    <button class="add-image-btn group flex flex-col items-center justify-center p-3 rounded-xl bg-white/60 backdrop-blur-md hover:bg-white/90 text-slate-400 hover:text-blue-600 transition-all duration-300 shadow-sm hover:shadow-md border border-white/50 hover:border-blue-400/50 hover:-translate-y-1 hover:scale-105 active:scale-95" title="Add Image">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 transition-transform group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                                             <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
                                             <circle cx="9" cy="9" r="2" />
                                             <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
                                         </svg>
                                     </button>
-                                    <button class="add-text-btn group flex flex-col items-center justify-center p-3 rounded-xl bg-white/80 hover:bg-violet-50 text-slate-400 hover:text-violet-600 transition-all shadow-sm hover:shadow-md border border-slate-200/60 hover:border-violet-300 active:scale-95" title="Add Text Label">
+                                    <button class="add-text-btn group flex flex-col items-center justify-center p-3 rounded-xl bg-white/60 backdrop-blur-md hover:bg-white/90 text-slate-400 hover:text-violet-600 transition-all duration-300 shadow-sm hover:shadow-md border border-white/50 hover:border-violet-400/50 hover:-translate-y-1 hover:scale-105 active:scale-95" title="Add Text Label">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 transition-transform group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                                             <path d="M4 7V4h16v3"/>
                                             <path d="M9 20h6"/>
                                             <path d="M12 4v16"/>
                                         </svg>
                                     </button>
-                                    <button class="add-shape-btn group flex flex-col items-center justify-center p-3 rounded-xl bg-white/80 hover:bg-amber-50 text-slate-400 hover:text-amber-600 transition-all shadow-sm hover:shadow-md border border-slate-200/60 hover:border-amber-300 active:scale-95" title="Add Shape/Emoji">
+                                    <button class="add-shape-btn group flex flex-col items-center justify-center p-3 rounded-xl bg-white/60 backdrop-blur-md hover:bg-white/90 text-slate-400 hover:text-amber-600 transition-all duration-300 shadow-sm hover:shadow-md border border-white/50 hover:border-amber-400/50 hover:-translate-y-1 hover:scale-105 active:scale-95" title="Add Shape/Emoji">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 transition-transform group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                                             <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
                                         </svg>
@@ -6096,23 +6633,22 @@
             }
 
             function updateSettings(e) {
-                // If the event came from the "Fit" selector, we only want to update the fit config
-                // and re-render. We should NOT re-read cols/rows from sliders, because
-                // the sliders might be stale (e.g. if we are in Square Mode but sliders show something else).
-                if (e && e.target === fitSelect) {
+                // Defensive check for fitSelect
+                if (fitSelect && e && e.target === fitSelect) {
                     config.fit = fitSelect.value;
-                    // Persist immediately so a reload keeps the setting
                     saveToLocalStorage();
                     renderGrid();
                     return;
                 }
 
+
                 const newCols = parseInt(colRange.value);
                 const newRows = parseInt(rowRange.value);
 
                 // Detection: Did the user manually change rows?
-                // If they changed rows slider while in square mode, turn off square mode.
-                if (config.squareAspect && e && e.target === rowRange && newRows !== config.rows) {
+                // If they interact with the rows slider while in square mode, exit square mode.
+                // This ensures users can always regain control of the row count.
+                if (config.squareAspect && e && e.target === rowRange) {
                     config.squareAspect = false;
                 }
 
@@ -6127,8 +6663,8 @@
                     }
                 }
 
-                config.gap = parseInt(gapRange.value);
-                config.fit = fitSelect.value;
+                if (gapRange) config.gap = parseInt(gapRange.value);
+                if (fitSelect) config.fit = fitSelect.value;
 
                 syncUIFromConfig(); // Ensure labels and other UI match
                 renderGrid();
@@ -6564,24 +7100,36 @@
             const bulkPopularContainer = document.getElementById('bulk-popular-tags');
 
             const bulkPopularTags = {
-                'arasaac': ['happy', 'sad', 'eat', 'drink', 'help', 'play', 'more', 'stop', 'yes', 'no'],
-                'mulberry': ['happy', 'sad', 'food', 'drink', 'help', 'work', 'home', 'person', 'yes', 'no']
+                'arasaac': ['go', 'stop', 'more', 'finished', 'help', 'want', 'like', 'not', 'in', 'on', 'out', 'off', 'up', 'down', 'get', 'that', 'this', 'I', 'you', 'what'],
+                'mulberry': ['go', 'stop', 'more', 'finished', 'help', 'want', 'like', 'not', 'in', 'on', 'out', 'off', 'up', 'down', 'get', 'that', 'this', 'I', 'you', 'what']
             };
 
             window.openBulkSymbolModal = function () {
                 bulkModal.classList.remove('hidden');
-                // Reset to default state if needed, or keep previous state?
-                // For now, let's keep the collection but maybe reset search
-                if (!bulkSearchInput.value && currentBulkTab === 'arasaac') {
-                    // Pre-load popular or clear
+                // Trigger slide-up animation on mobile (remove translate-y-full)
+                const panel = bulkModal.querySelector('[class*="translate-y-full"]');
+                if (panel) {
+                    // Allow hidden → visible paint before removing translate, so CSS transition fires
+                    requestAnimationFrame(() => { panel.classList.remove('translate-y-full'); });
                 }
                 updateBulkPopularTags();
                 renderBulkCollection();
-                bulkSearchInput.focus();
+                // Avoid focusing on iOS (triggers unwanted keyboard)
+                if (!/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+                    bulkSearchInput.focus();
+                }
             };
 
             window.closeBulkSymbolModal = function () {
-                bulkModal.classList.add('hidden');
+                const panel = bulkModal.querySelector('.translate-y-0, [class*="h-["]');
+                // Slide back down before hiding
+                const slidePanel = bulkModal.querySelector('[class*="h-[90vh"]');
+                if (slidePanel && !slidePanel.classList.contains('translate-y-full')) {
+                    slidePanel.classList.add('translate-y-full');
+                    setTimeout(() => { bulkModal.classList.add('hidden'); }, 320);
+                } else {
+                    bulkModal.classList.add('hidden');
+                }
             };
 
             window.switchBulkSymbolTab = function (tabName) {
@@ -6624,6 +7172,7 @@
                 tags.forEach(tag => {
                     const btn = document.createElement('button');
                     btn.className = "px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs rounded-full transition-colors";
+                    btn.style.cssText = "white-space: nowrap; flex-shrink: 0;";
                     btn.innerText = tag;
                     btn.onclick = () => {
                         bulkSearchInput.value = tag;
@@ -6870,21 +7419,32 @@
             };
 
             window.setSquareGrid = function (cols) {
-                config.cols = cols;
-                config.rows = 1;
-                config.squareAspect = true;
-                syncUIFromConfig();
-                renderGrid();
-                saveToLocalStorage();
+                try {
+                    config.cols = cols;
+                    config.rows = 1;
+                    config.squareAspect = true;
+                    syncUIFromConfig();
+                    renderGrid();
+                    saveToLocalStorage();
+                } catch (e) {
+                    console.error('setSquareGrid failed:', e);
+                    // Ensure grid renders even if sync fails
+                    renderGrid();
+                }
             };
 
             window.setStandardGrid = function (cols, rows) {
-                config.cols = cols;
-                config.rows = rows;
-                config.squareAspect = false;
-                syncUIFromConfig();
-                renderGrid();
-                saveToLocalStorage();
+                try {
+                    config.cols = cols;
+                    config.rows = rows;
+                    config.squareAspect = false;
+                    syncUIFromConfig();
+                    renderGrid();
+                    saveToLocalStorage();
+                } catch (e) {
+                    console.error('setStandardGrid failed:', e);
+                    renderGrid();
+                }
             };
 
             // Initialize App
