@@ -1777,6 +1777,42 @@
                         </p>
                     </div>
 
+                    <!-- Profile Selector -->
+                    <div class="bg-indigo-50/80 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 border border-indigo-100 shadow-sm text-left relative z-10 my-4">
+                        <div class="flex flex-col space-y-2">
+                            <div>
+                                <h3 class="font-bold text-indigo-900 text-sm">Configuration Profile</h3>
+                                <p class="text-[11px] text-indigo-700">Select which saved settings to load</p>
+                            </div>
+                            <select id="splash-profile-select" class="w-full p-2 text-sm border border-indigo-200 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none font-semibold text-slate-700 shadow-sm" onchange="window.switchProfile(this.value)">
+                                <!-- Options populated by JS -->
+                            </select>
+                            <div class="grid grid-cols-2 gap-2 mt-1">
+                                <button onclick="window.renameCurrentProfile()" class="w-full py-1.5 bg-white hover:bg-slate-50 border border-indigo-200 text-indigo-600 rounded-lg transition-colors text-xs font-semibold shadow-sm flex justify-center items-center gap-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                                    Rename
+                                </button>
+                                <button onclick="window.resetCurrentProfile()" class="w-full py-1.5 bg-white hover:bg-red-50 border border-red-200 text-red-600 rounded-lg transition-colors text-xs font-semibold shadow-sm flex justify-center items-center gap-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    
+
+<!-- Action Button -->
+                    <button id="splash-start-btn"
+                        class="w-full py-3 sm:py-4 mt-1 sm:mt-2 relative z-10 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 hover:from-blue-700 hover:via-indigo-700 hover:to-violet-700 text-white font-bold text-base sm:text-lg rounded-xl sm:rounded-2xl shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-1 active:scale-[0.98] active:translate-y-0 flex justify-center items-center gap-2">
+                        Start Creating
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 12h14" />
+                            <path d="m12 5 7 7-7 7" />
+                        </svg>
+                    </button>
+
                     <!-- Audio Settings Section -->
                     <div
                         class="bg-white/50 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 border border-white shadow-sm text-left space-y-3 sm:space-y-4 relative z-10">
@@ -1794,7 +1830,7 @@
 
                                 <div
                                     class="relative inline-block w-12 align-middle select-none transition duration-200 ease-in">
-                                    <input type="checkbox" name="splash-audio-toggle" id="splash-audio-toggle"
+                                    <input type="checkbox" name="splash-audio-toggle" id="splash-audio-toggle" checked
                                         class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-300" />
                                     <label for="splash-audio-toggle"
                                         class="toggle-label block overflow-hidden h-6 rounded-full bg-slate-300 cursor-pointer"></label>
@@ -1834,17 +1870,6 @@
 
                     </div>
 
-                    <!-- Action Button -->
-                    <button id="splash-start-btn"
-                        class="w-full py-3 sm:py-4 mt-1 sm:mt-2 relative z-10 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 hover:from-blue-700 hover:via-indigo-700 hover:to-violet-700 text-white font-bold text-base sm:text-lg rounded-xl sm:rounded-2xl shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-1 active:scale-[0.98] active:translate-y-0 flex justify-center items-center gap-2">
-                        Start Creating
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M5 12h14" />
-                            <path d="m12 5 7 7-7 7" />
-                        </svg>
-                    </button>
-
                     <!-- Caution notices -->
                     <div class="space-y-2 mt-3 relative z-10">
                         <div class="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2.5">
@@ -1882,7 +1907,7 @@
             <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full p-6 transform scale-95 transition-transform duration-300"
                 id="splash-help-content">
                 <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-xl font-bold text-slate-800">How Naming Works</h3>
+                    <h3 class="text-xl font-bold text-slate-800">Naming, renaming and adjusting text to speech labels</h3>
                     <button id="splash-help-close" class="text-slate-400 hover:text-slate-600 transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor" stroke-width="2">
@@ -1892,7 +1917,7 @@
                 </div>
 
                 <p class="text-slate-600 text-sm mb-4 leading-relaxed">
-                    There are two ways to assign what the app says when a symbol is clicked:
+                    <strong>Symbols added in the included symbol databases are automatically named.</strong> Images you select from your device can be named in two ways (renaming the file, or using the pencil tool). Renaming any file is possible using the pencil tool, but the customized name will only be saved in this specific browser.
                 </p>
 
                 <div class="grid md:grid-cols-2 gap-4">
@@ -1916,7 +1941,7 @@
                                 <p class="font-semibold text-slate-900 text-sm">Basic Naming</p>
                                 <p class="text-sm mt-1">Name the file exactly what you want spoken.</p>
                                 <code
-                                    class="block mt-1 bg-white px-2 py-1 rounded border border-slate-200 text-xs text-blue-600 font-mono">bear.png &rarr; speaks "Bear"</code>
+                                    class="block mt-1 bg-white px-2 py-1 rounded border border-slate-200 text-xs text-blue-600 font-mono">bear.png &rarr; speaks "bear"</code>
                             </div>
 
                             <div>
@@ -1925,7 +1950,7 @@
                                         class="bg-white px-1 rounded border border-slate-200 text-xs">-</code> to add
                                     descriptions that won't be spoken.</p>
                                 <code
-                                    class="block mt-1 bg-white px-2 py-1 rounded border border-slate-200 text-xs text-blue-600 font-mono">ball - red.jpg &rarr; speaks "Ball"</code>
+                                    class="block mt-1 bg-white px-2 py-1 rounded border border-slate-200 text-xs text-blue-600 font-mono">ball - red.jpg &rarr; speaks "ball"</code>
                             </div>
                         </div>
 
@@ -1975,9 +2000,7 @@
 
                             <div>
                                 <p class="font-semibold text-slate-900 text-sm">Clearing Labels</p>
-                                <p class="text-sm mt-1">Click the pencil icon and choose "Clear Label" to return to
-                                    using
-                                    the filename.</p>
+                                <p class="text-sm mt-1">Click the pencil icon and choose "Clear Label" to restore the text back to the original file or symbol library name assigned to it.</p>
                             </div>
                         </div>
 
@@ -2157,7 +2180,7 @@
                 <div class="grid grid-cols-2 gap-3">
                     <!-- Upload Button -->
                     <div onclick="document.getElementById('file-input').click()"
-                        class="relative z-10 aspect-square bg-white/50 backdrop-blur-sm border-2 border-dashed border-slate-300 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-50/80 transition-all duration-300 group hover:shadow-md hover:-translate-y-1 transform-gpu">
+                        class="aspect-square border-2 border-dashed border-slate-300 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-50/50 transition-all duration-200 group hover:shadow-sm">
                         <svg class="text-slate-400 group-hover:text-blue-500 mb-2" xmlns="http://www.w3.org/2000/svg"
                             width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -2171,7 +2194,7 @@
 
                     <!-- Bulk Button -->
                     <div onclick="openBulkSymbolModal()"
-                        class="relative z-10 aspect-square bg-white/50 backdrop-blur-sm border-2 border-dashed border-slate-300 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-50/80 transition-all duration-300 group hover:shadow-md hover:-translate-y-1 transform-gpu">
+                        class="aspect-square border-2 border-dashed border-slate-300 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-50/50 transition-all duration-200 group hover:shadow-sm">
                         <svg class="text-slate-400 group-hover:text-blue-500 mb-2" xmlns="http://www.w3.org/2000/svg"
                             width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -2913,7 +2936,7 @@
                         <span class="text-xs text-slate-500">Read names aloud</span>
                     </div>
                     <div class="relative inline-block w-10 align-middle select-none">
-                        <input type="checkbox" name="toggle" id="audio-toggle"
+                        <input type="checkbox" name="toggle" id="audio-toggle" checked
                             class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-300" />
                         <label for="audio-toggle"
                             class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-300 cursor-pointer"></label>
@@ -3037,11 +3060,43 @@
                     </div>
                 </div>
 
+                <!-- Profile Save/Load Block -->
+                <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100 space-y-3 mt-6">
+                    <div>
+                        <span class="text-sm font-bold text-indigo-900 block">Save Profiles</span>
+                        <span class="text-[11px] text-indigo-700">Switch and rename your configurations</span>
+                    </div>
+                    
+                    <div class="flex flex-col gap-2">
+                        <select id="drawer-profile-select" class="w-full p-2 text-sm border border-indigo-200 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none font-semibold text-slate-700 shadow-sm" onchange="window.switchProfile(this.value)">
+                            <!-- Options populated by JS -->
+                        </select>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button onclick="window.renameCurrentProfile()" class="w-full py-2 bg-white hover:bg-slate-50 border border-indigo-200 text-indigo-600 rounded-lg transition-colors text-xs font-semibold shadow-sm flex justify-center items-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                                Rename
+                            </button>
+                            <button onclick="window.resetCurrentProfile()" class="w-full py-2 bg-white hover:bg-red-50 border border-red-200 text-red-600 rounded-lg transition-colors text-xs font-semibold shadow-sm flex justify-center items-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Attribution -->
                 <div class="pt-6 pb-2 text-center border-t border-slate-200/60 mt-4">
+                    <button onclick="openSplashScreen()" class="mb-5 px-5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-xl transition-all shadow-sm active:scale-95 flex items-center justify-center gap-2 mx-auto">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M12 16v-4"></path>
+                            <path d="M12 8h.01"></path>
+                        </svg>
+                        About / Help
+                    </button>
                     <h3 class="text-sm font-semibold text-slate-700">By Niall Brown</h3>
                     <p class="text-xs text-slate-500 font-medium mt-0.5">Early Childhood Vision Consultant</p>
-                    <p class="text-[10px] text-slate-400 mt-2">Version 1.1</p>
+                    <p class="text-[10px] text-slate-400 mt-2">Version 1.2</p>
                 </div>
             </div>
         </div>
@@ -3721,8 +3776,36 @@
             </div>
         </div>
 
+    <!-- Game Alert Modal -->
+    <div id="game-alert-modal" class="fixed inset-0 z-[150] hidden">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" onclick="closeGameAlert()"></div>
+        <!-- Content -->
+        <div class="absolute inset-0 flex items-center justify-center pointer-events-none p-4">
+            <div id="game-alert-content" class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden z-10 transform scale-95 opacity-0 transition-all duration-300 flex flex-col pointer-events-auto">
+                <div class="p-6 text-center">
+                    <div class="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4 text-amber-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">Notice</h3>
+                    <p id="game-alert-text" class="text-slate-600 font-medium"></p>
+                </div>
+                <div class="p-4 bg-slate-50 border-t border-slate-100">
+                    <button onclick="closeGameAlert()" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-colors">
+                        OK
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
         <script>
             // --- State Management ---
+            let isLoadingProfile = false;
             let gridData = Array(6).fill(null);
             let config = {
                 rows: 2,
@@ -3732,9 +3815,10 @@
                 mode: 'edit',
                 squareAspect: false,
                 cellBgColor: '#ffffff',
+                appBgColor: '#f8fafc',
                 magnify: false,
                 zoomLevel: 1.35,
-                audioEnabled: false,
+                audioEnabled: true,
                 borderColor: '#000000',
                 borderWidth: 4,
                 showLabels: false,
@@ -3776,12 +3860,150 @@
             let magnifyPointerId = null;
             let pendingMagnifyRelease = null;
 
+            // --- Profile Management ---
+            let currentProfileId = localStorage.getItem('aac_active_profile') || 'profile_1';
+            let profiles = JSON.parse(localStorage.getItem('aac_profiles')) || {
+                'profile_1': 'Configuration 1',
+                'profile_2': 'Configuration 2',
+                'profile_3': 'Configuration 3',
+                'profile_4': 'Configuration 4',
+                'profile_5': 'Configuration 5'
+            };
+
+            // If an older version of the profiles object was loaded, make sure new profiles exist
+            if (!profiles['profile_4']) profiles['profile_4'] = 'Configuration 4';
+            if (!profiles['profile_5']) profiles['profile_5'] = 'Configuration 5';
+
+            function getStorageKeyConfig() { return currentProfileId === 'profile_1' ? 'acc_sandbox_config' : `acc_sandbox_config_${currentProfileId}`; }
+            function getStorageKeyGrid() { return currentProfileId === 'profile_1' ? 'grid_data' : `grid_data_${currentProfileId}`; }
+            function getSpeechLabelsKey() { return currentProfileId === 'profile_1' ? 'aac_speech_labels' : `aac_speech_labels_${currentProfileId}`; }
+            function getAudioKey() { return currentProfileId === 'profile_1' ? 'aac_audioEnabled' : `aac_audioEnabled_${currentProfileId}`; }
+
+            async function switchProfile(newProfileId) {
+                if (saveTimeout !== undefined) {
+                    clearTimeout(saveTimeout);
+                }
+                // Save current state before switching
+                await saveToLocalStorage();
+
+                // Switch and persist the active profile
+                currentProfileId = newProfileId;
+                localStorage.setItem('aac_active_profile', currentProfileId);
+
+                // Reset config to defaults so old config properties don't leak
+                config = {
+                    rows: 2, cols: 3, gap: 10, fit: 'contain', mode: 'edit',
+                    squareAspect: false, cellBgColor: '#ffffff', appBgColor: '#f8fafc', magnify: false,
+                    zoomLevel: 1.35, audioEnabled: true, borderColor: '#000000',
+                    borderWidth: 4, showLabels: false, labelColor: '#000000',
+                    labelSize: 20, labelPosition: 'below', dwellTime: 0,
+                    cooldownTime: 0, gameDelay: 2,
+                    prompts: ["See if you can find", "Let's find", "Where is"],
+                    incorrectFeedback: ["That's [word], let's find", "That's [word], see if you can find", ""],
+                    correctFeedback: ["You found", "", ""]
+                };
+                
+                // Clear the grid so old grid doesn't show randomly if load fails
+                gridData = Array(6).fill(null);
+
+                // Load new state
+                await loadFromLocalStorage();
+
+                // Update UI elements
+                updateProfileSelectors();
+                
+                // Update specific inputs like audio preference
+                const savedAudioPref = localStorage.getItem(getAudioKey());
+                if (savedAudioPref !== null) {
+                    const savedVal = savedAudioPref === 'true';
+                    config.audioEnabled = savedVal;
+                    const audioToggle = document.getElementById('audio-toggle');
+                    const splashToggle = document.getElementById('splash-audio-toggle');
+                    if (audioToggle) audioToggle.checked = savedVal;
+                    if (splashToggle) splashToggle.checked = savedVal;
+                    
+                    // Update splash labels
+                    const labelTone = document.getElementById('label-tone');
+                    const labelVoice = document.getElementById('label-voice');
+                    if (labelTone && labelVoice) {
+                        if (savedVal) {
+                            labelVoice.classList.replace('text-slate-400', 'text-blue-600');
+                            labelTone.classList.replace('text-blue-600', 'text-slate-400');
+                        } else {
+                            labelTone.classList.replace('text-slate-400', 'text-blue-600');
+                            labelVoice.classList.replace('text-blue-600', 'text-slate-400');
+                        }
+                    }
+                }
+            }
+
+            function updateProfileSelectors() {
+                const selects = [document.getElementById('splash-profile-select'), document.getElementById('drawer-profile-select')];
+                selects.forEach(select => {
+                    if (!select) return;
+                    select.innerHTML = '';
+                    Object.keys(profiles).forEach(key => {
+                        const option = document.createElement('option');
+                        option.value = key;
+                        option.textContent = profiles[key];
+                        if (key === currentProfileId) option.selected = true;
+                        select.appendChild(option);
+                    });
+                });
+            }
+
+            window.switchProfile = switchProfile;
+
+            window.renameCurrentProfile = function() {
+                const newName = prompt("Enter a new name for this configuration:", profiles[currentProfileId]);
+                if (newName && newName.trim() !== "") {
+                    profiles[currentProfileId] = newName.trim();
+                    localStorage.setItem('aac_profiles', JSON.stringify(profiles));
+                    updateProfileSelectors();
+                }
+            };
+
+            window.resetCurrentProfile = function() {
+                if (confirm("Are you sure you want to delete this profile? This will clear all settings, images, and reset its name.")) {
+                    // Reset name
+                    const defaultNames = {
+                        'profile_1': 'Configuration 1',
+                        'profile_2': 'Configuration 2',
+                        'profile_3': 'Configuration 3',
+                        'profile_4': 'Configuration 4',
+                        'profile_5': 'Configuration 5'
+                    };
+                    profiles[currentProfileId] = defaultNames[currentProfileId] || 'Configuration';
+                    localStorage.setItem('aac_profiles', JSON.stringify(profiles));
+
+                    // Clear local storage items for this profile
+                    localStorage.removeItem(getStorageKeyConfig());
+                    localStorage.removeItem(getSpeechLabelsKey());
+                    localStorage.removeItem(getAudioKey());
+                    localStorage.removeItem(`acc_sandbox_grid_${currentProfileId}`); // Just in case any old versions used it
+
+                    // Clear IndexedDB
+                    openDB().then(db => {
+                        const transaction = db.transaction([STORE_NAME], 'readwrite');
+                        const store = transaction.objectStore(STORE_NAME);
+                        const request = store.delete(getStorageKeyGrid());
+                        request.onsuccess = () => {
+                            location.reload();
+                        };
+                        request.onerror = () => {
+                            location.reload();
+                        };
+                    }).catch(err => {
+                        console.error('Error clearing database:', err);
+                        location.reload();
+                    });
+                }
+            };
+
             // --- Persistence (IndexedDB + localStorage) ---
             const DB_NAME = 'ACC_Sandbox_DB';
             const DB_VERSION = 1;
             const STORE_NAME = 'grid_store';
-            const KEY_GRID = 'grid_data';
-            const STORAGE_KEY_CONFIG = 'acc_sandbox_config';
 
             // Helper: Convert File to Base64
             function fileToBase64(file) {
@@ -3808,82 +4030,119 @@
                 });
             }
 
-            async function saveToLocalStorage() {
-                try {
-                    // Save config to localStorage (lightweight)
-                    const configToSave = { ...config };
-                    localStorage.setItem(STORAGE_KEY_CONFIG, JSON.stringify(configToSave));
-
-                    // Save gridData to IndexedDB (heavy updates)
-                    const db = await openDB();
-                    const transaction = db.transaction([STORE_NAME], 'readwrite');
-                    const store = transaction.objectStore(STORE_NAME);
-                    store.put(gridData, KEY_GRID);
-                } catch (e) {
-                    console.warn('Persistence Error:', e);
-                }
+            let saveTimeout;
+            function debouncedSave() {
+                clearTimeout(saveTimeout);
+                saveTimeout = setTimeout(() => {
+                    saveToLocalStorage();
+                }, 500);
             }
 
-            async function loadFromLocalStorage() {
-                try {
-                    // Load config from localStorage
-                    const savedConfig = localStorage.getItem(STORAGE_KEY_CONFIG);
-                    if (savedConfig) {
-                        const parsed = JSON.parse(savedConfig);
-                        if (typeof parsed === 'object' && parsed !== null) {
-                            Object.assign(config, parsed);
+            function saveToLocalStorage() {
+                return new Promise(async (resolve) => {
+                    if (isLoadingProfile) return resolve();
+                    try {
+                        const configToSave = { ...config };
+                        localStorage.setItem(getStorageKeyConfig(), JSON.stringify(configToSave));
+
+                        const db = await openDB();
+                        const transaction = db.transaction([STORE_NAME], 'readwrite');
+                        const store = transaction.objectStore(STORE_NAME);
+                        const request = store.put(gridData, getStorageKeyGrid());
+                        
+                        request.onsuccess = () => resolve();
+                        request.onerror = () => {
+                            console.warn('IndexedDB Save Error');
+                            resolve();
+                        };
+                    } catch (e) {
+                        console.warn('Persistence Error:', e);
+                        resolve();
+                    }
+                });
+            }
+
+            function loadFromLocalStorage() {
+                return new Promise(async (resolve) => {
+                    isLoadingProfile = true;
+                    try {
+                        // Load config from localStorage
+                        const savedConfig = localStorage.getItem(getStorageKeyConfig());
+                        if (savedConfig) {
+                            const parsed = JSON.parse(savedConfig);
+                            if (typeof parsed === 'object' && parsed !== null) {
+                                Object.assign(config, parsed);
+                            }
                         }
-                    }
 
-                    // FORCE Edit Mode on startup (safety)
-                    config.mode = 'edit';
+                        // FORCE Edit Mode on startup (safety)
+                        config.mode = 'edit';
 
-                    // If squareAspect is enabled, ensure rows is set to 1 for UI consistency
-                    if (config.squareAspect) {
-                        config.rows = 1;
-                    }
+                        // If squareAspect is enabled, ensure rows is set to 1 for UI consistency
+                        if (config.squareAspect) {
+                            config.rows = 1;
+                        }
 
-                    // Sync UI controls with loaded config
-                    syncUIFromConfig();
+                        // Sync UI controls with loaded config
+                        syncUIFromConfig();
 
-                    // Apply mode visuals & ensure drawer is open
-                    setMode('edit');
-                    toggleDrawer(true);
+                        // Apply mode visuals & ensure drawer is open
+                        setMode('edit');
+                        toggleDrawer(true);
 
-                    // Load gridData from IndexedDB
-                    const db = await openDB();
-                    const transaction = db.transaction([STORE_NAME], 'readonly');
-                    const store = transaction.objectStore(STORE_NAME);
-                    const request = store.get(KEY_GRID);
+                        // Load gridData from IndexedDB
+                        const db = await openDB();
+                        const transaction = db.transaction([STORE_NAME], 'readonly');
+                        const store = transaction.objectStore(STORE_NAME);
+                        const request = store.get(getStorageKeyGrid());
 
-                    request.onsuccess = () => {
-                        if (request.result && Array.isArray(request.result)) {
-                            gridData = request.result;
+                        request.onsuccess = () => {
+                            if (request.result && Array.isArray(request.result)) {
+                                gridData = request.result;
+                            } else {
+                                gridData = Array(config.rows * config.cols).fill(null);
+                            }
+                            isLoadingProfile = false;
                             renderGrid(); // Re-render after loading data
-                        }
-                    };
+                            resolve();
+                        };
 
-                    request.onerror = () => {
-                        console.warn('Failed to load grid data from IndexedDB');
-                    };
-                } catch (e) {
-                    console.warn('Load Error:', e);
-                    // Still initialize the app even if loading fails
-                    setMode('edit');
-                    toggleDrawer(true);
-                }
+                        request.onerror = () => {
+                            console.warn('Failed to load grid data from IndexedDB');
+                            gridData = Array(config.rows * config.cols).fill(null);
+                            isLoadingProfile = false;
+                            renderGrid();
+                            resolve();
+                        };
+                    } catch (e) {
+                        console.warn('Load Error:', e);
+                        // Still initialize the app even if loading fails
+                        setMode('edit');
+                        toggleDrawer(true);
+                        gridData = Array(config.rows * config.cols).fill(null);
+                        isLoadingProfile = false;
+                        renderGrid();
+                        resolve();
+                    }
+                });
             }
 
-            async function clearLocalStorage() {
-                try {
-                    localStorage.removeItem(STORAGE_KEY_CONFIG);
-                    const db = await openDB();
-                    const transaction = db.transaction([STORE_NAME], 'readwrite');
-                    const store = transaction.objectStore(STORE_NAME);
-                    store.delete(KEY_GRID);
-                } catch (e) {
-                    console.warn('Clear Error:', e);
-                }
+            function clearLocalStorage() {
+                return new Promise(async (resolve) => {
+                    try {
+                        localStorage.removeItem(getStorageKeyConfig());
+                        const db = await openDB();
+                        const transaction = db.transaction([STORE_NAME], 'readwrite');
+                        const store = transaction.objectStore(STORE_NAME);
+                        const request = store.delete(getStorageKeyGrid());
+                        
+                        request.onsuccess = () => resolve();
+                        request.onerror = () => resolve();
+                    } catch (e) {
+                        console.warn('Clear Error:', e);
+                        resolve();
+                    }
+                });
             }
 
 
@@ -4101,11 +4360,6 @@
                 saveToLocalStorage();
             }
 
-            // Stub for missing function
-            function updatePresetHighlight() {
-                // Placeholder to prevent crashes
-            }
-
             function syncUIFromConfig() {
                 try {
                     // Safety check: ensure core elements exist
@@ -4158,6 +4412,18 @@
                         magnifyControls.classList.remove('hidden');
                     } else if (magnifyControls) {
                         magnifyControls.classList.add('hidden');
+                    }
+
+                    // Apply app background color if it exists
+                    if (config.appBgColor) {
+                        mainContent.style.backgroundColor = config.appBgColor;
+                        document.body.style.backgroundColor = config.appBgColor;
+
+                        const isDark = (config.appBgColor === '#334155' || config.appBgColor === '#000000');
+                        const emptyText = document.querySelectorAll('#empty-state p, #empty-state svg');
+                        emptyText.forEach(el => {
+                            el.style.color = isDark ? '#475569' : (el.tagName === 'svg' ? '#cbd5e1' : '#94a3b8');
+                        });
                     }
                 } catch (e) {
                     console.error('syncUIFromConfig failed:', e);
@@ -4271,6 +4537,15 @@
 
                 config.mode = mode;
                 const isEdit = mode === 'edit';
+                
+                if (isEdit) {
+                    if (gameActive && typeof stopGame === 'function') {
+                        stopGame();
+                    }
+                    if (huntActive && typeof stopHuntGame === 'function') {
+                        stopHuntGame();
+                    }
+                }
 
                 // Update button styles (with null checks)
                 if (btnEdit && btnPlay) {
@@ -4312,6 +4587,7 @@
             };
 
             window.setBackground = function (color, btnElement) {
+                config.appBgColor = color;
                 mainContent.style.backgroundColor = color;
                 document.body.style.backgroundColor = color;
 
@@ -4329,6 +4605,7 @@
                     btnElement.classList.add('selected', 'ring-2', 'ring-blue-500');
                     btnElement.style.transform = 'scale(1.1)';
                 }
+                debouncedSave();
             };
 
             window.setBorderColor = function (color, btnElement) {
@@ -4392,6 +4669,7 @@
                 } else {
                     magnifyControls.classList.add('hidden');
                 }
+                debouncedSave();
             }
 
             magnifyToggle.addEventListener('change', updateFeatures);
@@ -4403,6 +4681,7 @@
                 config.borderWidth = parseInt(borderWidthRange.value);
                 borderWidthVal.innerText = config.borderWidth === 0 ? 'None' : `${config.borderWidth}px`;
                 renderGrid();
+                debouncedSave();
             });
 
 
@@ -4427,12 +4706,14 @@
                     labelPositionControl.classList.add('hidden');
                 }
                 renderGrid();
+                debouncedSave();
             });
 
             // Label position listener
             labelPositionSelect.addEventListener('change', () => {
                 config.labelPosition = labelPositionSelect.value;
                 renderGrid();
+                debouncedSave();
             });
 
 
@@ -4444,6 +4725,7 @@
                 document.querySelectorAll('.label-text').forEach(el => {
                     el.style.fontSize = `${config.labelSize}px`;
                 });
+                debouncedSave();
 
             });
 
@@ -4458,6 +4740,7 @@
                 }
                 if (labelColorPicker.value !== hex) labelColorPicker.value = hex;
                 renderGrid();
+                debouncedSave();
             }
 
             labelColorSelect.addEventListener('change', () => {
@@ -4472,12 +4755,14 @@
             dwellRange.addEventListener('input', () => {
                 config.dwellTime = parseFloat(dwellRange.value);
                 dwellVal.innerText = config.dwellTime === 0 ? 'Off' : `${config.dwellTime}s`;
+                debouncedSave();
             });
 
             // Cooldown time listener
             cooldownRange.addEventListener('input', () => {
                 config.cooldownTime = parseFloat(cooldownRange.value);
                 cooldownVal.innerText = config.cooldownTime === 0 ? 'Off' : `${config.cooldownTime}s`;
+                debouncedSave();
             });
 
             // Game toggle logic
@@ -4493,6 +4778,7 @@
             gameDelayRange.addEventListener('input', () => {
                 config.gameDelay = parseFloat(gameDelayRange.value);
                 gameDelayVal.innerText = `${config.gameDelay}s`;
+                debouncedSave();
             });
 
             // --- Magnify Interaction (Pointer Events - immediate on first press) ---
@@ -4876,6 +5162,11 @@
             function beginHuntRound() {
                 if (!huntSelected) return;
 
+                // Stop other game if running
+                if (typeof gameActive !== 'undefined' && gameActive) {
+                    stopGame();
+                }
+
                 // Always run the game in Play mode
                 if (typeof setMode === 'function') {
                     setMode('play');
@@ -4916,6 +5207,11 @@
                 huntBtn.innerText = "Start";
                 huntBtn.classList.remove('bg-red-500', 'hover:bg-red-600');
                 huntBtn.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
+
+                // Clean up any lingering visual states
+                document.querySelectorAll('.game-pop, .pulse-active').forEach(el => {
+                    el.classList.remove('game-pop', 'ring-4', 'ring-green-500', 'pulse-active');
+                });
 
                 // Restore the grid snapshot (if any)
                 if (Array.isArray(huntRestore)) {
@@ -5168,6 +5464,11 @@
                 gameBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
                 currentTargetIndex = null;
                 window.speechSynthesis.cancel();
+                
+                // Clean up any lingering visual states
+                document.querySelectorAll('.game-pop, .pulse-active').forEach(el => {
+                    el.classList.remove('game-pop', 'ring-4', 'ring-green-500', 'pulse-active');
+                });
             }
 
             function startFindItRound() {
@@ -5203,8 +5504,10 @@
                 if (visibleIndices.length === 0) {
                     if (occupiedIndices.length > 0) {
                         speak("No symbols are visible on screen.");
+                        showGameAlert("No symbols are visible on screen.");
                     } else {
                         speak("Please add some symbols first.");
+                        showGameAlert("Please add some symbols first.");
                     }
                     stopGame();
                     return;
@@ -5223,6 +5526,7 @@
 
                 // Speak prompt after a short delay
                 setTimeout(() => {
+                    if (!gameActive) return;
                     speak(`${randomPhrase} ${getSpeechLabel(targetItem)}`);
                 }, 1000);
             }
@@ -5253,6 +5557,7 @@
 
                     // 2. Pause then Reinforcement
                     setTimeout(() => {
+                        if (!gameActive) return;
                         const validReinforcements = config.correctFeedback.filter(p => p.trim() !== "");
                         if (validReinforcements.length > 0) {
                             const randomReinforcement = validReinforcements[Math.floor(Math.random() * validReinforcements.length)];
@@ -5397,6 +5702,37 @@
                 renderGrid();
             };
 
+            // --- Game Alert Modal Logic ---
+            window.showGameAlert = function(message) {
+                const modal = document.getElementById('game-alert-modal');
+                const content = document.getElementById('game-alert-content');
+                const text = document.getElementById('game-alert-text');
+                
+                if(!modal || !content || !text) return;
+                
+                text.textContent = message;
+                modal.classList.remove('hidden');
+                
+                // Read offsetWidth to trigger reflow before animation
+                void modal.offsetWidth;
+                
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            };
+
+            window.closeGameAlert = function() {
+                const modal = document.getElementById('game-alert-modal');
+                const content = document.getElementById('game-alert-content');
+                if(!modal || !content) return;
+                
+                content.classList.remove('scale-100', 'opacity-100');
+                content.classList.add('scale-95', 'opacity-0');
+                
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                }, 300);
+            };
+
             // --- Speech Label Modal Logic ---
             let speechLabelEditingIndex = null;
             const speechLabelModal = document.getElementById('speech-label-modal');
@@ -5404,11 +5740,11 @@
             const speechLabelDefault = document.getElementById('speech-label-default');
 
             // --- Speech Label Persistence (localStorage) ---
-            const SPEECH_LABELS_STORAGE_KEY = 'aac_speech_labels';
+            
 
             function loadSpeechLabelsFromStorage() {
                 try {
-                    const stored = localStorage.getItem(SPEECH_LABELS_STORAGE_KEY);
+                    const stored = localStorage.getItem(getSpeechLabelsKey());
                     return stored ? JSON.parse(stored) : {};
                 } catch (e) {
                     console.warn('Failed to load speech labels from storage:', e);
@@ -5424,7 +5760,7 @@
                     } else {
                         delete labels[filename];
                     }
-                    localStorage.setItem(SPEECH_LABELS_STORAGE_KEY, JSON.stringify(labels));
+                    localStorage.setItem(getSpeechLabelsKey(), JSON.stringify(labels));
                 } catch (e) {
                     console.warn('Failed to save speech label to storage:', e);
                 }
@@ -5779,7 +6115,7 @@
                     symbol: symbol,
                     label: label,
                     src: null,
-                    speechLabel: '',
+                    speechLabel: getSavedSpeechLabel(label),
                     customBgColor: null,
                     customBorderColor: null,
                     symbolColor: null // For custom symbol color
@@ -5961,7 +6297,7 @@
                     arasaacId: id,
                     src: imageUrl,
                     label: label,
-                    speechLabel: '',
+                    speechLabel: getSavedSpeechLabel(label),
                     customBgColor: null,
                     customBorderColor: null
                 };
@@ -6173,7 +6509,7 @@
                     mulberryId: id,
                     src: imageUrl,
                     label: label,
-                    speechLabel: '',
+                    speechLabel: getSavedSpeechLabel(label),
                     customBgColor: null,
                     customBorderColor: null
                 };
@@ -6673,7 +7009,7 @@
 
                 // Persist grid state (but not during game)
                 if (!huntActive) {
-                    saveToLocalStorage();
+                    debouncedSave();
                 }
             }
 
@@ -6681,7 +7017,6 @@
                 // Defensive check for fitSelect
                 if (fitSelect && e && e.target === fitSelect) {
                     config.fit = fitSelect.value;
-                    saveToLocalStorage();
                     renderGrid();
                     return;
                 }
@@ -6713,6 +7048,7 @@
 
                 syncUIFromConfig(); // Ensure labels and other UI match
                 renderGrid();
+                debouncedSave();
             }
 
             colRange.addEventListener('input', updateSettings);
@@ -6894,7 +7230,7 @@
                 if (!splash || !startBtn) return;
 
                 // Load saved audio preference from localStorage
-                const savedAudioPref = localStorage.getItem('aac_audioEnabled');
+                const savedAudioPref = localStorage.getItem(getAudioKey());
                 let initialLoadComplete = false;
 
                 if (savedAudioPref !== null) {
@@ -6903,6 +7239,11 @@
                     splashToggle.checked = savedVal;
                     config.audioEnabled = savedVal;
                     audioToggle.checked = savedVal;
+                } else {
+                    // Default to Voice ON 
+                    splashToggle.checked = true;
+                    config.audioEnabled = true;
+                    if(audioToggle) audioToggle.checked = true;
                 }
 
                 function updateSplashAudioLabels(isChecked) {
@@ -6986,7 +7327,7 @@
                     updateFeatures();
 
                     // Save audio preference to localStorage
-                    localStorage.setItem('aac_audioEnabled', String(splashToggle.checked));
+                    localStorage.setItem(getAudioKey(), String(splashToggle.checked));
 
                     // Prime TTS engine with a silent utterance to unlock audio context
                     // This is required by browsers to allow speech synthesis on future calls
@@ -7001,10 +7342,22 @@
 
                     // Dismiss
                     splash.style.opacity = '0';
-                    setTimeout(() => splash.remove(), 700);
+                    setTimeout(() => {
+                        splash.classList.add('hidden');
+                        splash.style.opacity = '1';
+                    }, 700);
                 });
             })();
 
+            window.openSplashScreen = function() {
+                const splash = document.getElementById('splash-screen');
+                if (splash) {
+                    splash.style.opacity = '0';
+                    splash.classList.remove('hidden');
+                    void splash.offsetWidth; // trigger reflow
+                    splash.style.opacity = '1';
+                }
+            };
 
             window.setGridSize = function (cols, rows) {
                 const colRange = document.getElementById('col-range');
@@ -7016,30 +7369,6 @@
                 // Trigger update (this will also call updatePresetHighlight via updateSettings)
                 colRange.dispatchEvent(new Event('input'));
             };
-
-            function updatePresetHighlight() {
-                const presets = document.querySelectorAll('.preset-btn');
-                presets.forEach(btn => {
-                    const pCols = parseInt(btn.dataset.cols);
-                    const pRows = parseInt(btn.dataset.rows);
-                    const label = btn.querySelector('.preset-label');
-                    const originalText = `${pCols}x${pRows}`;
-
-                    if (pCols === config.cols && pRows === config.rows) {
-                        btn.classList.add('border-blue-600', 'bg-blue-50', 'ring-2', 'ring-blue-200');
-                        btn.classList.remove('border-slate-200');
-                        label.classList.add('text-blue-700', 'font-bold');
-                        label.classList.remove('text-slate-500');
-                        label.innerText = 'Selected';
-                    } else {
-                        btn.classList.remove('border-blue-600', 'bg-blue-50', 'ring-2', 'ring-blue-200');
-                        btn.classList.add('border-slate-200');
-                        label.classList.remove('text-blue-700', 'font-bold');
-                        label.classList.add('text-slate-500');
-                        label.innerText = originalText;
-                    }
-                });
-            }
 
             // --- Debounced Resize ---
             let resizeTimeout;
@@ -7432,7 +7761,7 @@
                     isMulberry: item.type === 'mulberry',
                     customBgColor: null,
                     customBorderColor: null,
-                    speechLabel: ''
+                    speechLabel: getSavedSpeechLabel(item.label)
                 });
 
                 // 1. Fill empty slots in the current grid
@@ -7470,7 +7799,6 @@
                     config.squareAspect = true;
                     syncUIFromConfig();
                     renderGrid();
-                    saveToLocalStorage();
                 } catch (e) {
                     console.error('setSquareGrid failed:', e);
                     // Ensure grid renders even if sync fails
@@ -7485,7 +7813,6 @@
                     config.squareAspect = false;
                     syncUIFromConfig();
                     renderGrid();
-                    saveToLocalStorage();
                 } catch (e) {
                     console.error('setStandardGrid failed:', e);
                     renderGrid();
@@ -7494,6 +7821,7 @@
 
             // Initialize App
             window.addEventListener('DOMContentLoaded', () => {
+                updateProfileSelectors();
                 loadFromLocalStorage().catch(e => console.error("Init failed:", e));
             });
         </script>
