@@ -5748,6 +5748,7 @@
             const textLabelModal = document.getElementById('text-label-modal');
             const textLabelInput = document.getElementById('text-label-input');
             const textLabelPreview = document.getElementById('text-label-preview');
+            const textLabelPreviewContainer = document.getElementById('text-label-preview-container');
 
             if (textLabelInput) {
                 textLabelInput.addEventListener('input', updateTextLabelPreview);
@@ -5781,6 +5782,11 @@
         textLabelPreview.textContent = text;
         textLabelPreview.setAttribute('data-text', text);
         textLabelPreview.style.color = config.labelColor || '#000000';
+
+        // Match preview container background to the symbol background colour
+        if (textLabelPreviewContainer) {
+            textLabelPreviewContainer.style.background = config.cellBgColor || '#ffffff';
+        }
 
         // Ensure contour styling is not applied
         textLabelPreview.classList.remove('text-cell-contour');
