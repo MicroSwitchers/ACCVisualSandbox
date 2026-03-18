@@ -1,11 +1,11 @@
 /**
  * AAC Visual Sandbox - Service Worker
  * Provides offline support and caching for the PWA
- * Version: 1.2
+ * Version: 1.2.1
  */
 
 const CACHE_PREFIX = 'aac-sandbox-';
-const CACHE_NAME = `${CACHE_PREFIX}v5`;
+const CACHE_NAME = `${CACHE_PREFIX}v6`;
 
 // Precache same-origin assets only. Cross-origin assets (like the Tailwind CDN)
 // can cause `cache.addAll` to fail during install.
