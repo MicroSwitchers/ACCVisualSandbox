@@ -3288,7 +3288,7 @@
                         <div class="flex justify-between mb-1">
                             <div>
                                 <span class="text-sm font-semibold text-slate-700 block">Cooldown</span>
-                                <span class="text-xs text-slate-500">Ignore touches after selection</span>
+                                <span class="text-xs text-slate-500">Ignore repeat touches on each symbol</span>
                             </div>
                             <span id="cooldown-val" class="text-xs font-bold text-blue-600">Off</span>
                         </div>
@@ -4313,9 +4313,10 @@
 
             // Timing state
             let dwellTimer = null;
-            let lastActivationTime = 0;
-            function selectionIsCoolingDown() {
-                return config.cooldownTime > 0 && Date.now() - lastActivationTime < config.cooldownTime * 1000;
+            let selectionActivationTimes = new WeakMap();
+            function selectionIsCoolingDown(item) {
+                const activatedAt = item && selectionActivationTimes.get(item);
+                return config.cooldownTime > 0 && activatedAt !== undefined && Date.now() - activatedAt < config.cooldownTime * 1000;
             }
 
             // Game state
@@ -4410,7 +4411,7 @@
 
                 // Switch and persist the active profile
                 currentProfileId = newProfileId;
-                lastActivationTime = 0;
+                selectionActivationTimes = new WeakMap();
                 localStorage.setItem('aac_active_profile', currentProfileId);
 
                 // Reset config to defaults so old config properties don't leak
@@ -5434,6 +5435,8 @@
                     gridCell = target ? target.closest('.grid-cell.occupied') : null;
                 }
 
+                if (gridCell && selectionIsCoolingDown(gridData[gridCell.dataset.index])) gridCell = null;
+
                 // Optimize: skip if nothing changed
                 if (currentMagnifiedEl === gridCell) return;
 
@@ -5521,7 +5524,7 @@
                 if (!config.magnify || magnifyPointerId !== null) return;
                 if (e.target.closest('button, .cell-tools')) return;
                 if (!e.target.closest('.grid-cell.occupied')) return;
-                if (selectionIsCoolingDown() || pendingMagnifyRelease || gameAnswerPending || huntMoving) {
+                if (selectionIsCoolingDown(gridData[e.target.closest('.grid-cell').dataset.index]) || pendingMagnifyRelease || gameAnswerPending || huntMoving) {
                     if (e.cancelable) e.preventDefault();
                     return;
                 }
@@ -6376,10 +6379,10 @@
             function activateCell(index, cellElement) {
                 index = parseInt(index);
                 const item = gridData[index];
-                if (!item || !cellElement || cellElement.dataset.opening || selectionIsCoolingDown()) return;
+                if (!item || !cellElement || cellElement.dataset.opening || selectionIsCoolingDown(item)) return;
                 if (gameActive && (gameAnswerPending || item.isFolder || currentTargetIndex === null)) return;
                 if (huntActive && (huntMoving || huntCurrentIndex !== index)) return;
-                lastActivationTime = Date.now();
+                selectionActivationTimes.set(item, Date.now());
 
                 // Game Mode Interception
                 if (gameActive) {
@@ -6440,7 +6443,7 @@
                 if (e.target.closest('.color-pick-btn')) return;
                 if (e.target.closest('.folder-link-btn')) return;
                 if (e.target.closest('button, .move-action-btn')) return;
-                if (selectionIsCoolingDown()) return;
+                if (selectionIsCoolingDown(gridData[this.dataset.index])) return;
 
                 // If using Magnify in Play Mode, speech is handled on release (handleMagnifyEnd).
                 // DO NOT call e.preventDefault() here. Let pointer events handle it natively.
