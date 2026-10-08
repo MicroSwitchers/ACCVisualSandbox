@@ -6617,6 +6617,9 @@
                 if (!containerWidth || !containerHeight) return;
                 const targetWidth = containerWidth * targetWidthPercent;
                 const maxHeight = containerHeight * 0.8; // Don't exceed 80% of height
+                // Measure the text itself, rather than a percentage-width label box.
+                textElement.style.width = 'max-content';
+                textElement.style.maxWidth = 'none';
 
                 let fontSize = 100; // Start large
                 const minFontSize = 1;
@@ -6639,6 +6642,7 @@
                 }
 
                 textElement.style.fontSize = low + 'px';
+                textElement.style.maxWidth = `${targetWidth}px`;
             }
 
             // Helper function to get the effective speech label
