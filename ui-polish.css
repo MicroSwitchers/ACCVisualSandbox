@@ -17,9 +17,9 @@ button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-v
     outline-offset: 3px;
 }
 input[type="text"], input[type="search"], input[type="number"], textarea { user-select: text; -webkit-user-select: text; }
-input[type="range"] { min-height: 20px; background: transparent; }
-input[type="range"]::-webkit-slider-runnable-track { height: 4px; background: #dbe3ee; border-radius: 8px; }
-input[type="range"]::-webkit-slider-thumb { margin-top: -6px; }
+input[type="range"] { --slider-track-height: 4px; --slider-thumb-size: 24px; min-height: 20px; background: transparent; }
+input[type="range"]::-webkit-slider-runnable-track { height: var(--slider-track-height); border: 0; background: #dbe3ee; border-radius: 8px; }
+input[type="range"]::-webkit-slider-thumb { box-sizing: border-box; width: var(--slider-thumb-size); height: var(--slider-thumb-size); margin-top: calc((var(--slider-track-height) - var(--slider-thumb-size)) / 2); }
 
 /* Welcome */
 #splash-screen {
