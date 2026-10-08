@@ -37,8 +37,12 @@ async function boot(t, storage = {}) {
         }
     });
     t.after(() => { dom.window.close(); assert.deepEqual(errors, [], 'No application runtime errors'); });
-    await delay(100);
-    assert.equal(dom.window.eval('isLoadingProfile'), false);
+    if (dom.window.document.readyState !== 'complete') {
+        await new Promise(resolve => dom.window.addEventListener('load', resolve, { once: true }));
+    }
+    const deadline = Date.now() + 5000;
+    while (dom.window.eval('isLoadingProfile') && Date.now() < deadline) await delay(20);
+    assert.equal(dom.window.eval('isLoadingProfile'), false, 'Profile startup finishes within five seconds');
     return dom.window;
 }
 
