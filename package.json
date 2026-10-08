@@ -1,0 +1,16 @@
+{
+  "name": "aac-visual-sandbox",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/regression.test.cjs",
+    "build": "node scripts/build.cjs"
+  },
+  "devDependencies": {
+    "fake-indexeddb": "6.2.5",
+    "jsdom": "29.1.1"
+  },
+  "description": "AAC communication grids, folders, and assessment games.",
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}

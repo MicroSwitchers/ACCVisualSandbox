@@ -5,7 +5,7 @@
  */
 
 const CACHE_PREFIX = 'aac-sandbox-';
-const CACHE_NAME = `${CACHE_PREFIX}v6`;
+const CACHE_NAME = `${CACHE_PREFIX}v20`;
 
 // Precache same-origin assets only. Cross-origin assets (like the Tailwind CDN)
 // can cause `cache.addAll` to fail during install.
@@ -13,7 +13,11 @@ const ASSETS = [
     './',
     './index.html',
     './manifest.json',
-    './icon.svg'
+    './icon.svg',
+    './ui-polish.css',
+    './ui-polish.js',
+    './folder-system.css',
+    './folder-system.js'
 ];
 
 self.addEventListener('install', (event) => {
