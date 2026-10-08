@@ -144,3 +144,20 @@ test('edit mode previews selection and separates repositioning from card activat
     assert.deepEqual(Array.from(w.heard), ['Apple'], 'The reposition handle never speaks the symbol');
     assert.ok(handle.getAttribute('aria-label').includes('Apple'));
 });
+
+test('move controls follow folders across the whole project and disappear after the last folder is deleted', async t => {
+    const w = await boot(t);
+    w.eval("gridData[0] = { isTextOnly: true, label: 'Apple' }; renderGrid()");
+    assert.equal(w.document.querySelectorAll('.move-action-btn').length, 0);
+    assert.equal(w.document.querySelectorAll('.reorder-handle').length, 1);
+    w.eval("gridData[1] = { isFolder: true, folderId: 'food', label: 'Food', folderGridData: [{ isTextOnly: true, label: 'Pear' }, null, null, null, null, null] }; renderGrid()");
+    assert.equal(w.document.querySelectorAll('.move-action-btn').length, 2);
+    w.openFolder(1);
+    assert.equal(w.document.querySelectorAll('.move-action-btn').length, 1, 'Symbols inside folders can still move to Home');
+    w.document.querySelector('.move-action-btn').click();
+    assert.equal(w.document.getElementById('move-cell-modal').classList.contains('hidden'), false);
+    assert.ok(w.document.querySelector('[data-move-destination="root"]'));
+    w.closeMoveCellModal();
+    w.eval("folderNavigationStack = []; gridData = [{ isTextOnly: true, label: 'Apple' }, null, null, null, null, null]; renderGrid()");
+    assert.equal(w.document.querySelectorAll('.move-action-btn').length, 0);
+});

@@ -3543,7 +3543,7 @@
                 <div class="flex items-center justify-between p-5 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-purple-50/30 md:rounded-t-2xl flex-shrink-0">
                     <div class="flex items-center gap-3">
                         <div class="w-9 h-9 bg-purple-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7e22ce" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M19 9l3 3-3 3M9 19l3 3 3 3M2 12h20M12 2v20"/></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7e22ce" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M19 9l3 3-3 3M9 19l3 3 3-3M2 12h20M12 2v20"/></svg>
                         </div>
                         <div>
                             <h2 class="text-lg font-bold text-slate-800">Move Item</h2>
@@ -7849,6 +7849,8 @@
                 // Safety check: ensure grid container exists
                 if (!gridContainer) return;
                 debouncedRenderFolderTree();
+                const projectHasFolders = (typeof getRootGridData === 'function' ? getRootGridData() : gridData)
+                    .some(item => item?.isFolder);
 
                 const hasImages = gridData.some(item => item !== null);
 
@@ -7970,17 +7972,18 @@
                             cell.appendChild(delBtn);
 
                             // Move to folder button
-                            const moveBtn = document.createElement('button');
-                            moveBtn.type = 'button';
-                            moveBtn.className = 'move-action-btn';
-                            moveBtn.title = 'Move symbol';
-                            moveBtn.title = "Move to another folder";
-                            moveBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M19 9l3 3-3 3M9 19l3 3 3 3M2 12h20M12 2v20"/></svg>`;
-                            moveBtn.onclick = (e) => {
-                                e.stopPropagation();
-                                openMoveCellModal(index);
-                            };
-                            cell.appendChild(moveBtn);
+                            if (projectHasFolders) {
+                                const moveBtn = document.createElement('button');
+                                moveBtn.type = 'button';
+                                moveBtn.className = 'move-action-btn';
+                                moveBtn.title = "Move to another folder";
+                                moveBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M19 9l3 3-3 3M9 19l3 3 3-3M2 12h20M12 2v20"/></svg>`;
+                                moveBtn.onclick = (e) => {
+                                    e.stopPropagation();
+                                    openMoveCellModal(index);
+                                };
+                                cell.appendChild(moveBtn);
+                            }
 
                             // Preview/speak button
                             {
