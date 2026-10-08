@@ -526,7 +526,7 @@
             cell.addEventListener('keydown', event => {
                 if (event.target !== cell || !['Enter', ' '].includes(event.key)) return;
                 event.preventDefault();
-                if (config.mode === 'edit') openFolder(index); else activateCell(index, cell);
+                activateCell(index, cell);
             });
             const open = button('folder-card-open', 'Open folder', event => { event.stopPropagation(); openFolder(index); }, 'chevron');
             open.addEventListener('mousedown', event => event.stopPropagation());
@@ -545,22 +545,6 @@
                 replacement.addEventListener('touchstart', event => event.stopPropagation(), { passive: true });
                 control.replaceWith(replacement);
             }
-            let touchStart = null; let moved = false;
-            const isControl = target => target.closest('button, .delete-btn, .preview-btn, .color-pick-btn, .folder-link-btn, .move-action-btn');
-            cell.addEventListener('click', event => { if (!isControl(event.target) && Date.now() - lastTouchTime > 800) openFolder(index); });
-            cell.addEventListener('touchstart', event => {
-                if (isControl(event.target) || event.touches.length !== 1) return;
-                touchStart = [event.touches[0].clientX, event.touches[0].clientY]; moved = false;
-            }, { passive: true });
-            cell.addEventListener('touchmove', event => {
-                if (!touchStart || moved) return;
-                const touch = event.touches[0];
-                if (Math.hypot(touch.clientX - touchStart[0], touch.clientY - touchStart[1]) > 10) {
-                    moved = true; handleEditTouchStart.call(cell, event); handleEditTouchMove.call(cell, event);
-                }
-            }, { passive: false });
-            cell.addEventListener('touchend', () => { if (touchStart && !moved) openFolder(index); touchStart = null; });
-            cell.addEventListener('touchcancel', () => { touchStart = null; });
         });
         updateCardDensity();
     }

@@ -12,6 +12,10 @@ A browser-based workspace for arranging AAC images, symbols, text, and folders i
 4. Adjust the layout and interaction settings, then switch to **Play** for the client view.
 5. Hold the menu button for 1.5 seconds to return to editing.
 
+Tap a populated card in either view to test its speech and selection behavior. With touch magnification enabled, hold and slide across cards, then release to select. The outline defaults to blue; its colour and an optional no-outline setting are available under Interaction.
+
+In the editor, drag the grip at a card's bottom-right corner to reposition it. Dropping onto another populated card swaps their positions. Use the move button to transfer an item to another folder.
+
 Boards and settings are saved in the current browser using IndexedDB and localStorage. Use the app's import/export controls to transfer configurations between devices. Symbol searches use external services and require an internet connection.
 
 ## Local development

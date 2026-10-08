@@ -118,3 +118,29 @@ test('database connections release when data is cleared', async t => {
         request.onblocked = () => reject(new Error('Database deletion blocked by an open connection'));
     });
 });
+
+test('magnification starts with blue and defaults to blue when enabled from no outline', async t => {
+    const w = await boot(t);
+    assert.equal(w.eval('config.zoomOutlineColor'), '#3b82f6');
+    w.selectZoomOutlineColor('');
+    const toggle = w.document.getElementById('magnify-toggle');
+    toggle.checked = true;
+    toggle.dispatchEvent(new w.Event('change'));
+    assert.equal(w.eval('config.zoomOutlineColor'), '#3b82f6');
+    w.selectZoomOutlineColor('');
+    w.document.getElementById('audio-toggle').dispatchEvent(new w.Event('change'));
+    assert.equal(w.eval('config.zoomOutlineColor'), '', 'An explicit no-outline choice remains available');
+});
+
+test('edit mode previews selection and separates repositioning from card activation', async t => {
+    const w = await boot(t);
+    w.eval("gridData[0] = { isTextOnly: true, label: 'Apple' }; renderGrid(); window.heard = []; speak = text => heard.push(text)");
+    const cell = w.document.querySelector('.grid-cell.occupied');
+    cell.dispatchEvent(new w.MouseEvent('mousedown', { bubbles: true }));
+    assert.deepEqual(Array.from(w.heard), ['Apple']);
+    assert.equal(cell.draggable, false);
+    const handle = cell.querySelector('.reorder-handle');
+    handle.dispatchEvent(new w.MouseEvent('mousedown', { bubbles: true }));
+    assert.deepEqual(Array.from(w.heard), ['Apple'], 'The reposition handle never speaks the symbol');
+    assert.ok(handle.getAttribute('aria-label').includes('Apple'));
+});

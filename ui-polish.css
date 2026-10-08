@@ -204,7 +204,12 @@ body > [id$="modal"] .text-blue-500 { color: #2563eb; }
 .grid-cell .label-text { flex-shrink: 0; min-width: 0; padding: 1px 2px; overflow: hidden; overflow-wrap: anywhere; line-height: 1.2; }
 .grid-cell .text-only-label { width: 95%; max-width: 95%; max-height: 100%; min-width: 0; padding: 2px; overflow: hidden; overflow-wrap: anywhere; }
 .grid-cell .shape-symbol { min-width: 0; min-height: 0; flex-shrink: 1; }
-.cell-tools { position: absolute; top: 4px; left: 4px; right: 4px; display: flex; justify-content: flex-end; gap: 3px; z-index: 20; }
+.cell-tools { position: absolute; top: 4px; left: 4px; right: 4px; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 3px; z-index: 20; }
+.cell-tools > [hidden] { display: none !important; }
+.reorder-handle { position: absolute; right: 8px; bottom: 8px; z-index: 21; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; padding: 7px; border: 1px solid #cbd5e1; border-radius: 9px; background: #f1f5f9; color: #475569; cursor: grab; touch-action: none; }
+.reorder-handle svg { width: 18px; height: 18px; pointer-events: none; }
+.reorder-handle:active { cursor: grabbing; background: #dbeafe; }
+.reorder-handle:focus-visible { outline: 3px solid #3b82f6; outline-offset: 2px; }
 .cell-tools > :is(.delete-btn, .move-action-btn, .preview-btn, .label-btn, .color-pick-btn, .folder-link-btn) { position: static; width: 22px; height: 22px; min-width: 22px; min-height: 22px; flex: 0 0 22px; border-radius: 6px; }
 .cell-tools > :is(.delete-btn, .move-action-btn, .preview-btn, .label-btn, .color-pick-btn, .folder-link-btn):hover { transform: none; }
 .cell-tools > :is(.delete-btn, .move-action-btn, .preview-btn, .label-btn, .color-pick-btn, .folder-link-btn) svg { width: 13px; height: 13px; }

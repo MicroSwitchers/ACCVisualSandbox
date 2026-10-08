@@ -4291,7 +4291,7 @@
                 appBgColor: '#f8fafc',
                 magnify: false,
                 zoomLevel: 1.35,
-                zoomOutlineColor: '',
+                zoomOutlineColor: '#3b82f6',
                 zoomOutlineSize: 6,
                 zoomDimBackground: false,
                 audioEnabled: true,
@@ -4413,7 +4413,7 @@
                 config = {
                     rows: 2, cols: 3, gap: 10, fit: 'contain', mode: 'edit',
                     squareAspect: false, cellBgColor: '#ffffff', appBgColor: '#f8fafc', magnify: false,
-                    zoomLevel: 1.35, zoomOutlineColor: '', zoomOutlineSize: 6, zoomDimBackground: false, audioEnabled: true, borderColor: '#000000',
+                    zoomLevel: 1.35, zoomOutlineColor: '#3b82f6', zoomOutlineSize: 6, zoomDimBackground: false, audioEnabled: true, borderColor: '#000000',
                     borderWidth: 4, showLabels: false, labelColor: '#000000',
                     labelSize: 20, labelPosition: 'below', dwellTime: 0,
                     cooldownTime: 0, gameDelay: 2, folderNavStyle: 'breadcrumbs',
@@ -5233,6 +5233,11 @@
 
             // --- Feature Listeners ---
             function updateFeatures() {
+                if (magnifyToggle.checked && !config.magnify && !config.zoomOutlineColor) {
+                    config.zoomOutlineColor = '#3b82f6';
+                    syncZoomOutlineSwatches();
+                    zoomOutlineSizeRow.classList.remove('hidden');
+                }
                 config.magnify = magnifyToggle.checked;
                 config.zoomLevel = parseFloat(zoomRange.value);
                 config.audioEnabled = audioToggle.checked;
@@ -5244,6 +5249,7 @@
                     magnifyControls.classList.add('hidden');
                 }
                 applyZoomOutline();
+                fitGridContents();
                 debouncedSave();
             }
 
@@ -5500,33 +5506,23 @@
                 requestAnimationFrame(() => gridContainer.classList.remove('zoom-dim-fading'));
                 currentMagnifiedEl = null; // Ensure global state is cleared
 
-                if (isReleaseEvent && config.magnify && config.mode === 'play') {
+                if (isReleaseEvent && config.magnify) {
                     if (gridData[index]) {
                         if (huntActive) {
                             handleHuntPress(parseInt(index), cellElement);
                         } else if (gameActive) {
                             checkAnswer(parseInt(index));
                         } else {
-                            const item = gridData[index];
-                            if (config.audioEnabled) {
-                                speak(getSpeechLabel(item));
-                            } else {
-                                playChime();
-                            }
-                            if (item && item.isFolder) {
-                                cellElement.dataset.opening = 'true';
-                                setTimeout(() => {
-                                    cellElement.dataset.opening = '';
-                                    openFolder(parseInt(index));
-                                }, 400); // 400ms delay feels responsive but allows visual/audio feedback
-                            }
+                            activateCell(index, cellElement);
                         }
                     }
                 }
             }
 
             function handleMagnifyPointerDown(e) {
-                if (config.mode !== 'play' || !config.magnify) return;
+                if (!config.magnify || magnifyPointerId !== null) return;
+                if (e.target.closest('button, .cell-tools')) return;
+                if (!e.target.closest('.grid-cell.occupied')) return;
 
                 // Only left mouse button; touch/stylus are always OK
                 if (e.pointerType === 'mouse' && e.button !== 0) return;
@@ -5559,7 +5555,7 @@
             }
 
             function handleMagnifyPointerMove(e) {
-                if (config.mode !== 'play' || !config.magnify) return;
+                if (!config.magnify) return;
                 if (magnifyPointerId === null || e.pointerId !== magnifyPointerId) return;
 
                 // For mouse, only magnify while the button is held down
@@ -5584,6 +5580,7 @@
                     requestAnimationFrame(handleMagnifyRelease); // Ensure release happens after paint
                 } else {
                     // If no element was magnified (e.g., quick tap outside a cell), just clear state
+                    pendingMagnifyRelease = { cellElement: null, index: null, isReleaseEvent: false };
                     requestAnimationFrame(handleMagnifyRelease);
                 }
             }
@@ -5602,6 +5599,7 @@
                     pendingMagnifyRelease = { cellElement, index, isReleaseEvent: false };
                     requestAnimationFrame(handleMagnifyRelease);
                 } else {
+                    pendingMagnifyRelease = { cellElement: null, index: null, isReleaseEvent: false };
                     requestAnimationFrame(handleMagnifyRelease);
                 }
             }
@@ -5660,6 +5658,54 @@
             }
 
             // --- Mobile Touch Drag Logic (Edit Mode) ---
+            function bindReorderHandle(handle, cell, index) {
+                let gesture = null;
+                const clear = () => {
+                    gesture = null;
+                    cell.classList.remove('dragging');
+                    gridContainer.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+                };
+                const destination = event => {
+                    const target = document.elementFromPoint(event.clientX, event.clientY)?.closest('.grid-cell');
+                    return target && gridContainer.contains(target) ? target : null;
+                };
+                handle.addEventListener('pointerdown', event => {
+                    if (config.mode !== 'edit' || gesture || !event.isPrimary || event.button !== 0) return;
+                    event.preventDefault();
+                    event.stopPropagation();
+                    gesture = { id: event.pointerId, x: event.clientX, y: event.clientY, moved: false };
+                    handle.setPointerCapture(event.pointerId);
+                });
+                handle.addEventListener('pointermove', event => {
+                    if (!gesture || gesture.id !== event.pointerId) return;
+                    event.preventDefault();
+                    if (Math.hypot(event.clientX - gesture.x, event.clientY - gesture.y) > 8) gesture.moved = true;
+                    if (!gesture.moved) return;
+                    cell.classList.add('dragging');
+                    gridContainer.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+                    const target = destination(event);
+                    if (target && target !== cell) target.classList.add('drag-over');
+                });
+                handle.addEventListener('pointerup', event => {
+                    if (!gesture || gesture.id !== event.pointerId) return;
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const target = gesture.moved && config.mode === 'edit' ? destination(event) : null;
+                    clear();
+                    if (handle.hasPointerCapture(event.pointerId)) handle.releasePointerCapture(event.pointerId);
+                    if (target && Number(target.dataset.index) !== index) {
+                        const other = Number(target.dataset.index);
+                        [gridData[index], gridData[other]] = [gridData[other], gridData[index]];
+                        renderGrid();
+                        debouncedSave();
+                    }
+                });
+                handle.addEventListener('pointercancel', clear);
+                handle.addEventListener('lostpointercapture', clear);
+                handle.addEventListener('click', event => event.stopPropagation());
+                handle.addEventListener('mousedown', event => event.stopPropagation());
+                handle.addEventListener('touchstart', event => event.stopPropagation(), { passive: true });
+            }
             // Note: touchDragItem, touchDragIndex, and touchGhost are declared in State Management section
 
             function handleEditTouchStart(e) {
@@ -6365,7 +6411,7 @@
                 if (!item) return;
 
                 // In Play Mode, add pulse animation and audio feedback
-                if (config.mode === 'play') {
+                if (config.mode === 'play' || config.mode === 'edit') {
                     // Add pulse animation
                     cellElement.classList.add('pulse-active');
                     setTimeout(() => {
@@ -6387,11 +6433,6 @@
                             openFolder(index);
                         }, 400); // 400ms delay feels responsive but allows visual/audio feedback
                     }
-                } else {
-                    // In Edit Mode, open folders directly on tap
-                    if (item.isFolder) {
-                        openFolder(index);
-                    }
                 }
             }
 
@@ -6409,11 +6450,10 @@
                 if (e.target.closest('.color-pick-btn')) return;
                 if (e.target.closest('.folder-link-btn')) return;
                 if (e.target.closest('button, .move-action-btn')) return;
-                if (config.mode === 'edit' && gridData[this.dataset.index]?.isFolder) return;
 
                 // If using Magnify in Play Mode, speech is handled on release (handleMagnifyEnd).
                 // DO NOT call e.preventDefault() here. Let pointer events handle it natively.
-                if (config.mode === 'play' && config.magnify) return;
+                if (config.magnify) return;
 
                 // Games (Pop-Up Finder & Find-It): always activate immediately on press (ignore dwell)
                 if ((huntActive || gameActive) && config.mode === 'play' && !config.magnify) {
@@ -7731,12 +7771,13 @@
                 const height = gridContainer.clientHeight;
                 if (!width || !height) return;
                 const editing = config.mode === 'edit';
-                // Preserve usable editor cards; fit assessment grids to the viewport.
-                const gap = editing ? config.gap : Math.min(config.gap,
+                // Magnification previews use the same fitted targets as client mode.
+                const previewing = !editing || config.magnify;
+                const gap = !previewing ? config.gap : Math.min(config.gap,
                     width / (config.cols * 4 + 1), height / (config.rows * 4 + 1));
                 gridContainer.style.gap = `${gap}px`;
                 gridContainer.style.padding = `${gap}px`;
-                const minimum = editing ? 160 : 0;
+                const minimum = previewing ? 0 : 160;
                 if (config.squareAspect) {
                     const side = Math.max(minimum, Math.min(
                         (width - gap * (config.cols + 1)) / config.cols,
@@ -7884,7 +7925,7 @@
                     }
                     if (item) {
                         cell.classList.add('occupied');
-                        if (config.mode === 'play' && !item.isFolder) {
+                        if (!item.isFolder) {
                             cell.tabIndex = 0;
                             cell.setAttribute('role', 'button');
                             cell.setAttribute('aria-label', getSpeechLabel(item));
@@ -7903,7 +7944,15 @@
 
                         if (config.mode === 'edit') {
                             cell.classList.add('editable');
-                            cell.setAttribute('draggable', 'true');
+                            cell.setAttribute('draggable', 'false');
+                            const reorderHandle = document.createElement('button');
+                            reorderHandle.type = 'button';
+                            reorderHandle.className = 'reorder-handle';
+                            reorderHandle.title = 'Drag to reposition';
+                            reorderHandle.setAttribute('aria-label', `Drag to reposition ${getSpeechLabel(item) || 'symbol'}`);
+                            reorderHandle.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="8" cy="5" r="2"/><circle cx="16" cy="5" r="2"/><circle cx="8" cy="12" r="2"/><circle cx="16" cy="12" r="2"/><circle cx="8" cy="19" r="2"/><circle cx="16" cy="19" r="2"/></svg>';
+                            bindReorderHandle(reorderHandle, cell, index);
+                            cell.appendChild(reorderHandle);
 
                             const delBtn = document.createElement('button');
                             delBtn.type = 'button';
@@ -8008,11 +8057,7 @@
                             };
                             cell.appendChild(colorPickBtn);
 
-                            cell.addEventListener('dragstart', handleDragStart);
-                            if (!item.isFolder) cell.addEventListener('touchstart', handleEditTouchStart, { passive: false });
-                            cell.addEventListener('touchmove', handleEditTouchMove, { passive: false });
-                            cell.addEventListener('touchend', handleEditTouchEnd);
-                            cell.addEventListener('touchcancel', handleEditTouchEnd);
+                            cell.addEventListener('dragstart', event => event.preventDefault());
                         } else {
                             cell.classList.add('locked');
                             cell.setAttribute('draggable', 'false');
@@ -8261,16 +8306,6 @@
 
                         }
 
-                        cell.addEventListener('dragover', handleDragOver);
-                        cell.addEventListener('dragenter', handleDragEnter);
-                    }
-
-                    if (config.mode === 'edit') {
-                        cell.addEventListener('dragover', handleDragOver);
-                        cell.addEventListener('dragenter', handleDragEnter);
-                        cell.addEventListener('dragleave', handleDragLeave);
-                        cell.addEventListener('drop', handleDrop);
-                        cell.addEventListener('dragend', handleDragEnd);
                     }
 
                     if (config.mode === 'edit' && item) {
