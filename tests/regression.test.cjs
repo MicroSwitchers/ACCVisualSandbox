@@ -161,3 +161,46 @@ test('move controls follow folders across the whole project and disappear after 
     w.eval("folderNavigationStack = []; gridData = [{ isTextOnly: true, label: 'Apple' }, null, null, null, null, null]; renderGrid()");
     assert.equal(w.document.querySelectorAll('.move-action-btn').length, 0);
 });
+
+test('cooldown rejects tap, dwell, keyboard and magnify starts without extending the interval', async t => {
+    const w = await boot(t);
+    w.eval("gridData[0] = { isTextOnly: true, label: 'Apple' }; gridData[1] = { isTextOnly: true, label: 'Pear' }; renderGrid(); config.cooldownTime = 1; window.now = 10000; Date.now = () => now; window.heard = []; speak = text => heard.push(text)");
+    const cell = w.document.querySelector('[data-index="0"]');
+    const other = w.document.querySelector('[data-index="1"]');
+    cell.dispatchEvent(new w.MouseEvent('mousedown', { bubbles: true }));
+    assert.deepEqual(Array.from(w.heard), ['Apple'], 'The first accepted selection speaks immediately');
+    cell.classList.remove('pulse-active');
+    for (const time of [10100, 10500, 10999]) {
+        w.now = time;
+        other.dispatchEvent(new w.MouseEvent('mousedown', { bubbles: true }));
+        other.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+        w.eval("config.dwellTime = .2");
+        other.dispatchEvent(new w.MouseEvent('mousedown', { bubbles: true }));
+        assert.equal(w.eval('dwellTimer'), null, 'Blocked presses cannot start dwell');
+        w.eval("config.magnify = true; handleMagnifyPointerDown({ target: gridContainer.children[1], pointerId: 1, pointerType: 'touch', button: 0, cancelable: true, preventDefault() {} }); config.magnify = false");
+        assert.equal(w.eval('magnifyPointerId'), null, 'Blocked presses cannot capture or magnify');
+        assert.equal(w.document.querySelectorAll('.magnified, .pulse-active').length, 0);
+        assert.deepEqual(Array.from(w.heard), ['Apple']);
+        assert.equal(w.eval('lastActivationTime'), 10000, 'Blocked presses do not extend cooldown');
+    }
+    w.now = 11000;
+    w.eval('config.dwellTime = 0');
+    other.dispatchEvent(new w.MouseEvent('mousedown', { bubbles: true }));
+    assert.deepEqual(Array.from(w.heard), ['Apple', 'Pear'], 'The next fresh touch works at expiry');
+    w.eval('config.cooldownTime = 0');
+    cell.dispatchEvent(new w.MouseEvent('mousedown', { bubbles: true }));
+    assert.deepEqual(Array.from(w.heard), ['Apple', 'Pear', 'Apple'], 'Off permits immediate selection');
+});
+
+test('game selection also respects cooldown before answering', async t => {
+    const w = await boot(t);
+    w.eval("gridData[0] = { isTextOnly: true, label: 'Apple' }; renderGrid(); config.cooldownTime = 1; window.now = 10000; Date.now = () => now; gameActive = true; currentTargetIndex = 0; window.answers = []; checkAnswer = index => answers.push(index)");
+    const cell = w.document.querySelector('[data-index="0"]');
+    cell.dispatchEvent(new w.MouseEvent('mousedown', { bubbles: true }));
+    w.now = 10500;
+    cell.dispatchEvent(new w.MouseEvent('mousedown', { bubbles: true }));
+    assert.deepEqual(Array.from(w.answers), [0]);
+    w.now = 11000;
+    cell.dispatchEvent(new w.MouseEvent('mousedown', { bubbles: true }));
+    assert.deepEqual(Array.from(w.answers), [0, 0]);
+});

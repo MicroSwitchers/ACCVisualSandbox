@@ -14,6 +14,8 @@ A browser-based workspace for arranging AAC images, symbols, text, and folders i
 
 Tap a populated card in either view to test its speech and selection behavior. With touch magnification enabled, hold and slide across cards, then release to select. The outline defaults to blue; its colour and an optional no-outline setting are available under Interaction.
 
+Raise the **Cooldown** slider to ignore further presses for the chosen interval after a selection. The first selection behaves normally; ignored presses cannot start magnification, dwell, animation, or additional speech. They do not extend the interval or queue a selection. **Off** keeps normal repeated selection.
+
 In the editor, drag the grip at a card's bottom-right corner to reposition it. Dropping onto another populated card swaps their positions. Use the move button to transfer an item to another folder.
 
 Boards and settings are saved in the current browser using IndexedDB and localStorage. Use the app's import/export controls to transfer configurations between devices. Symbol searches use external services and require an internet connection.
