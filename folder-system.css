@@ -137,7 +137,10 @@
 #main-content:not(.play-mode) .folder-cell .folder-label-text { display: block; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 #main-content:not(.play-mode) .folder-cell .folder-card-open { position: static; transform: none; justify-self: center; display: flex; flex-direction: row-reverse; align-items: center; justify-content: center; gap: 6px; max-width: 100%; min-height: 26px; padding: 4px 8px; border: 1px solid #dce6f7; border-radius: 7px; background: #edf3ff; color: #2555a8; font-size: 11px; font-weight: 500; line-height: 1.3; }
 .folder-card-open span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-#main-content:not(.play-mode) .folder-cell .folder-card-open { margin-right: 38px; }
+#main-content:not(.play-mode) .folder-cell .cell-content { bottom: calc(var(--folder-edit-inset, 12px) + 40px); }
+@container (max-width: 179px) {
+    #main-content:not(.play-mode) .folder-cell .folder-card-open { display: none; }
+}
 .folder-card-open svg { width: 12px; height: 12px; flex-shrink: 0; }
 .folder-card-kind { position: absolute; top: var(--folder-kind-top, 12px); left: var(--folder-edit-inset, 12px); max-width: var(--folder-kind-width, 120px); display: flex; align-items: center; gap: 6px; padding: 2px 0; z-index: 4; font-size: 11px; color: #52627b; line-height: 1.3; }
 .folder-card-kind svg { width: 14px; height: 14px; flex-shrink: 0; }
